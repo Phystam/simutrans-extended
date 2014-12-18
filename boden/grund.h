@@ -170,6 +170,17 @@ protected:
 	 */
 	uint8 flags;
 
+	/**
+	 * Image of the walls
+	 */
+	sint8 back_bild_nr;
+
+	/**
+	 * Flags to indicate existence of halts, ways, to mark dirty
+	 */
+	uint8 flags;
+
+
 public:
 	/**
 	 * setzt die Bildnr. des anzuzeigenden Bodens

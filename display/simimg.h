@@ -17,6 +17,6 @@
 
 typedef uint32 image_id;
 
-#define IMG_EMPTY ((image_id)0xFFFFFFFFFFu)
+#define IMG_EMPTY ((image_id)0xFFFFFFFFu)
 
 #endif
