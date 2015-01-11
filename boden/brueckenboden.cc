@@ -45,7 +45,6 @@ void brueckenboden_t::calc_image_internal(const bool calc_only_snowline_change)
 		clear_back_image();
 		set_image(IMG_EMPTY);
 	}
-
 }
 
 
