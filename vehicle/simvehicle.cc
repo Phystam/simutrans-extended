@@ -131,7 +131,7 @@ bool vehicle_base_t::need_realignment() const
 }
 
 // [0]=xoff [1]=yoff
-static sint8 driveleft_base_offsets[8][2] =
+sint8 vehicle_base_t::driveleft_base_offsets[8][2] =
 {
 	{ 12, 6 },
 	{ -12, 6 },
@@ -205,7 +205,6 @@ vehicle_base_t::vehicle_base_t():
 	steps = 0;
 	steps_next = VEHICLE_STEPS_PER_TILE - 1;
 	use_calc_height = true;
-	drives_on_left = false;
 	dx = 0;
 	dy = 0;
 	zoff_start = zoff_end = 0;
@@ -230,7 +229,6 @@ vehicle_base_t::vehicle_base_t(koord3d pos):
 	steps = 0;
 	steps_next = VEHICLE_STEPS_PER_TILE - 1;
 	use_calc_height = true;
-	drives_on_left = false;
 	dx = 0;
 	dy = 0;
 	zoff_start = zoff_end = 0;
@@ -475,11 +473,6 @@ void vehicle_base_t::get_screen_offset( int &xoff, int &yoff, const sint16 raste
 	xoff += (display_steps*dx) >> 10;
 	yoff += ((display_steps*dy) >> 10) + (get_hoff(raster_width)) / (4 * 16);
 
-	if(  drives_on_left  ) {
-		const int drive_left_dir = ribi_t::get_dir(get_direction());
-		xoff += tile_raster_scale_x( driveleft_base_offsets[drive_left_dir][0], raster_width );
-		yoff += tile_raster_scale_y( driveleft_base_offsets[drive_left_dir][1], raster_width );
-	}
 }
 
 
@@ -686,6 +679,7 @@ vehicle_base_t *vehicle_base_t::no_cars_blocking( const grund_t *gr, const convo
 					return v;
 				}
 
+				const bool drives_on_left = welt->get_settings().is_drive_left();
 				const bool across = next_direction == (drives_on_left ? ribi_t::rotate45l(next_90direction) : ribi_t::rotate45(next_90direction)); // turning across the opposite directions lane
 				const bool other_across = other_direction == (drives_on_left ? ribi_t::rotate45l(other_90direction) : ribi_t::rotate45(other_90direction)); // other is turning across the opposite directions lane
 				if(  other_direction == next_direction  &&  !(other_across || across)  &&  cnv_overtaking == other_overtaking  ) {
@@ -3196,7 +3190,6 @@ road_vehicle_t::road_vehicle_t(koord3d pos, const vehicle_desc_t* desc, player_t
 {
 	cnv = cn;
 	is_checker = false;
-	drives_on_left = welt->get_settings().is_drive_left();
 }
 
 road_vehicle_t::road_vehicle_t() :
@@ -3266,7 +3259,6 @@ road_vehicle_t::road_vehicle_t(loadsave_t *file, bool is_leading, bool is_last) 
 	}
 	fix_class_accommodations();
 	is_checker = false;
-	drives_on_left = welt->get_settings().is_drive_left();
 }
 
 void road_vehicle_t::rotate90()
@@ -3289,7 +3281,6 @@ route_t::route_result_t road_vehicle_t::calc_route(koord3d start, koord3d ziel, 
 {
 	assert(cnv);
 	// free target reservation
-	drives_on_left = welt->get_settings().is_drive_left();	// reset driving settings
 	if(leading   &&  previous_direction!=ribi_t::none  &&  cnv  &&  target_halt.is_bound() ) {
 		// now reserve our choice (beware: might be longer than one tile!)
 		for(  uint32 length=0;  length<cnv->get_tile_length()  &&  length+1<cnv->get_route()->get_count();  length++  ) {
@@ -3433,6 +3424,12 @@ bool road_vehicle_t:: is_target(const grund_t *gr, const grund_t *prev_gr)
 void road_vehicle_t::get_screen_offset( int &xoff, int &yoff, const sint16 raster_width, bool prev_based ) const
 {
 	vehicle_base_t::get_screen_offset( xoff, yoff, raster_width );
+
+	if(  welt->get_settings().is_drive_left()  ) {
+		const int drive_left_dir = ribi_t::get_dir(get_direction());
+		xoff += tile_raster_scale_x( driveleft_base_offsets[drive_left_dir][0], raster_width );
+		yoff += tile_raster_scale_y( driveleft_base_offsets[drive_left_dir][1], raster_width );
+	}
 
 	// eventually shift position to take care of overtaking
 	if(cnv) {

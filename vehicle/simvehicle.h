@@ -86,6 +86,7 @@ protected:
 	static uint16 diagonal_multiplier;
 
 	// [0]=xoff [1]=yoff
+	static sint8 driveleft_base_offsets[8][2];
 	static sint8 overtaking_base_offsets[8][2];
 
 	/**
