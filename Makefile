@@ -1,6 +1,9 @@
 CFG ?= default
 -include config.$(CFG)
 
+HOSTCC?=$(CC)
+HOSTCXX?=$(CXX)
+
 
 BACKENDS      = allegro gdi opengl sdl sdl2 mixer_sdl posix
 COLOUR_DEPTHS = 0 16
@@ -33,7 +36,8 @@ else
       else
         ifeq ($(OSTYPE),mingw)
           CFLAGS  += -DPNG_STATIC -DZLIB_STATIC -static
-		  LDFLAGS += -static-libgcc -static-libstdc++ -Wl,--large-address-aware -static
+          #LDFLAGS += -static-libgcc -static-libstdc++ -Wl,-Bstatic -lpthread -lbz2 -lz -Wl,-Bdynamic
+          LDFLAGS += -static-libgcc -static-libstdc++ -lpthread -lbz2 -lz -Wl,-Bdynamic
           LIBS    += -lmingw32
         endif
       endif
@@ -127,8 +131,8 @@ ifneq ($(MULTI_THREAD),)
     ifeq ($(OSTYPE),mingw)
 #use lpthreadGC2d for debug alternatively
 #		Disabled, as this does not work for cross-compiling
-#      LDFLAGS += -lpthreadGC2
-	   LDFLAGS += -static -lpthread
+			LDFLAGS += -lpthread
+#LDFLAGS += -static -lpthread
     else
       ifneq ($(OSTYPE),haiku)
         LDFLAGS += -lpthread
@@ -617,7 +621,7 @@ CFLAGS += -DCOLOUR_DEPTH=$(COLOUR_DEPTH)
 ifneq ($(findstring $(OSTYPE), cygwin mingw),)
   SOURCES += simres.rc
   # See https://sourceforge.net/p/mingw-w64/discussion/723798/thread/bf2a464d/
-  WINDRES ?= windres -F pe-i386
+  WINDRES ?= x86_64-w64-mingw32-windres
 endif
 
 CCFLAGS  += $(CFLAGS)
@@ -625,7 +629,7 @@ CXXFLAGS += $(CFLAGS)
 
 BUILDDIR ?= build/$(CFG)
 PROGDIR  ?= $(BUILDDIR)
-PROG     ?= simutrans-extended
+PROG     ?= simutrans-extended.exe
 
 
 include common.mk

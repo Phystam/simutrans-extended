@@ -1,4 +1,4 @@
-#/*
+/*
  * Copyright (c) 1997 - 2001 Hj. Malthaner
  *
  * This file is part of the Simutrans project under the artistic license.
@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <iostream>
 #include "../boden/grund.h"
 #include "../boden/wege/runway.h"
 #include "../boden/wege/kanal.h"
@@ -7020,7 +7020,7 @@ bool air_vehicle_t::calc_route_internal(
 			const grund_t *gr=NULL;
 			// add the start
 			int endi = 1;
-			int over = 3;
+			int over = HOLDING_PATTERN_OFFSET;
 			// now add all runway + 3 ...
 			do {
 				if(!welt->is_within_limits(search_start.get_2d()+(start_dir*endi)) ) {
@@ -7066,7 +7066,7 @@ bool air_vehicle_t::calc_route_internal(
 			flying_height = 3*TILE_HEIGHT_STEP;
 		}
 		takeoff = 0;
-		target_height = ((sint16)start.z+3)*TILE_HEIGHT_STEP;
+		target_height = ((sint16)start.z+SET_FLIGHT_HEIGHT)*TILE_HEIGHT_STEP;
 	}
 
 //DBG_MESSAGE("air_vehicle_t::calc_route()","take off ok");
@@ -7081,7 +7081,7 @@ bool air_vehicle_t::calc_route_internal(
 			// add the start
 			const grund_t *gr;
 			int endi = 1;
-			int over = 3;
+			int over = HOLDING_PATTERN_OFFSET;//changed
 			// now add all runway + 3 ...
 			do {
 				if(!welt->is_within_limits(search_end.get_2d()+(end_dir*endi)) ) {
@@ -7120,7 +7120,17 @@ bool air_vehicle_t::calc_route_internal(
 
 		// now make a curve
 		koord circlepos=landing_start.get_2d();
-		static const koord circle_koord[HOLDING_PATTERN_LENGTH]={ koord(0,1), koord(0,1), koord(1,0), koord(0,1), koord(1,0), koord(1,0), koord(0,-1), koord(1,0), koord(0,-1), koord(0,-1), koord(-1,0), koord(0,-1), koord(-1,0), koord(-1,0), koord(0,1), koord(-1,0) };
+
+		// static const koord circle_koord[HOLDING_PATTERN_LENGTH]	={ koord(0,1), koord(0,1), koord(1,0), koord(0,1), koord(1,0), koord(1,0), koord(0,-1), koord(1,0), koord(0,-1), koord(0,-1), koord(-1,0), koord(0,-1), koord(-1,0), koord(-1,0), koord(0,1), koord(-1,0) };
+		static const koord circle_koord[HOLDING_PATTERN_LENGTH]	
+			= { koord(0,1), koord(0,1), 
+					koord(1,0), koord(0,1),
+					koord(1,0), koord(1,0), 
+					koord(0,-1), koord(1,0),
+					koord(0,-1), koord(0,-1), 
+					koord(-1,0), koord(0,-1), 
+					koord(-1,0), koord(-1,0), 
+					koord(0,1), koord(-1,0) };
 
 		// circle to the left
 		for(  int  i=0;  i < HOLDING_PATTERN_LENGTH;  i++  ) {
@@ -7207,7 +7217,7 @@ int air_vehicle_t::block_reserver( uint32 start, uint32 end, bool reserve ) cons
 
 	bool start_now = false;
 
-	uint16 runway_tiles = end - start;
+	uint16 runway_tiles = end - start + HOLDING_PATTERN_LENGTH;
 	uint16 runway_meters = runway_tiles * welt->get_settings().get_meters_per_tile();
 	const uint16 min_runway_length_meters = desc->get_minimum_runway_length();
 	int success = runway_meters >= min_runway_length_meters ? 1 : 2;
@@ -7244,7 +7254,8 @@ int air_vehicle_t::block_reserver( uint32 start, uint32 end, bool reserve ) cons
 				// end of runway?
 				if(i>start  &&  ribi_t::is_single(sch1->get_ribi_unmasked())  )
 				{
-					runway_tiles = (i + 1) - start;
+					//					runway_tiles = (i + 1) - start;
+					runway_tiles = (i + HOLDING_PATTERN_OFFSET) - start;
 					runway_meters = runway_tiles * welt->get_settings().get_meters_per_tile();
 					success = success == 0 ? 0 : runway_meters >= min_runway_length_meters ? 1 : 2;
 					return success;
@@ -7707,12 +7718,13 @@ void air_vehicle_t::hop(grund_t* gr)
 				new_friction = 1;
 				block_reserver( takeoff, takeoff+100, false );
 				flying_height = h_cur - h_next;
-				target_height = h_cur+TILE_HEIGHT_STEP*3;
+				//target_height = h_cur+TILE_HEIGHT_STEP*3;
+				target_height = h_cur + ((sint16)get_pos().z+SET_FLIGHT_HEIGHT)*TILE_HEIGHT_STEP;
 			}
 			break;
 		}
 		case circling: {
-			new_speed_limit = kmh_to_speed(desc->get_topspeed())/3;
+			new_speed_limit = max ( kmh_to_speed(100), kmh_to_speed(desc->get_topspeed())/3 );//changed... 44km/h is too slow 
 			new_friction = 4;
 			// do not change height any more while circling
 			flying_height += h_cur;
@@ -7730,7 +7742,7 @@ void air_vehicle_t::hop(grund_t* gr)
 			}
 			flying_height -= h_next;
 			// did we have to change our flight height?
-			if(  target_height-h_next > TILE_HEIGHT_STEP*5  ) {
+			if(  target_height-h_next > TILE_HEIGHT_STEP*SET_FLIGHT_HEIGHT  ) { //changed
 				// Move down
 				target_height -= TILE_HEIGHT_STEP*2;
 			}
@@ -7741,7 +7753,8 @@ void air_vehicle_t::hop(grund_t* gr)
 			break;
 		}
 		case landing: {
-			new_speed_limit = kmh_to_speed(desc->get_topspeed())/3; // ==approach speed
+			new_speed_limit = max ( kmh_to_speed(100), kmh_to_speed(desc->get_topspeed())/3 ); //changed... 44km/h is too slow 
+			//kmh_to_speed(desc->get_topspeed())/3; // ==approach speed
 			new_friction = 8;
 			flying_height += h_cur;
 			if(  flying_height < target_height  ) {
@@ -7787,7 +7800,7 @@ void air_vehicle_t::hop(grund_t* gr)
 			break;
 		}
 		default: {
-			new_speed_limit = kmh_to_speed( min( 60, desc->get_topspeed()/4 ) );
+			new_speed_limit = flying_height == h_cur ? kmh_to_speed( min( 60, desc->get_topspeed()/4 ) ) : kmh_to_speed( max( 100, desc->get_topspeed()/3 ) );
 			new_friction = 16;
 			flying_height = 0;
 			target_height = h_next;
