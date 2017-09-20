@@ -1603,6 +1603,7 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_long(job_replenishment_per_hundredths_of_months);
 			file->rdwr_long(random_mode_commuting);
 			file->rdwr_long(random_mode_visiting);
+			std::cout <<"revision = "<< file->get_extended_revision() << std::endl;
 			if(file->get_extended_revision() >= 22){
 				file->rdwr_short(min_flight_altitude);
 				file->rdwr_short(max_flight_altitude);
