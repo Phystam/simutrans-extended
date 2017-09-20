@@ -2448,7 +2448,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	random_mode_visiting = contents.get_int("random_mode_visiting", random_mode_visiting);
 
 	min_flight_altitude = contents.get_int("min_flight_altitude", min_flight_altitude);
-	max_flight_altitude = contents.get_int("max_flight_altitude", min_flight_altitude);
+	max_flight_altitude = contents.get_int("max_flight_altitude", max_flight_altitude);
 	flight_altitude_persent = contents.get_int("flight_altitude_persent", flight_altitude_persent);
 
 	for(uint8 i = road_wt; i <= air_wt; i ++)
