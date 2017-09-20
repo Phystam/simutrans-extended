@@ -454,6 +454,10 @@ settings_t::settings_t() :
 	walking_speed = 5;
 
 	random_mode_commuting = random_mode_visiting = 2;
+
+	min_flight_altitude = 5;
+	max_flight_altitude = 30;
+	flight_altitude_persent = 100;
 	
 	for(uint8 i = 0; i < 17; i ++)
 	{
@@ -1599,7 +1603,12 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_long(job_replenishment_per_hundredths_of_months);
 			file->rdwr_long(random_mode_commuting);
 			file->rdwr_long(random_mode_visiting);
-
+			if(file->get_extended_version() >= 13){
+				file->rdwr_short(min_flight_altitude);
+				file->rdwr_short(max_flight_altitude);
+				file->rdwr_short(flight_altitude_persent);
+			}
+			
 			file->rdwr_longlong(forge_cost_road);
 			file->rdwr_longlong(forge_cost_track);
 			file->rdwr_longlong(forge_cost_water);
@@ -2437,7 +2446,11 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 
 	random_mode_commuting = contents.get_int("random_mode_commuting", random_mode_commuting);
 	random_mode_visiting = contents.get_int("random_mode_visiting", random_mode_visiting);
-	
+
+	min_flight_altitude = contents.get_int("min_flight_altitude", min_flight_altitude);
+	max_flight_altitude = contents.get_int("max_flight_altitude", min_flight_altitude);
+	flight_altitude_persent = contents.get_int("flight_altitude_persent", flight_altitude_persent);
+
 	for(uint8 i = road_wt; i <= air_wt; i ++)
 	{
 		std::string buf;

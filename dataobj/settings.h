@@ -321,6 +321,14 @@ private:
 	uint32 random_mode_commuting;
 	uint32 random_mode_visiting;
 
+	/**
+	 * These three parameters define the altitude of aircraft.
+	 * flight altitude is determined by following fomula:
+	 * h = min( max_flight_altitude, max( min_flight_altitude, topspeed_kmh/33 * flight_altitude_persent/100 ) )
+	 */
+	sint16 min_flight_altitude;
+	sint16 max_flight_altitude;
+	sint16 flight_altitude_persent;
 public:
 	//Cornering settings
 	//@author: jamespetts
