@@ -937,8 +937,11 @@ private:
 	sint16 altitude_level; // for AFHP
 	sint16 landing_distance; // for AFHP
 
-	void calc_altitude_level(sint32 speed_limit_kmh){
-		altitude_level = max(5, speed_limit_kmh/33);
+	void calc_altitude_level(sint32 speed_limit_kmh, karte_t* welt){
+		sint16 min_flight_altitude = welt->get_settings().get_min_flight_altitude();
+		sint16 max_flight_altitude = welt->get_settings().get_min_flight_altitude();
+		sint16 flight_altitude_persent = welt->get_settings().get_flight_altitude_persent();
+		altitude_level = max(min_flight_altitude, speed_limit_kmh/33. * (flight_altitude_persent/100.));
 		altitude_level = min(altitude_level, 30);
 		landing_distance = altitude_level - 1;
 	}
