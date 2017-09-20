@@ -1081,6 +1081,10 @@ public:
 	uint32 get_random_mode_commuting() const { return random_mode_commuting; }
 	uint32 get_random_mode_visiting() const { return random_mode_visiting; }
 
+	sint16 get_min_flight_altitude() const { return min_flight_altitude; }
+	sint16 get_max_flight_altitude() const { return max_flight_altitude; }
+	sint16 get_flight_altitude_persent() const { return flight_altitude_persent; }
+
 #ifndef NETTOOL
 	float32e8_t get_simtime_factor() const { return simtime_factor; }
 	float32e8_t meters_to_steps(const float32e8_t &meters) const { return steps_per_meter * meters; }

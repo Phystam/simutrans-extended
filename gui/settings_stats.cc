@@ -431,6 +431,9 @@ void settings_extended_revenue_stats_t::init( settings_t *sets )
 	INIT_NUM("min_wait_airport", sets->get_min_wait_airport(), 0, 311040, gui_numberinput_t::AUTOLINEAR, false );
 	INIT_NUM("random_mode_commuting", sets->get_random_mode_commuting(), 0, 16, gui_numberinput_t::AUTOLINEAR, false );
 	INIT_NUM("random_mode_visiting", sets->get_random_mode_visiting(), 0, 16, gui_numberinput_t::AUTOLINEAR, false );
+	INIT_NUM("min_flight_altitude", sets->get_min_flight_altitude(), 3, 50, gui_numberinput_t::AUTOLINEAR, false );
+	INIT_NUM("max_flight_altitude", sets->get_max_flight_altitude(), 3, 50, gui_numberinput_t::AUTOLINEAR, false );
+	INIT_NUM("flight_altitude_persent", sets->get_flight_altitude_persent(), 50, 150,gui_numberinput_t::AUTOLINEAR, false );
 	{
 		gui_component_table_t &tbl = new_table(scr_coord(0, ypos), 6, 4);
 		int row = 0;
