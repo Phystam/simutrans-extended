@@ -941,8 +941,8 @@ private:
 		sint16 min_flight_altitude = welt->get_settings().get_min_flight_altitude();
 		sint16 max_flight_altitude = welt->get_settings().get_max_flight_altitude();
 		sint16 flight_altitude_persent = welt->get_settings().get_flight_altitude_persent();
-		altitude_level = max(min_flight_altitude, speed_limit_kmh/33. * (flight_altitude_persent/100.));
-		altitude_level = min(altitude_level, max_flight_altitude);
+		altitude_level = max(min_flight_altitude, (speed_limit_kmh * flight_altitude_persent)/3300 ) ;
+		altitude_level = min(altitude_level, max_flight_altitude );
 		std::cout << "altitude_level = "<<altitude_level << std::endl;
 		landing_distance = altitude_level - 1;
 	}
