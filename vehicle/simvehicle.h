@@ -942,7 +942,7 @@ private:
 		sint16 max_flight_altitude = welt->get_settings().get_min_flight_altitude();
 		sint16 flight_altitude_persent = welt->get_settings().get_flight_altitude_persent();
 		altitude_level = max(min_flight_altitude, speed_limit_kmh/33. * (flight_altitude_persent/100.));
-		altitude_level = min(altitude_level, 30);
+		altitude_level = min(altitude_level, max_flight_altitude);
 		landing_distance = altitude_level - 1;
 	}
 	// BG, 07.08.2012: extracted from calc_route()

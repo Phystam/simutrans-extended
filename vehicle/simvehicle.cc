@@ -6950,7 +6950,7 @@ bool air_vehicle_t::calc_route_internal(
 	{
 		// see, if we find a direct route: We are finished
 		state = air_vehicle_t::taxiing;
-		calc_altitude_level( get_desc()->get_topspeed() );
+		calc_altitude_level( get_desc()->get_topspeed() ,welt);
 		if(route.calc_route( welt, start, ziel, this, max_speed, weight, false, 0))
 		{
 			// ok, we can taxi to our location
@@ -7064,7 +7064,7 @@ bool air_vehicle_t::calc_route_internal(
 		route.append( start );
 		state = flying;
 		play_sound();
-		calc_altitude_level( desc->get_topspeed() ); // added for AFHP
+		calc_altitude_level( desc->get_topspeed() ,welt); // added for AFHP
 		if(flying_height==0) {
 			flying_height = 3*TILE_HEIGHT_STEP;
 		}
@@ -7518,7 +7518,7 @@ air_vehicle_t::air_vehicle_t(loadsave_t *file, bool is_leading, bool is_last) :
 #endif
 {
 	rdwr_from_convoi(file);
-	calc_altitude_level( desc->get_topspeed() );
+	calc_altitude_level( desc->get_topspeed() ,welt);
 	runway_too_short = false;
 
 	if(  file->is_loading()  ) {
@@ -7555,7 +7555,7 @@ air_vehicle_t::air_vehicle_t(koord3d pos, const vehicle_desc_t* desc, player_t* 
 	flying_height = 0;
 	target_height = pos.z;
 	runway_too_short = false;
-	calc_altitude_level( desc->get_topspeed() );
+	calc_altitude_level( desc->get_topspeed() ,welt);
 }
 
 
@@ -7730,7 +7730,7 @@ void air_vehicle_t::hop(grund_t* gr)
 				play_sound();
 				new_friction = 1;
 				block_reserver( takeoff, takeoff+100, false );
-				calc_altitude_level( desc->get_topspeed() );
+				calc_altitude_level( desc->get_topspeed() ,welt);
 				flying_height = h_cur - h_next;
 				target_height = h_cur+TILE_HEIGHT_STEP*(altitude_level+(sint16)get_pos().z);//modified
 			}
