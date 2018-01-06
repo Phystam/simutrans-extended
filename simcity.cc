@@ -14,7 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include <limits>
-
+#include <iostream>
 #include "boden/wege/strasse.h"
 #include "boden/grund.h"
 #include "boden/boden.h"
@@ -1605,7 +1605,7 @@ void stadt_t::rdwr(loadsave_t* file)
 		owner_n = welt->sp2num(owner);
 	}
 	file->rdwr_str(name);
-	DBG_DEBUG("stadt_t::rdwr", "city'%s'", name);
+	//	DBG_DEBUG("stadt_t::rdwr", "city'%s'", name);
 	pos.rdwr(file);
 	uint32 lli = lo.x;
 	uint32 lob = lo.y;
@@ -4994,8 +4994,9 @@ void stadt_t::build(bool new_town, bool map_generation)
 	}
 
 	// renovation 
+	
 	koord c( (ur.x + lo.x)/2 , (ur.y + lo.y)/2);
-	uint32 maxdist(koord_distance(ur,c));
+	uint32 maxdist(welt->get_settings().get_station_coverage());
 	if (maxdist < 10) {maxdist = 10;}
 	uint32 was_renovated=0;
 	uint32 try_nr = 0;
@@ -5003,8 +5004,47 @@ void stadt_t::build(bool new_town, bool map_generation)
 		while (was_renovated < renovations_count && try_nr++ < renovations_try) { // trial and errors parameters
 			// try to find a non-player owned building
 			gebaeude_t* const gb = pick_any(buildings);
-			const uint32 dist(koord_distance(c, gb->get_pos()));
-			const uint32 distance_rate = 100 - (dist * 100) / maxdist;
+
+			//renovation around station
+			const planquadrat_t* plan = welt->access(gb->get_pos().get_2d());
+			const nearby_halt_t* const halt_list = plan->get_haltlist();
+			int number_of_halt = plan->get_haltlist_count();
+			uint32 distance_from_largest_halt=9999;
+			uint32 largest_halt_capacity=0;
+			if(number_of_halt>0){
+				for(int h=0; h < number_of_halt; h++){
+					const halthandle_t halt = halt_list[h].halt;
+					if((halt->get_station_type()&0b000010000) == 0){//avoid airstop
+						continue;
+					}
+					if(halt->is_enabled(goods_manager_t::passengers)){//only pax stop
+						const uint32 tiles_to_halt = halt_list[h].distance;
+
+						const uint32 halt_capacity = halt->get_capacity((uint8)goods_manager_t::INDEX_PAS);
+						//						std::cout << "halt_distance = "<<tiles_to_halt<<",halt_cap="<<halt_capacity <<std::endl;						
+						if(largest_halt_capacity<halt_capacity){
+							distance_from_largest_halt=tiles_to_halt;
+							largest_halt_capacity=halt_capacity;
+						}
+					}
+				}
+			}else{
+				//no chance
+				continue;
+			}
+			const uint32 dist=distance_from_largest_halt;
+
+			if(dist>welt->get_settings().get_station_coverage()){
+				continue;
+			}
+			//			const uint32 dist(koord_distance(c, gb->get_pos()));
+			//Woods-Saxon form
+			double diffuseness=maxdist/12.;
+			double threshold=maxdist*2./3.;
+			const double distance_rate = 100./(1.+exp((dist-threshold)/diffuseness));//1/3 diffuseness
+			//			const uint32 distance_rate = 100./(1.+exp((dist-maxdist*4./5.)/(maxdist/5.)));//1/3 diffuseness
+			//			const uint32 distance_rate = 100 - (dist * 100) / maxdist;
+			std::cout << "distance"<<dist<<" "<<" "<<maxdist<<" "<<distance_rate<<std::endl;
 			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < distance_rate) {
 				if(renovate_city_building(gb, map_generation)) { was_renovated++;}
 			}
