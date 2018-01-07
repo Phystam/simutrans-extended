@@ -5010,40 +5010,37 @@ void stadt_t::build(bool new_town, bool map_generation)
 			const nearby_halt_t* const halt_list = plan->get_haltlist();
 			int number_of_halt = plan->get_haltlist_count();
 			uint32 distance_from_largest_halt=9999;
-			uint32 largest_halt_capacity=0;
+			std::cout << "halt number="<<number_of_halt<<std::endl;
+			//Woods-Saxon form
+			double diffuseness=maxdist/12.;
+			double threshold=maxdist*2./3.;
+			double max_distance_rate=0;//in percent
+
 			if(number_of_halt>0){
 				for(int h=0; h < number_of_halt; h++){
-					const halthandle_t halt = halt_list[h].halt;
-					if((halt->get_station_type()&0b000010000) == 0){//avoid airstop
+					if((halt->get_station_type()&16) != 0){//avoid airstop
+						std::cout <<"this halt is airport. continue."<<std::endl;
 						continue;
 					}
-					if(halt->is_enabled(goods_manager_t::passengers)){//only pax stop
-						const uint32 tiles_to_halt = halt_list[h].distance;
-
-						const uint32 halt_capacity = halt->get_capacity((uint8)goods_manager_t::INDEX_PAS);
-						//						std::cout << "halt_distance = "<<tiles_to_halt<<",halt_cap="<<halt_capacity <<std::endl;						
-						if(largest_halt_capacity<halt_capacity){
-							distance_from_largest_halt=tiles_to_halt;
-							largest_halt_capacity=halt_capacity;
-						}
+					const halthandle_t halt = halt_list[h].halt;
+					const uint32 halt_capacity = halt->get_capacity((uint8)0); //pax capacity
+					const uint32 tiles_to_halt = halt_list[h].distance;
+					// std::cout << "halt_distance = "<<tiles_to_halt<<",halt_cap="<<halt_capacity <<std::endl;
+					// std::cout << "halt_type="<<halt->get_station_type()<<std::endl;
+					double distance_rate = log(halt_capacity<1?1:halt_capacity)*10./(1.+exp((dist-threshold)/diffuseness));//woods-saxon form
+					if(max_distance_rate<distance_rate){
+						distance_from_largest_halt=tiles_to_halt;
+						max_distance_rate=distance_rate;
 					}
 				}
+
 			}else{
 				//no chance
 				continue;
 			}
 			const uint32 dist=distance_from_largest_halt;
-
-			if(dist>welt->get_settings().get_station_coverage()){
-				continue;
-			}
+			std::cout << "largest_dist="<<dist<<std::endl;
 			//			const uint32 dist(koord_distance(c, gb->get_pos()));
-			//Woods-Saxon form
-			double diffuseness=maxdist/12.;
-			double threshold=maxdist*2./3.;
-			const double distance_rate = 100./(1.+exp((dist-threshold)/diffuseness));//1/3 diffuseness
-			//			const uint32 distance_rate = 100./(1.+exp((dist-maxdist*4./5.)/(maxdist/5.)));//1/3 diffuseness
-			//			const uint32 distance_rate = 100 - (dist * 100) / maxdist;
 			std::cout << "distance"<<dist<<" "<<" "<<maxdist<<" "<<distance_rate<<std::endl;
 			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < distance_rate) {
 				if(renovate_city_building(gb, map_generation)) { was_renovated++;}
