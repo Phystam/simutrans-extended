@@ -1234,12 +1234,19 @@ bool stadt_t::enlarge_city_borders(ribi_t::ribi direction) {
 		return false;
 	}
 	// Now check a row along that side to see if it's safe to expand
+	// Phystam: if all of tested tiles are "water", return false
+	bool is_all_water=true;
 	for (koord test = test_first; test != test_stop; test = test + test_increment) {
 		stadt_t* found_city = welt->access(test)->get_city();
+		const climate cl_border = welt->get_climate(test);
 		if (found_city && found_city != this) {
 			// We'd be expanding into another city.  Don't!
 			return false;
 		}
+		is_all_water = is_all_water && (cl_border==water_climate);
+	}
+	if(is_all_water){
+		return false;
 	}
 	// OK, it's safe to expand in this direction.  Do so.
 	lo = new_lo;
