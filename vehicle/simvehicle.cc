@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <iostream>
 #include "../boden/grund.h"
 #include "../boden/wege/runway.h"
 #include "../boden/wege/kanal.h"
@@ -454,14 +454,52 @@ void vehicle_base_t::get_screen_offset( int &xoff, int &yoff, const sint16 raste
 {
 	sint32 adjusted_steps = steps;
 	const vehicle_t* veh = obj_cast<vehicle_t>(this);
+	uint8 direction = ribi_t::get_dir(get_direction());
 	if (veh  &&  veh->is_reversed()) 
 	{
-		adjusted_steps += (VEHICLE_STEPS_PER_TILE / 2 - veh->get_desc()->get_length_in_steps());
+		// adjusted_steps += (VEHICLE_STEPS_PER_TILE / 2);
+		// adjusted_steps -= veh->get_desc()->get_length_in_steps();
+		// adjusted_steps += (VEHICLE_STEPS_PER_TILE);
+		//phystam mod
+		switch(direction){
+		case ribi_t::dir_east://5
+		case ribi_t::dir_south:
+			//			adjusted_steps += veh->get_desc()->get_length_in_steps()/2;
+			adjusted_steps -= (VEHICLE_STEPS_PER_TILE / 2);
+			break;
+		case ribi_t::dir_west:
+		case ribi_t::dir_north:
+			break;
+		default:
+			adjusted_steps += (VEHICLE_STEPS_PER_TILE / 2);
+			adjusted_steps -= veh->get_desc()->get_length_in_steps();
+			break;
+		}
+	}else if( veh && (!veh->is_reversed()) ){
+		switch(direction){
+		case ribi_t::dir_east://5
+		case ribi_t::dir_south:
+			//no offset
+			adjusted_steps -= (VEHICLE_STEPS_PER_TILE / 2);
+			//			adjusted_steps += (VEHICLE_STEPS_PER_TILE / 2 - veh->get_desc()->get_length_in_steps() ) ;
+			// adjusted_steps += veh->get_desc()->get_length_in_steps()/2;			
+			break;
+		case ribi_t::dir_west:
+		case ribi_t::dir_north:
+			break;
+		default:
+			adjusted_steps += (VEHICLE_STEPS_PER_TILE / 2);
+			adjusted_steps -= veh->get_desc()->get_length_in_steps();
+			break;
+		}
+		//		adjusted_steps += (VEHICLE_STEPS_PER_TILE)/2;
+		// adjusted_steps += veh->get_desc()->get_length_in_steps()/2;
 	}
-
+	// std::cout<<"dir="<<	(int)direction<<std::endl;
+	// std::cout<<" reverse?="<<veh->is_reversed()<<", steps="<<(int)steps<<", adjusted_steps="<<adjusted_steps<<std::endl;
 	// vehicles needs finer steps to appear smoother
 	sint32 display_steps = (uint32)adjusted_steps*(uint16)raster_width;
-
+	//modoru
 	if(dx && dy) {
 		display_steps &= 0xFFFFFC00;
 	}

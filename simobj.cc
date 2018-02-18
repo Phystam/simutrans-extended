@@ -217,6 +217,7 @@ void obj_t::rdwr(loadsave_t *file)
  * the dirty-flag is reset from objlist_t::display_obj_fg, or objlist_t::display_overlay when multithreaded
  */
 void obj_t::display(int xpos, int ypos  CLIP_NUM_DEF) const
+//void obj_t::display(int xpos, int ypos  CLIP_NUM_DEFAULT) const
 {
 	image_id image = get_image();
 	image_id const outline_image = get_outline_image();

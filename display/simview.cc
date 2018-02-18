@@ -286,6 +286,7 @@ void karte_ansicht_t::display(bool force_dirty)
 				}
 			}
 		}
+		
 		zeiger->display( pointer_pos.x , pointer_pos.y  CLIP_NUM_DEFAULT);
 		zeiger->clear_flag( obj_t::dirty );
 	}

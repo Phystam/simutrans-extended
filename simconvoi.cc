@@ -2,7 +2,7 @@
  * convoi_t Klasse fÅE Fahrzeugverb‰nde
  * von Hansjˆrg Malthaner
  */
-
+#include <iostream>
 #include <stdlib.h>
 #include <algorithm>
 
@@ -460,7 +460,7 @@ uint32 convoi_t::move_to(uint16 const start_index)
 			v.enter_tile(gr);
 		}
 
-		if (i != vehicle_count - 1U) {
+		if (i != vehicle_count - 1U ) {
 			train_length += v.get_desc()->get_length();
 		}
 	}
@@ -3337,29 +3337,42 @@ void convoi_t::vorfahren()
 			}
 
 			// start route from the beginning at index 0, place everything on start
-			uint32 train_length = move_to(0);
+			uint32 train_length = move_to(0)+vehicle[vehicle_count-1]->get_desc()->get_length();
+			//phystam mod
+			std::cout << "original train length = "<<train_length<<std::endl;
 
 			// move one train length to the start position ...
 			// in north/west direction, we leave the vehicle away to start as much back as possible
-			ribi_t::ribi neue_direction = front()->get_direction_of_travel();
+			//			ribi_t::ribi neue_direction = front()->get_direction_of_travel();
+
+			ribi_t::ribi neue_direction = front()->get_direction();
 			if(neue_direction==ribi_t::south  ||  neue_direction==ribi_t::east)
 			{
+				std::cout << " south or east"<<endl;
 				// drive the convoi to the same position, but do not hop into next tile!
 				if(  train_length%16==0  ) {
 					// any space we need => just add
-					train_length += vehicle[vehicle_count-1]->get_desc()->get_length();
+					std::cout << "  16train length: add "<<std::endl;
+					//train_length += vehicle[vehicle_count-1]->get_desc()->get_length();
 				}
 				else {
 					// limit train to front of tile
-					train_length += min( (train_length%CARUNITS_PER_TILE)-1, vehicle[vehicle_count-1]->get_desc()->get_length() );
+					//					std::cout << "  not 16train length: add "<< vehicle[vehicle_count-1]->get_desc()->get_length() <<std::endl;
+					std::cout << "  not 16train length: add "<<std::endl;
+					//<< min( (train_length%CARUNITS_PER_TILE)-1, vehicle[vehicle_count-1]->get_desc()->get_length() ) <<std::endl;
+					// train_length += min( (train_length%CARUNITS_PER_TILE)-1, vehicle[vehicle_count-1]->get_desc()->get_length() );
+					// train_length += vehicle[vehicle_count-1]->get_desc()->get_length() ;
+					std:: cout << "   "<<CARUNITS_PER_TILE - vehicle[vehicle_count-1]->get_desc()->get_length()<<endl;
+					train_length += CARUNITS_PER_TILE - vehicle[vehicle_count-1]->get_desc()->get_length();
 				}
 			}
 			else
 			{
-				train_length += 1;
+				std::cout << " north or west"<<endl;
+				 train_length += CARUNITS_PER_TILE/2 - vehicle[vehicle_count-1]->get_desc()->get_length();
 			}
 			train_length = max(1,train_length);
-
+			std::cout << "final train length = "<<train_length<<std::endl;
 			// now advance all convoi until it is completely on the track
 			front()->set_leading(false); // switches off signal checks ...
 
