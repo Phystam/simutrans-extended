@@ -56,12 +56,9 @@ diagram_visualizer_t::diagram_visualizer_t():
 void diagram_visualizer_t::update_components(){
 		const char *name;
 	title_buf.clear();
-	if (line.is_bound()) {
-		title_buf.append(translator::translate("diagram_visualizer_window"));
-		name = line->get_name();
-	}
+	title_buf.append(translator::translate("diagram_visualizer_window"));
+	name = line->get_name();
 	title_buf.append(name);
-
 }
 
 bool diagram_visualizer_t::action_triggered(gui_action_creator_t *comp, value_t extra)
@@ -71,5 +68,6 @@ bool diagram_visualizer_t::action_triggered(gui_action_creator_t *comp, value_t 
 
 void diagram_visualizer_t::draw(scr_coord pos, scr_size size)
 {
+	gui_frame_t::draw( pos, size );
 	//just a dummy
 }
