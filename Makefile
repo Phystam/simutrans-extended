@@ -354,6 +354,7 @@ SOURCES += gui/simwin.cc
 SOURCES += gui/sound_frame.cc
 SOURCES += gui/sprachen.cc
 SOURCES += gui/times_history.cc
+SOURCES += gui/diagram_visualizer.cc
 SOURCES += gui/times_history_container.cc
 SOURCES += gui/times_history_entry.cc
 SOURCES += gui/city_info.cc

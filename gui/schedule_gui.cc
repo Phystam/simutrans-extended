@@ -462,7 +462,16 @@ schedule_gui_t::schedule_gui_t(schedule_t* sch_, player_t* player_, convoihandle
 		bt_wait_for_time.add_listener(this);
 		add_component(&bt_wait_for_time);
 	}
-
+	if(!cnv.is_bound())
+	{
+		// diagram visualizer
+		bt_diagram_visualizer.init(button_t::roundbox_state, "Diagram_visualizer", scr_coord( BUTTON1_X, ypos+24 ), scr_size(D_BUTTON_WIDTH * 2,D_BUTTON_HEIGHT) );
+		bt_diagram_visualizer.set_tooltip("Diagram Visualizer");
+		bt_diagram_visualizer.set_visible(true);
+		bt_diagram_visualizer.add_listener(this);
+		add_component(&bt_diagram_visualizer);
+	}
+	
 	// Mirror schedule/alternate directions
 	bt_mirror.init(button_t::square_automatic, "return ticket", scr_coord( BUTTON3_X, ypos ), scr_size(D_BUTTON_WIDTH*2,D_BUTTON_HEIGHT) );
 	bt_mirror.set_tooltip("Vehicles make a round trip between the schedule endpoints, visiting all stops in reverse after reaching the end.");
@@ -472,7 +481,7 @@ schedule_gui_t::schedule_gui_t(schedule_t* sch_, player_t* player_, convoihandle
 
 	ypos += LINESPACE;
 
-	ypos += D_BUTTON_HEIGHT;
+	ypos += D_BUTTON_HEIGHT * 2;
 
 	// Spacing
 	if ( !cnv.is_bound() ) {
