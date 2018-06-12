@@ -6,7 +6,7 @@
 #include "gui_frame.h"
 #include "components/gui_scrollpane.h"
 #include "components/gui_label.h"
-
+#include "components/gui_diagram.h"
 #include "../linehandle_t.h"
 #include "../utils/cbuffer_t.h"
 
@@ -29,6 +29,11 @@ class diagram_visualizer_t : public gui_frame_t, public action_listener_t
 
 	gui_container_t cont;
 	gui_scrollpane_t scrolly;
+	button_t b_append_schedule, b_clear_schedule;
+	button_t zoom_buttons[4];//0: vertical left, 1: vertical right, 2: horizontal left, 3: horizontal right
+	gui_label_t hzoom_label, vzoom_label, hzoom_value_label, vzoom_value_label;
+		
+	gui_diagram_t diagram;
 	//slist_tpl <times_history_container_t *> history_conts;
 
  public:
@@ -39,7 +44,9 @@ class diagram_visualizer_t : public gui_frame_t, public action_listener_t
 	virtual void set_windowsize(scr_size size);
 	bool action_triggered(gui_action_creator_t*, value_t) OVERRIDE;
 	void draw( scr_coord pos, scr_size size );
+	void update_lineinfo();
 	void update_components();
+	void register_containers();
 };
 
 #endif
