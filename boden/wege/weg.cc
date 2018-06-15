@@ -278,20 +278,23 @@ void weg_t::set_desc(const way_desc_t *b, bool from_saved_game)
 		add_way_constraints(wayobj->get_desc()->get_way_constraints());
 	}
 
-	// We need to know when the way was degraded as well as upgraded
-	last_renewal_month_year = welt->get_timeline_year_month();
-
 	if(desc->is_mothballed())
 	{
 		degraded = true;
 		remaining_wear_capacity = 0;
 		replacement_way = NULL;	
+		if(!from_saved_game)
+		{
+			// We need to know when the way was degraded as well as upgraded
+			last_renewal_month_year = welt->get_timeline_year_month();
+		}
 	}
 	else if(!from_saved_game)
 	{
 		remaining_wear_capacity = desc->get_wear_capacity();
 		degraded = false;
 		replacement_way = desc;
+		last_renewal_month_year = welt->get_timeline_year_month();
 		const grund_t* gr = welt->lookup(get_pos());
 		if(gr)
 		{
