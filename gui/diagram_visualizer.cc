@@ -1,4 +1,5 @@
 #include "../simworld.h"
+#include "../simintr.h"
 #include "../simhalt.h"
 #include "../simline.h"
 #include "../dataobj/schedule.h"
@@ -10,7 +11,7 @@
 #define LINE_NAME_COLUMN_WIDTH ((D_BUTTON_WIDTH*3)+11+4)
 #define SCL_HEIGHT (15*LINESPACE)
 #define L_BUTTON_WIDTH (button_size.w)
-
+#include <iostream>
 /*
 	This class is made by Phystam
 */
@@ -29,17 +30,26 @@ diagram_visualizer_t::diagram_visualizer_t(linehandle_t line_, convoihandle_t co
 	const scr_coord_val zoom_label_width = display_get_char_max_width("0123456789") * 4 + display_get_char_width(':');
 	const scr_size button_size(max(D_BUTTON_WIDTH, 100), D_BUTTON_HEIGHT);
 
+	const scr_size size = diagram.get_size();
+	const scr_size s_size=scrolly.get_size();
+	const scr_size win_size = size-s_size; // this is the visible area
+
 	update_components();
 	set_name(title_buf);
 
+	//	scrolly.set_scroll_position(  max(0,min(ij.x-win_size.w/2,size.w)), max(0, min(ij.y-win_size.h/2,size.h)) );
+	// scrolly.set_focusable( true );
+	// scrolly.set_scrollbar_mode(scrollbar_t::show_always);
+
 	// diagram visualizer window
-	scrolly.set_pos(scr_coord(0, 0));
+	scrolly.set_pos(scr_coord(0, 42));
 	scrolly.set_show_scroll_x(true);
+	// scrolly.set_color(COL_WHITE);
 	add_component(&scrolly);
 	set_windowsize(scr_size(D_DEFAULT_WIDTH, D_TITLEBAR_HEIGHT+4+22*(LINESPACE)+D_SCROLLBAR_HEIGHT+2));
 	set_min_windowsize(scr_size(D_DEFAULT_WIDTH, D_TITLEBAR_HEIGHT+4+3*(LINESPACE)+D_SCROLLBAR_HEIGHT+2));
 	set_resizemode(diagonal_resize);
-	resize(scr_coord(0,0));
+	resize(scr_coord(0,42));
 
 	//	append schedule button
 	
@@ -57,7 +67,7 @@ diagram_visualizer_t::diagram_visualizer_t(linehandle_t line_, convoihandle_t co
 	add_component(&b_clear_schedule);
 	cursor = scr_coord(D_MARGIN_LEFT, cursor.y + D_BUTTON_HEIGHT + D_V_SPACE);
 
-	// zool label
+	// // zool label
 	vzoom_label.set_pos(cursor);
 	vzoom_label.set_color(SYSCOL_TEXT);
 	add_component( &vzoom_label );
@@ -69,8 +79,9 @@ diagram_visualizer_t::diagram_visualizer_t(linehandle_t line_, convoihandle_t co
 	add_component( zoom_buttons+0 );
 	cursor.x += zoom_buttons[0].get_size().w;
 
+	vzoom_value_label.set_text("1:1");
 	vzoom_value_label.set_pos(cursor);
-	vzoom_value_label.set_size( scr_size(zoom_label_width,LINESPACE) );
+	vzoom_value_label.set_size( scr_size(zoom_label_width*10,LINESPACE) );
 	vzoom_value_label.set_align(gui_label_t::centered);
 	vzoom_value_label.set_color(SYSCOL_TEXT);
 	add_component( &vzoom_value_label );
@@ -93,6 +104,7 @@ diagram_visualizer_t::diagram_visualizer_t(linehandle_t line_, convoihandle_t co
 	cursor.x += zoom_buttons[2].get_size().w;
 
 	hzoom_value_label.set_pos(cursor);
+	hzoom_value_label.set_text("1:1");
 	hzoom_value_label.set_size( scr_size(zoom_label_width,LINESPACE) );
 	hzoom_value_label.set_align(gui_label_t::centered);
 	hzoom_value_label.set_color(SYSCOL_TEXT);
@@ -107,12 +119,19 @@ diagram_visualizer_t::diagram_visualizer_t(linehandle_t line_, convoihandle_t co
 	//diagram
 	
 	diagram.set_pos(cursor);
-	diagram.set_size(scr_size(1000,1000));
+	// size is determined using line length and month length(sec)
+	uint32 month_length = world()->ticks_to_seconds(world()->ticks_per_world_month);
+	//	uint32 line_length = line;
+	std::cout <<"month_length="<< month_length << std::endl;
+	diagram.set_size(scr_size(month_length/10,100));
 	diagram.set_background(COL_WHITE);
 	diagram.set_visible(true);
 	//	diagram.add_listener(this);
 	add_component(&diagram);
 
+	scrolly.set_show_scroll_x(true);
+	scrolly.set_scroll_discrete_y(false);
+	add_component(&scrolly);
 
 	
 	draw(scr_coord(0,0), scr_size(D_DEFAULT_WIDTH, D_TITLEBAR_HEIGHT+4+22*(LINESPACE)+D_SCROLLBAR_HEIGHT+2));
@@ -166,11 +185,7 @@ void diagram_visualizer_t::draw(scr_coord pos, scr_size size)
 			register_containers();
 		}
 	}
-	// diagram.set_dimension(120, 1000);
-	// diagram.set_pos( scr_coord(0,0) );
-	// diagram.set_seed(0);
-	// diagram.set_background(COL_WHITE);
-	// add_component(&diagram);
+	//	schedule_t* schedule = line.get_schedule();
 	
 	gui_frame_t::draw( pos, size );
 	//just a dummy
