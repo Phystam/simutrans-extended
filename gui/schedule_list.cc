@@ -15,7 +15,7 @@
 #include "line_management_gui.h"
 #include "components/gui_convoiinfo.h"
 #include "line_item.h"
-
+#include "diagram_visualizer.h"
 #include "../simcolor.h"
 #include "../simdepot.h"
 #include "../simhalt.h"
@@ -195,7 +195,7 @@ schedule_list_gui_t::schedule_list_gui_t(player_t *player_) :
 
 	// convoi list
 	cont.set_size(scr_size(200, 40));
-	scrolly_convois.set_pos(scr_coord(LINE_NAME_COLUMN_WIDTH, 14 + SCL_HEIGHT+D_BUTTON_HEIGHT*2+4+2*LINESPACE+2));
+	scrolly_convois.set_pos(scr_coord(LINE_NAME_COLUMN_WIDTH, 14 + SCL_HEIGHT+D_BUTTON_HEIGHT*3+6+2*LINESPACE+2));
 	scrolly_convois.set_show_scroll_x(true);
 	scrolly_convois.set_scroll_amount_y(40);
 	scrolly_convois.set_visible(false);
@@ -254,6 +254,12 @@ schedule_list_gui_t::schedule_list_gui_t(player_t *player_) :
 	bt_times_history.set_visible(true);
 	bt_times_history.add_listener(this);
 	add_component(&bt_times_history);
+	
+	bt_diagram_visualizer.init(button_t::roundbox, "diagram_visualizer", scr_coord(LINE_NAME_COLUMN_WIDTH, 14 + SCL_HEIGHT + D_BUTTON_HEIGHT*2 + 4), scr_size(D_BUTTON_WIDTH*2, D_BUTTON_HEIGHT));
+	bt_diagram_visualizer.set_tooltip("view_journey_diagram_visualizer_of_this_line");
+	bt_diagram_visualizer.set_visible(true);
+	bt_diagram_visualizer.add_listener(this);
+	add_component(&bt_diagram_visualizer);
 
 	// Select livery
 	livery_selector.set_pos(scr_coord(11+0*D_BUTTON_WIDTH*2 + 92, 8 + SCL_HEIGHT+D_BUTTON_HEIGHT+D_BUTTON_HEIGHT));
@@ -409,6 +415,12 @@ bool schedule_list_gui_t::action_triggered( gui_action_creator_t *comp, value_t 
 			create_win( new times_history_t(line, convoihandle_t()), w_info, (ptrdiff_t)line.get_rep() + 1 );
 		}
 	}
+	else if (comp == &bt_diagram_visualizer) {
+		if(line.is_bound()) {
+			create_win( new diagram_visualizer_t(line, convoihandle_t()), w_info, (ptrdiff_t)line.get_rep() + 1 );
+		}
+	}
+
 	else if(comp == &livery_selector) 
 	{
 			int livery_selection = livery_selector.get_selection();
@@ -537,7 +549,7 @@ void schedule_list_gui_t::draw(scr_coord pos, scr_size size)
 		if(  (!line->get_schedule()->empty()  &&  !line->get_schedule()->matches( welt, last_schedule ))  ||  last_vehicle_count != line->count_convoys()  ) {
 			update_lineinfo( line );
 		}
-		PUSH_CLIP( pos.x + 1, pos.y + D_TITLEBAR_HEIGHT, size.w - 2, size.h - D_TITLEBAR_HEIGHT);
+		PUSH_CLIP( pos.x + 1, pos.y + D_TITLEBAR_HEIGHT , size.w - 2, size.h - D_TITLEBAR_HEIGHT);
 		display(pos);
 		POP_CLIP();
 	}
@@ -651,11 +663,11 @@ void schedule_list_gui_t::display(scr_coord pos)
 		buf.printf(" %s",  as_clock);
 	}
 
-	int len=display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*2+4, buf, ALIGN_LEFT, SYSCOL_TEXT, true );
+	int len=display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*3+6, buf, ALIGN_LEFT, SYSCOL_TEXT, true );
 
-	int len2 = display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*2+4+LINESPACE, translator::translate("Gewinn"), ALIGN_LEFT, SYSCOL_TEXT, true );
+	int len2 = display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*3+6+LINESPACE, translator::translate("Gewinn"), ALIGN_LEFT, SYSCOL_TEXT, true );
 	money_to_string(ctmp, profit/100.0);
-	len2 += display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH+len2, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*2+4+LINESPACE, ctmp, ALIGN_LEFT, profit>=0?MONEY_PLUS:MONEY_MINUS, true );
+	len2 += display_proportional_clip(pos.x+LINE_NAME_COLUMN_WIDTH+len2, pos.y+16+14+SCL_HEIGHT+D_BUTTON_HEIGHT*3+6+LINESPACE, ctmp, ALIGN_LEFT, profit>=0?MONEY_PLUS:MONEY_MINUS, true );
 
 	if (capacity > 0) {
 		int rest_width = max( (get_windowsize().w-LINE_NAME_COLUMN_WIDTH)/2, max(len2,len) );
@@ -867,6 +879,7 @@ void schedule_list_gui_t::update_lineinfo(linehandle_t new_line)
 	bt_withdraw_line.set_visible( line.is_bound() );
 	bt_line_class_manager.set_visible(line.is_bound());
 	bt_times_history.set_visible( line.is_bound() );
+	bt_diagram_visualizer.set_visible( line.is_bound() );
 
 	reset_line_name();
 }

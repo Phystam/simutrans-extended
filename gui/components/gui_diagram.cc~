@@ -1,0 +1,32 @@
+#include <string.h>
+#include <cmath>
+
+#include "gui_chart.h"
+#include "../gui_frame.h"
+#include "../simwin.h"
+#include "../../simcolor.h"
+#include "../../utils/simstring.h"
+#include "../../dataobj/environment.h"
+#include "../../display/simgraph.h"
+#include "../gui_theme.h"
+
+gui_diagram_t::gui_diagram_t() : gui_component_t()
+{
+	tooltipcoord = scr_coord::invalid;
+
+	seed = 0;
+	show_x_axis = true;
+	show_y_axis = true;
+	ltr = false;
+	x_elements = 0;
+
+	// Hajo: transparent by default
+	background = -1;
+
+}
+
+void gui_diagram_t::draw(scr_coord offset)
+{
+	offset += pos;
+
+}
