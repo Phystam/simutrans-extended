@@ -256,7 +256,7 @@ schedule_list_gui_t::schedule_list_gui_t(player_t *player_) :
 	add_component(&bt_times_history);
 	
 	bt_diagram_visualizer.init(button_t::roundbox, "diagram_visualizer", scr_coord(LINE_NAME_COLUMN_WIDTH, 14 + SCL_HEIGHT + D_BUTTON_HEIGHT*2 + 4), scr_size(D_BUTTON_WIDTH*2, D_BUTTON_HEIGHT));
-	bt_diagram_visualizer.set_tooltip("view_journey_diagram_visualizer_of_this_line");
+	bt_diagram_visualizer.set_tooltip("view_diagram_visualizer_of_this_line");
 	bt_diagram_visualizer.set_visible(true);
 	bt_diagram_visualizer.add_listener(this);
 	add_component(&bt_diagram_visualizer);
@@ -417,7 +417,7 @@ bool schedule_list_gui_t::action_triggered( gui_action_creator_t *comp, value_t 
 	}
 	else if (comp == &bt_diagram_visualizer) {
 		if(line.is_bound()) {
-			create_win( new diagram_visualizer_t(line, convoihandle_t()), w_info, (ptrdiff_t)line.get_rep() + 1 );
+			create_win( new diagram_visualizer_t(line), w_info, (ptrdiff_t)line.get_rep() + 2 );
 		}
 	}
 

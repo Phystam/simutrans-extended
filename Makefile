@@ -1,4 +1,4 @@
-CFG ?= default
+CFG ?= mingw
 -include config.$(CFG)
 
 
@@ -484,6 +484,7 @@ SOURCES += gui/components/gui_convoy_label.cc
 SOURCES += gui/replace_frame.cc
 SOURCES += dataobj/livery_scheme.cc
 SOURCES += dataobj/replace_data.cc
+SOURCES += dataobj/diagram.cc
 
 ifeq ($(BACKEND),allegro)
   SOURCES  += simsys_d.cc

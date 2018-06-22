@@ -1,0 +1,20 @@
+
+#include ""
+
+diagram_t::diagram_t(){
+	//initialized by empty value at the beginning of the list
+	// station_name_list.append();
+	// is_reverse_list.append();
+	// total_distance_list.append();
+	// is_reverse_line=false;
+}
+
+diagram_t::~diagram_t(){
+}
+
+void diagram_t::append_diagram_entry(char* station_name, int total_distance, bool is_reverse){
+	station_name_list.append(station_name);
+	total_distance_list.append(total_distance);
+	is_reverse_list.append(is_reverse);
+
+}

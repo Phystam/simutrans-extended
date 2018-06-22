@@ -11,15 +11,11 @@
 #include "../utils/cbuffer_t.h"
 
 class player_t;
-
 class diagram_visualizer_t : public gui_frame_t, public action_listener_t
 {
  private:
 	const player_t *owner;
-	// if it is a history about convoi, line is null
 	linehandle_t line;
-	// if it is a history about line, convoi is null
-	convoihandle_t convoi;
 	const char* cached_name;
 	uint32 update_time;
 	schedule_t *last_schedule = NULL;
@@ -37,7 +33,7 @@ class diagram_visualizer_t : public gui_frame_t, public action_listener_t
 	//slist_tpl <times_history_container_t *> history_conts;
 
  public:
-	diagram_visualizer_t(linehandle_t line, convoihandle_t convoi);
+	diagram_visualizer_t(linehandle_t line);
 	~diagram_visualizer_t();
 	diagram_visualizer_t();	
 
@@ -47,6 +43,8 @@ class diagram_visualizer_t : public gui_frame_t, public action_listener_t
 	void update_lineinfo();
 	void update_components();
 	void register_containers();
+	void horizontal_zoom(bool magnify);
+	void vertical_zoom(bool magnify);
 };
 
 #endif

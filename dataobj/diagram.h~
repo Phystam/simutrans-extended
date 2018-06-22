@@ -1,0 +1,24 @@
+#ifndef _diagram_h_
+#define _diagram_h_
+#include "../tpl/vector_tpl.h"
+#include ""
+
+class diagram_t
+{
+public:
+	diagram_t();
+	~diagram_t();
+	void append_diagram_entry(char* station_name, int total_distance, bool is_reverse);
+	void modify_station_name_at(int i, char* station_name){
+		station_name_list[i]=station_name;
+	}
+	void modify_distance_at(int i, int total_distance){
+		total_distance_list[i]=total_distance;
+	}
+	private:
+	vector_tpl<char*> station_name_list;
+	vector_tpl<bool> is_reverse_list;//
+	vector_tpl<int> total_distance_list;//in meter
+	bool is_reverse_line;
+};
+#endif
