@@ -5217,7 +5217,7 @@ void stadt_t::build(bool new_town, bool map_generation)
 			}
 
 		}
-	}
+	} //end of quick city growth
 
 	// renovation
 	koord c( (ur.x + lo.x)/2 , (ur.y + lo.y)/2);
@@ -5229,9 +5229,27 @@ void stadt_t::build(bool new_town, bool map_generation)
 		while (was_renovated < renovations_count && try_nr++ < renovations_try) { // trial and errors parameters
 			// try to find a non-player owned building
 			gebaeude_t* const gb = pick_any(buildings);
+
+			// try to find nearby halt, and get user number
+			const planquadrat_t* plan = welt->access(gb->get_pos().get_2d());
+			const nearby_halt_t* halt_list = plan->get_haltlist();
+			uint32 renovation_chance=1;
+			for( unsigned h=0; h < plan->get_haltlist_count(); h++){
+				halthandle_t halt = halt_list[h].halt;
+				if(halt->get_pax_enabled()&&halt->get_station_type()!=16/* should not be airstop*/){
+					uint32 halt_user = (halt->get_finance_history(1,HALT_ARRIVED)+halt->get_finance_history(1,HALT_DEPARTED))/2;
+					uint32 halt_distance = sqrt(welt->get_settings().get_meters_per_tile()
+																			*( pow(halt->get_basis_pos().x-gb->get_pos().x,2)
+																				 +pow(halt->get_basis_pos().y-gb->get_pos().y,2)));
+					uint32 sigma=welt->get_settings().get_meters_per_tile()*10.;					
+					renovation_chance=200/3.14*atan(halt_user*0.0002) * 1./(sqrt(2.*3.14)*sigma)*exp(-pow(halt_distance,2.)/(2.*sigma*sigma))>renovation_chance
+						? 200/3.14*atan(halt_user*0.0002)*1./(sqrt(2.*3.14)*sigma)*exp(-pow(halt_distance,2.)/(2.*sigma*sigma))
+						: renovation_chance;
+				}
+			}//end of halt searching
 			const uint32 dist(koord_distance(c, gb->get_pos()));
 			const uint32 distance_rate = 100 - (dist * 100) / maxdist;
-			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < distance_rate) {
+			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < renovation_chance) {
 				if(renovate_city_building(gb, map_generation)) {
 					was_renovated++;
 				}
