@@ -404,6 +404,7 @@ private:
 	 */
 	void build_city_building(koord pos, bool new_town, bool map_generation);
 	bool renovate_city_building(gebaeude_t *gb, bool map_generation = false);
+	double get_renovation_chance(koord pos,bool new_town, bool map_generation);
 	// Subroutines for build_city_building and renovate_city_buiding
 	// @author neroden
 	const gebaeude_t* get_citybuilding_at(const koord k) const;

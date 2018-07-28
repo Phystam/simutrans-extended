@@ -14,7 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include <limits>
-
+#include <iostream>
 #include "boden/wege/strasse.h"
 #include "boden/grund.h"
 #include "boden/boden.h"
@@ -1236,12 +1236,19 @@ bool stadt_t::enlarge_city_borders(ribi_t::ribi direction) {
 		return false;
 	}
 	// Now check a row along that side to see if it's safe to expand
+	// Phystam: if all of tested tiles are "water", return false
+	bool is_all_water=true;
 	for (koord test = test_first; test != test_stop; test = test + test_increment) {
 		stadt_t* found_city = welt->access(test)->get_city();
+		const climate cl_border = welt->get_climate(test);
 		if (found_city && found_city != this) {
 			// We'd be expanding into another city.  Don't!
 			return false;
 		}
+		is_all_water = is_all_water && (cl_border==water_climate);
+	}
+	if(is_all_water){
+		return false;
 	}
 	// OK, it's safe to expand in this direction.  Do so.
 	lo = new_lo;
@@ -5221,17 +5228,16 @@ void stadt_t::build(bool new_town, bool map_generation)
 
 	// renovation
 	koord c( (ur.x + lo.x)/2 , (ur.y + lo.y)/2);
-	uint32 maxdist(koord_distance(ur,c));
-	if (maxdist < 10) {maxdist = 10;}
 	uint32 was_renovated=0;
 	uint32 try_nr = 0;
-	if (  !buildings.empty()  &&  simrand(100, "void stadt_t::build") <= renovation_percentage  ) {
+	if (  !buildings.empty() ) {
 		while (was_renovated < renovations_count && try_nr++ < renovations_try) { // trial and errors parameters
 			// try to find a non-player owned building
 			gebaeude_t* const gb = pick_any(buildings);
-			const uint32 dist(koord_distance(c, gb->get_pos()));
-			const uint32 distance_rate = 100 - (dist * 100) / maxdist;
-			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < distance_rate) {
+
+			//renovation around station
+			double renovation_rate = get_renovation_chance(gb->get_pos().get_2d(), new_town, map_generation);
+			if(  player_t::check_owner(gb->get_owner(),NULL)  && simrand(100, "void stadt_t::build") < renovation_rate) {
 				if(renovate_city_building(gb, map_generation)) {
 					was_renovated++;
 				}
@@ -5266,7 +5272,10 @@ void stadt_t::build(bool new_town, bool map_generation)
 				}
 
 				// a potential candidate coordinate
-				candidates.append(k);
+				double build_chance = get_renovation_chance(k, new_town, map_generation);
+				if(simrand(100, "void stadt_t::build")<build_chance){
+					candidates.append(k);
+				}
 			}
 		}
 
@@ -5311,6 +5320,53 @@ void stadt_t::build(bool new_town, bool map_generation)
 		}
 	} while (num_enlarge_tries > 0);
 	return;
+}
+
+double stadt_t::get_renovation_chance(koord k,bool new_town, bool map_generation){
+	// Are there stations?
+	if(haltestelle_t::get_alle_haltestellen().get_count()==0 || map_generation || new_town){ //the total station number
+		//		koord c( (ur.x + lo.x)/2 , (ur.y + lo.y)/2);
+		return 100;
+	}
+	// check whether the ground locates around some stations or not
+	uint32 maxdist= welt->get_settings().get_station_coverage()<10?10:welt->get_settings().get_station_coverage();
+	const planquadrat_t* plan = welt->access(k);
+	const nearby_halt_t* const halt_list = plan->get_haltlist();
+	int number_of_halt = plan->get_haltlist_count();
+	uint32 distance_from_largest_halt=9999;
+	//	std::cout << "halt number="<<number_of_halt<<std::endl;
+	//Woods-Saxon form
+	double diffuseness=maxdist/12.;
+	double threshold=maxdist*2./3.;
+	double max_distance_rate=0;//in percent
+	
+	if(number_of_halt>0){
+		for(int h=0; h < number_of_halt; h++){
+			const halthandle_t halt = halt_list[h].halt;
+			if((halt->get_station_type()&16) != 0){//avoid airstop
+				continue;
+			}
+			//			const uint32 halt_capacity = halt->get_capacity((uint8)0); //pax capacity
+			const uint32 halt_passengers = (halt->get_finance_history(1,HALT_ARRIVED)+halt->get_finance_history(1,HALT_DEPARTED)
+																			-halt->get_finance_history(1,HALT_UNHAPPY)-halt->get_finance_history(1,HALT_NOROUTE)-halt->get_finance_history(1,HALT_TOO_SLOW))/2.;
+			const uint32 tiles_to_halt = halt_list[h].distance;
+			//			double distance_rate = log(halt_passengers<1?1:halt_passengers)*10./(1.+exp((tiles_to_halt-threshold)/diffuseness));//woods-saxon form
+			double base_chance = 200./3.14*atan(0.001*halt_passengers);
+			double distance_rate = base_chance/(1.+exp((tiles_to_halt-threshold)/diffuseness));//woods-saxon form
+			if(max_distance_rate<distance_rate){
+				distance_from_largest_halt=tiles_to_halt;
+				max_distance_rate=distance_rate;
+			}
+		}
+	}else{
+		//almost no chance
+		return 1;
+	}
+	const uint32 dist=distance_from_largest_halt;
+	//	std::cout << "largest_dist="<<dist<<std::endl;
+	//			const uint32 dist(koord_distance(c, gb->get_pos()));
+	//	std::cout << "distance"<<dist<<" "<<" "<<maxdist<<" "<<max_distance_rate<<std::endl;
+	return max_distance_rate<10 ? 10 : max_distance_rate;
 }
 
 // find suitable places for cities
