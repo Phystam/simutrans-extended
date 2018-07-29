@@ -1415,6 +1415,7 @@ public:
 		const sint32 adjustment_factor = base_meters_per_tile / (sint32)get_settings().get_meters_per_tile();
 		
 		// Adjust for bits per month
+
 		if(ticks_per_world_month_shift >= base_bits_per_month)
 		{
 			const sint32 adjusted_monthly_figure = (sint32)(nominal_monthly_figure << (ticks_per_world_month_shift - base_bits_per_month)); 
@@ -1423,6 +1424,7 @@ public:
 		else
 		{
 			const sint32 adjusted_monthly_figure = nominal_monthly_figure / adjustment_factor;
+
 			return (sint32)(adjusted_monthly_figure >> (base_bits_per_month - ticks_per_world_month_shift)); 
 		}
 	}
