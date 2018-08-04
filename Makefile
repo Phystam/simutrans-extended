@@ -1,4 +1,4 @@
-CFG ?= default
+CFG ?= mingw
 -include config.$(CFG)
 
 
