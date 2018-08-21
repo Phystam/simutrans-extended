@@ -72,10 +72,6 @@ class records_t;
 
 #define CHK_RANDS 32
 
-// Without this, the in-transit numbers are recalculated on every load/save
-// and this goes wrong. 
-//#define CACHE_TRANSIT
-
 #ifdef MULTI_THREAD
 //#define FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
 //#define FORBID_MULTI_THREAD_PATH_EXPLORER
@@ -1596,12 +1592,18 @@ public:
 	*/
 	void remove_building_from_world_list(gebaeude_t *gb);
 
-/**
+	/**
 	* Updates the weight of a building in the world list if it changes its
 	* passenger/mail demand	
 	* @author: jamespetts
 	*/
 	void update_weight_of_building_in_world_list(gebaeude_t *gb);
+
+	/**
+	* Removes all references to a city from every building in
+	* the world. Used when deleting cities.
+	*/
+	void remove_all_building_references_to_city(stadt_t* city); 
 
 private:
 	/*

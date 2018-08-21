@@ -1539,6 +1539,10 @@ DBG_DEBUG("insert to close","(%i,%i,%i)  f=%i",gr->get_pos().x,gr->get_pos().y,g
 		FOR(vector_tpl<next_gr_t>, const& r, next_gr) {
 			to = r.gr;
 
+			if(  to==NULL) {
+				continue;
+			}
+
 			// new values for cost g
 			uint32 new_g = tmp->g + r.cost;
 
@@ -1638,7 +1642,7 @@ DBG_DEBUG("way_builder_t::intern_calc_route()","steps=%i  (max %i) in route, ope
 	long cost = -1;
 //DBG_DEBUG("reached","%i,%i",tmp->pos.x,tmp->pos.y);
 	// target reached?
-	if(  !ziel.is_contained(gr->get_pos())  ||  tmp->parent==NULL  ) {
+	if(  !ziel.is_contained(gr->get_pos())  ||  tmp->parent==NULL  ||  tmp->g > maximum  ) {
 	}
 	else if(  step>=route_t::MAX_STEP  ) {
 		dbg->warning("way_builder_t::intern_calc_route()","Too many steps (%i>=max %i) in route (too long/complex)",step,route_t::MAX_STEP);
@@ -2665,6 +2669,24 @@ void way_builder_t::build_track()
 						// we take ownership => we take care to maintain the roads completely ...
 						player_t *p = weg->get_owner();
 						cost -= weg->get_desc()->get_upgrade_group() == desc->get_upgrade_group() ? desc->get_way_only_cost() : desc->get_value();
+						
+						if (!desc->is_mothballed())
+						{
+							// If we are upgrading an unowned bridge or tunnel's way, take ownership of the bridge or tunnel.
+							bruecke_t *bridge = gr ? gr->find<bruecke_t>() : NULL;
+							tunnel_t *tunnel = gr ? gr->find<tunnel_t>() : NULL;
+							if (bridge && bridge->get_owner() == NULL)
+							{
+								bridge->set_owner(player);
+								player_t::add_maintenance(player, bridge->get_desc()->get_maintenance(), bridge->get_desc()->get_finance_waytype());
+							}
+							else if (tunnel && tunnel->get_owner() == NULL)
+							{
+								tunnel->set_owner(player);
+								player_t::add_maintenance(player, tunnel->get_desc()->get_maintenance(), tunnel->get_desc()->get_finance_waytype());
+							}
+						}
+
 						weg->set_desc(desc);
 						if(desc->is_mothballed())
 						{

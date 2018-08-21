@@ -3706,6 +3706,7 @@ int karte_t::lower_to(sint16 x, sint16 y, sint8 hsw, sint8 hse, sint8 hne, sint8
 	int n=0;
 	assert(is_within_limits(x,y));
 	grund_t *gr = lookup_kartenboden_nocheck(x,y);
+	const uint8 old_slope = gr->get_grund_hang();
 	sint8 water_hgt = get_water_hgt_nocheck(x,y);
 	const sint8 h0 = gr->get_hoehe();
 	// old height
@@ -3733,6 +3734,20 @@ int karte_t::lower_to(sint16 x, sint16 y, sint8 hsw, sint8 hse, sint8 hne, sint8
 	// calc new height and slope
 	const sint8 hneu = min( min( hn_sw, hn_se ), min( hn_ne, hn_nw ) );
 	const sint8 hmaxneu = max( max( hn_sw, hn_se ), max( hn_ne, hn_nw ) );
+
+	// only slope could have been shores
+	if(  old_slope  ) {
+		// if there are any shore corners, then the new tile must be all water since it is lowered
+		const bool make_water =
+			get_water_hgt_nocheck(x,y) <= lookup_hgt_nocheck(x,y)  ||
+			get_water_hgt_nocheck(x+1,y) <= lookup_hgt_nocheck(x+1,y)  ||
+			get_water_hgt_nocheck(x,y+1) <= lookup_hgt_nocheck(x,y+1)  ||
+			get_water_hgt_nocheck(x+1,y+1) <= lookup_hgt_nocheck(x+1,y+1);
+		if(  make_water  ) {
+			sint8 water_table = water_hgt >= hneu ? water_hgt : hneu;
+			set_water_hgt(x, y, water_table );
+		}
+	}
 
 	if(  hneu >= water_hgt  ) {
 		// calculate water table from surrounding tiles - start off with height on this tile
@@ -9378,13 +9393,11 @@ DBG_MESSAGE("karte_t::load()", "%d factories loaded", fab_list.get_count());
 			// On re-loading, there is no need to distribute the
 			// cargoes about different members of this array.
 			transferring_cargoes[0].append(tc);
-#ifndef CACHE_TRANSIT
 			fabrik_t* fab = fabrik_t::get_fab(tc.ware.get_zielpos());
 			if (fab)
 			{
 				fab->update_transit(tc.ware, true);
 			}
-#endif // !CACHE_TRANSIT
 		}
 	}
 
@@ -10591,7 +10604,6 @@ bool karte_t::interactive(uint32 quit_month)
 // 2 - shutdown
 void karte_t::announce_server(int status)
 {
-	assert(env_t::server  &&  env_t::server_announce);
 	DBG_DEBUG( "announce_server()", "status: %i",  status );
 	// Announce game info to server, format is:
 	// st=on&dns=server.com&port=13353&rev=1234&pak=pak128&name=some+name&time=3,1923&size=256,256&active=[0-16]&locked=[0-16]&clients=[0-16]&towns=15&citizens=3245&factories=33&convoys=56&stops=17
@@ -11020,6 +11032,44 @@ void karte_t::update_weight_of_building_in_world_list(gebaeude_t *gb)
 		mail_origins_and_targets.update_at(mail_origins_and_targets.index_of(gb), gb->get_adjusted_mail_demand());
 		mail_step_interval = calc_adjusted_step_interval(mail_origins_and_targets.get_sum_weight(), get_settings().get_mail_packets_per_month_hundredths());
 	}
+}
+
+void karte_t::remove_all_building_references_to_city(stadt_t* city)
+{
+	FOR(weighted_vector_tpl <gebaeude_t *>, building, passenger_origins)
+	{
+		if(building->get_stadt() == city)
+		{
+			building->set_stadt(NULL);
+		}
+	}
+
+	FOR(weighted_vector_tpl <gebaeude_t *>, building, mail_origins_and_targets)
+	{
+		if(building->get_stadt() == city)
+		{
+			building->set_stadt(NULL);
+		}
+	}
+
+	for (uint8 i = 0; i < goods_manager_t::passengers->get_number_of_classes(); i++)
+	{
+		FOR(weighted_vector_tpl <gebaeude_t *>, building, commuter_targets[i])
+		{
+			if (building->get_stadt() == city)
+			{
+				building->set_stadt(NULL);
+			}
+		}
+
+		FOR(weighted_vector_tpl <gebaeude_t *>, building, visitor_targets[i])
+		{
+			if (building->get_stadt() == city)
+			{
+				building->set_stadt(NULL);
+			}
+		}
+	}	
 }
 
 vector_tpl<car_ownership_record_t> *karte_t::car_ownership;
