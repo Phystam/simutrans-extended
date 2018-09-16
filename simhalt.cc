@@ -656,19 +656,19 @@ haltestelle_t::~haltestelle_t()
 		}
 	}
 	free(cargo);
-
-	if(!welt->is_destroying())
-	{
+	
 #ifdef MULTI_THREAD
-		welt->stop_path_explorer();
+	welt->stop_path_explorer();
 #endif
-		for(uint8 i = 0; i < max_categories; i++)
+	for(uint8 i = 0; i < max_categories; i++)
+	{		
+		if (!welt->is_destroying())
 		{
 			reset_connexions(i);
 			path_explorer_t::refresh_category(i);
 		}
 		delete connexions[i];
-	}
+	}		
 
 	delete[] connexions;
 	// See here for an explanation of the below: http://stackoverflow.com/questions/29375797/copy-2d-array-using-memcpy/29375830#29375830
@@ -5753,7 +5753,6 @@ void haltestelle_t::add_line(linehandle_t line)
 void haltestelle_t::remove_line(linehandle_t line)
 {
 	registered_lines.remove(line);
-
 	if(registered_convoys.empty() && registered_lines.empty() && !welt->is_destroying())
 	{
 		const uint8 max_categories = goods_manager_t::get_max_catg_index();

@@ -2273,7 +2273,14 @@ image_id vehicle_t::get_loaded_image() const
 			break;
 		}
 	}
-	return desc->get_image_id(ribi_t::dir_south, empty ?  goods_manager_t::none  : gd);
+	if (reversed)
+	{
+		return desc->get_image_id(ribi_t::dir_north, empty ? goods_manager_t::none : gd, current_livery.c_str());
+	}
+	else
+	{
+		return desc->get_image_id(ribi_t::dir_south, empty ? goods_manager_t::none : gd, current_livery.c_str());
+	}
 }
 
 
@@ -8348,7 +8355,8 @@ route_t::route_result_t air_vehicle_t::calc_route_internal(
 		takeoff = 0;
 	}
 
-	const weg_t *w_start = welt->lookup(start)->get_weg(air_wt);
+	const grund_t* gr_start = welt->lookup(start);
+	const weg_t *w_start = gr_start ? gr_start->get_weg(air_wt) : NULL;
 	bool start_in_air = flying_height || w_start == NULL;
 
 	const weg_t *w_ziel = welt->lookup(ziel)->get_weg(air_wt);

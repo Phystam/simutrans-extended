@@ -509,10 +509,10 @@ public:
 
 	// The ranges for the journey time tolerance for passengers.
 	// @author: jamespetts
-	uint16 range_commuting_tolerance;
-	uint16 min_commuting_tolerance;
-	uint16 min_visiting_tolerance;
-	uint16 range_visiting_tolerance;
+	uint32 range_commuting_tolerance;
+	uint32 min_commuting_tolerance;
+	uint32 min_visiting_tolerance;
+	uint32 range_visiting_tolerance;
 	
 private:
 	/// what is the minimum clearance required under bridges
@@ -969,13 +969,13 @@ public:
 	bool get_with_private_paks() const { return with_private_paks; }
 
 	// @author: jamespetts
-	uint16 get_min_visiting_tolerance() const { return min_visiting_tolerance; }
+	uint32 get_min_visiting_tolerance() const { return min_visiting_tolerance; }
 	void set_min_visiting_tolerance(uint16 value) { min_visiting_tolerance = value; }
-	uint16 get_range_commuting_tolerance() const { return range_commuting_tolerance; }
+	uint32 get_range_commuting_tolerance() const { return range_commuting_tolerance; }
 	void set_range_commuting_tolerance(uint16 value) { range_commuting_tolerance = value; }
-	uint16 get_min_commuting_tolerance() const { return min_commuting_tolerance; }
+	uint32 get_min_commuting_tolerance() const { return min_commuting_tolerance; }
 	void set_min_commuting_tolerance(uint16 value) { min_commuting_tolerance = value; }
-	uint16 get_range_visiting_tolerance() const { return range_visiting_tolerance; }
+	uint32 get_range_visiting_tolerance() const { return range_visiting_tolerance; }
 	void set_range_visiting_tolerance(uint16 value) { range_visiting_tolerance = value; }
 
 	// town growth stuff
