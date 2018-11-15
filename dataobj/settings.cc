@@ -408,7 +408,7 @@ settings_t::settings_t() :
 
 	allow_airports_without_control_towers = true;
 
-	allow_buying_obsolete_vehicles = true;
+	allow_buying_obsolete_vehicles = 1;
 
 	// default: load also private extensions of the pak file
 	with_private_paks = true;
@@ -968,7 +968,17 @@ void settings_t::rdwr(loadsave_t *file)
 				frames_per_second = env_t::fps;	// update it on the server to the current setting
 				frames_per_step = env_t::network_frames_per_step;
 			}
-			file->rdwr_bool( allow_buying_obsolete_vehicles);
+			if(file->get_extended_version() >= 14 && file->get_extended_revision() > 1)
+			{
+				file->rdwr_byte( allow_buying_obsolete_vehicles);
+			} else {
+				bool compat = allow_buying_obsolete_vehicles > 0;
+				file->rdwr_bool( compat );
+				allow_buying_obsolete_vehicles = 0;
+				if (compat) {
+					allow_buying_obsolete_vehicles = 1;
+				}
+			}
 			if(file->get_extended_version() < 12 && (file->get_extended_version() >= 8 || file->get_extended_version() == 0))
 			{
 				// Was factory_worker_minimum_towns and factory_worker_maximum_towns
@@ -2262,7 +2272,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	env_t::pak_height_conversion_factor = contents.get_int("height_conversion_factor", env_t::pak_height_conversion_factor );
 
 	// minimum clearance under under bridges: 1 or 2? (HACK: value only zero during loading of pak set config)
-	bool bounds = way_height_clearance!=0;
+	const uint32 bounds = way_height_clearance != 0 ? 1 : 0;
 	way_height_clearance  = contents.get_int("way_height_clearance", way_height_clearance );
 	if(  way_height_clearance > 2  &&  way_height_clearance < bounds  ) {
 		sint8 new_whc = clamp( way_height_clearance, bounds, 2 );

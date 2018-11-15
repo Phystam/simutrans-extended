@@ -83,7 +83,7 @@ road_user_t::road_user_t(grund_t* bd, uint16 random) :
 #endif
 	, tiles_since_last_increment(0)
 {
-	ribi_t::ribi road_ribi = bd->get_weg_ribi(road_wt);
+	ribi_t::ribi road_ribi = bd ? bd->get_weg_ribi(road_wt) : ribi_t::all;
 
 	weg_next = random;
 
@@ -723,7 +723,7 @@ bool private_car_t::can_enter_tile(grund_t *gr)
 			sg[0] = welt->lookup(pos_next);
 			sg[1] = welt->lookup(pos_next_next);
 			for(uint8 i = 0; i < 2; i++) {
-				for(  uint8 pos=1;  pos<(volatile uint8)sg[i]->get_top();  pos++  ) {
+				for(  uint8 pos=1;  pos < sg[i]->get_top();  pos++  ) {
 					if(  vehicle_base_t* const v = obj_cast<vehicle_base_t>(sg[i]->obj_bei(pos))  ) {
 						ribi_t:: ribi other_direction = 255;
 						if(  road_vehicle_t const* const at = obj_cast<road_vehicle_t>(v)  ) {
@@ -1539,7 +1539,7 @@ vehicle_base_t* private_car_t::other_lane_blocked(const bool only_search_top) co
 		// rear check should be written here...
 		for(uint8 r = 0; r < 4; r++) {
 			grund_t *to = NULL;
-			if(  gr->get_neighbour(to, road_wt, ribi_t::nsew[r])  ) {
+			if( gr && gr->get_neighbour(to, road_wt, ribi_t::nsew[r])  ) {
 				if(  to  ) {
 					if(  vehicle_base_t* v = is_there_car(gr)  ) {
 						return v;
@@ -1557,7 +1557,7 @@ vehicle_base_t* private_car_t::is_there_car (grund_t *gr) const
 		dbg->error( "private_car_t::is_there_car", "grund is invalid!" );
 	}
 	assert(  gr  );
-	for(  uint8 pos=1;  pos<(volatile uint8)gr->get_top();  pos++  ) {
+	for(  uint8 pos=1;  pos < gr->get_top();  pos++  ) {
 		if(  vehicle_base_t* const v = obj_cast<vehicle_base_t>(gr->obj_bei(pos))  ) {
 			if(  v->get_typ()==obj_t::pedestrian  ) {
 				continue;
