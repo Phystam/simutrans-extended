@@ -40,6 +40,6 @@ void fundament_t::calc_image_internal(const bool calc_only_snowline_change)
 		grund_t::calc_back_image( get_disp_height(), 0 );
 	}
 	else if(  is_visible()  ) {
-		set_bild( grund_besch_t::get_ground_tile(this) );
+		set_image( ground_desc_t::get_ground_tile(this) );
 	}
 }
