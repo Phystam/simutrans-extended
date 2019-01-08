@@ -175,12 +175,6 @@ protected:
 	 */
 	sint8 back_bild_nr;
 
-	/**
-	 * Flags to indicate existence of halts, ways, to mark dirty
-	 */
-	uint8 flags;
-
-
 public:
 	/**
 	 * setzt die Bildnr. des anzuzeigenden Bodens
