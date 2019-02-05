@@ -104,6 +104,7 @@ enum waytype_t {
 	maglev_wt        =   6,
 	tram_wt          =   7,
 	narrowgauge_wt   =   8,
+	narrowgauge_tram_wt =9,
 	air_wt           =  16,
 	noise_barrier_wt =  17,
 	powerline_wt     = 128,
