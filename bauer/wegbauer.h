@@ -82,6 +82,7 @@ public:
 		wasser=water_wt,
 		luft=air_wt,
 		narrowgauge=narrowgauge_wt,
+		narrowgauge_tram=narrowgauge_tram_wt, // Phystam: narrowgauge tramway
 		leitung=powerline_wt,
 		river=127,
 		bautyp_mask=255,

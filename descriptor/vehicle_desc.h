@@ -779,6 +779,7 @@ public:
 			case track_wt:
 			case tram_wt:
 			case narrowgauge_wt:
+			case narrowgauge_tram_wt:
 			case air_wt: // Runways should be like roads, but aircraft are so huge that it is unbalancable as such
 				power = way_wear_factor_rail;
 				break;
@@ -871,7 +872,8 @@ public:
 			case tram_wt:
 			case monorail_wt:		return 160L; //1.6 when read
 			
-			case narrowgauge_wt:	return 120L; //1.2 when read
+			case narrowgauge_wt:
+	  	case narrowgauge_tram_wt: 	return 120L; //1.2 when read
 
 			case water_wt:			return 2500L; //25 when read
 
@@ -893,7 +895,8 @@ public:
 			case track_wt:
 			case monorail_wt:		return 15L; //0.0015 when read
 
-			case tram_wt:			return 60L; //0.006 when read						
+			case tram_wt:
+  		case narrowgauge_tram_wt:   return 60L; //0.006 when read						
 
 			case narrowgauge_wt:	return 17L; //0.0017 when read
 

@@ -26,7 +26,7 @@ class schedule_t
 {
 public:
 	enum schedule_type {
-		schedule = 0, truck_schedule = 1, train_schedule = 2, ship_schedule = 3, airplane_schedule = 4, monorail_schedule = 5, tram_schedule = 6, maglev_schedule = 7, narrowgauge_schedule = 8,
+		schedule = 0, truck_schedule = 1, train_schedule = 2, ship_schedule = 3, airplane_schedule = 4, monorail_schedule = 5, tram_schedule = 6, maglev_schedule = 7, narrowgauge_schedule = 8,narrowgauge_tram_schedule = 9
 	};
 
 protected:
@@ -369,6 +369,19 @@ public:
 
 	waytype_t get_waytype() const { return narrowgauge_wt; }
 };
+
+class narrowgauge_tram_schedule_t : public train_schedule_t
+{
+public:
+	narrowgauge_tram_schedule_t() {}
+	narrowgauge_tram_schedule_t(loadsave_t* const file) : train_schedule_t(file) {}
+	schedule_t* copy() { schedule_t *s = new narrowgauge_tram_schedule_t(); s->copy_from(this); return s; }
+
+	schedule_type get_type() const { return narrowgauge_tram_schedule; }
+
+	waytype_t get_waytype() const { return narrowgauge_tram_wt; }
+};
+
 
 class departure_point_t
 {

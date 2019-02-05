@@ -303,6 +303,7 @@ bool bridge_builder_t::is_blocked(koord3d pos, ribi_t::ribi check_ribi, player_t
 
 				&& ((w->get_desc()->get_waytype() != road_wt
 					&& w->get_desc()->get_waytype() != tram_wt
+					&& w->get_desc()->get_waytype() != narrowgauge_tram_wt
 					&& w->get_desc()->get_waytype() != water_wt)
 
 					|| (w->get_player_nr() != player_nr && !public_service)

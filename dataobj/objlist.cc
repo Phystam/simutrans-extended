@@ -826,7 +826,9 @@ void objlist_t::rdwr(loadsave_t *file, koord3d current_pos)
 				case obj_t::narrowgaugedepot:
 					new_obj = new narrowgaugedepot_t(file);
 					break;
-
+				case obj_t::narrowgaugetramdepot:
+					new_obj = new narrowgaugetramdepot_t(file);
+					break;
 				case obj_t::bahndepot:
 				{
 					// for compatibility reasons we may have to convert them to tram and monorail depots

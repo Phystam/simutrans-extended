@@ -404,6 +404,27 @@ public:
 	//virtual const char *get_name() const {return "Narrowgaugedepot"; }
 };
 
+class narrowgaugetramdepot_t : public bahndepot_t
+{
+public:
+#ifdef INLINE_OBJ_TYPE
+	narrowgaugetramdepot_t(loadsave_t *file):bahndepot_t(narrowgaugetramdepot, file) {}
+	narrowgaugetramdepot_t(koord3d pos,player_t *player, const building_tile_desc_t *t): bahndepot_t(narrowgaugetramdepot, pos, player, t) {}
+#else
+	narrowgaugetramdepot_t(loadsave_t *file):bahndepot_t(file) {}
+	narrowgaugetramdepot_t(koord3d pos,player_t *player, const building_tile_desc_t *t): bahndepot_t(pos,player,t) {}
+#endif
+
+	virtual simline_t::linetype get_line_type() const { return simline_t::tramline; }
+
+	virtual waytype_t get_wegtyp() const {return tram_wt;}
+#ifdef INLINE_OBJ_TYPE
+#else
+	virtual obj_t::typ get_typ() const { return narrowgaugetramdepot; }
+#endif
+	//virtual const char *get_name() const {return "Narrowgaugetramdepot"; }
+};
+
 /**
  * Depots for street vehicles
  *

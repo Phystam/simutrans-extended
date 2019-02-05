@@ -653,6 +653,7 @@ public:
 	sint64 forge_cost_maglev;
 	sint64 forge_cost_tram;
 	sint64 forge_cost_narrowgauge;
+	sint64 forge_cost_narrowgauge_tram;
 	sint64 forge_cost_air;
 
 	uint16 parallel_ways_forge_cost_percentage_road;
@@ -662,6 +663,7 @@ public:
 	uint16 parallel_ways_forge_cost_percentage_maglev;
 	uint16 parallel_ways_forge_cost_percentage_tram;
 	uint16 parallel_ways_forge_cost_percentage_narrowgauge;
+	uint16 parallel_ways_forge_cost_percentage_narrowgauge_tram;
 	uint16 parallel_ways_forge_cost_percentage_air;
 
 	uint32 max_diversion_tiles;
@@ -1125,6 +1127,7 @@ public:
 	sint64 get_forge_cost_maglev() const { return forge_cost_maglev; }
 	sint64 get_forge_cost_tram() const { return forge_cost_tram; }
 	sint64 get_forge_cost_narrowgauge() const { return forge_cost_narrowgauge; }
+	sint64 get_forge_cost_narrowgauge_tram() const { return forge_cost_narrowgauge_tram; }
 	sint64 get_forge_cost_air() const { return forge_cost_air; }
 
 	uint16 get_parallel_ways_forge_cost_percentage_road() const { return parallel_ways_forge_cost_percentage_road; }
@@ -1134,6 +1137,7 @@ public:
 	uint16 get_parallel_ways_forge_cost_percentage_maglev() const { return parallel_ways_forge_cost_percentage_maglev; }
 	uint16 get_parallel_ways_forge_cost_percentage_tram() const { return parallel_ways_forge_cost_percentage_tram; }
 	uint16 get_parallel_ways_forge_cost_percentage_narrowgauge() const { return parallel_ways_forge_cost_percentage_narrowgauge; }
+	uint16 get_parallel_ways_forge_cost_percentage_narrowgauge_tram() const { return parallel_ways_forge_cost_percentage_narrowgauge_tram; }
 	uint16 get_parallel_ways_forge_cost_percentage_air() const { return parallel_ways_forge_cost_percentage_air; }
 
 	sint64 get_forge_cost(waytype_t wt) const;

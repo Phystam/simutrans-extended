@@ -49,11 +49,12 @@ public:
 		maglev_filter      = 1 << 16,
 		narrowgauge_filter = 1 << 17,
 		tram_filter        = 1 << 18,
-		obsolete_filter    = 1 << 19,
+		narrowgauge_tram_filter        = 1 << 19,
+		obsolete_filter    = 1 << 20,
 		// number of first special filter
 		sub_filter         = lkws_filter
 	};
-	enum { FILTER_BUTTONS=19 };
+	enum { FILTER_BUTTONS=20 };
 
 
 private:

@@ -135,6 +135,8 @@ void export_global_constants(HSQUIRRELVM vm)
 	enum_slot(vm, "wt_tram", tram_wt);
 	/// narrow gauge
 	enum_slot(vm, "wt_narrowgauge", narrowgauge_wt);
+	/// narrowgauge trams
+	enum_slot(vm, "wt_narrowgauge_tram", narrowgauge_tram_wt);
 	/// aircrafts and airports
 	enum_slot(vm, "wt_air", air_wt);
 	/// powerlines

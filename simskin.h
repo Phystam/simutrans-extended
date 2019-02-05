@@ -87,6 +87,7 @@ public:
 	static const skin_desc_t *narrowgaugehaltsymbol;
 	static const skin_desc_t *bushaltsymbol;
 	static const skin_desc_t *tramhaltsymbol;
+	static const skin_desc_t *narrowgaugetramhaltsymbol;
 	///@}
 
 	/// @name icons shown in status bar at the bottom of the screen

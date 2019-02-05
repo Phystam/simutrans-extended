@@ -151,7 +151,7 @@ public:
 		crossing = 29,
 		groundobj = 30, // lakes, stones
 
-		narrowgaugedepot=31,
+		narrowgaugedepot=31, narrowgaugetramdepot=37,
 
 		// after this only moving stuff
 		// reserved values for vehicles: 64 to 95

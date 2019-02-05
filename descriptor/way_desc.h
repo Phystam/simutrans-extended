@@ -111,6 +111,7 @@ public:
 	//systemtype_t get_styp() const { return (systemtype_t)styp; }
 
 	bool is_tram() const { return wtyp == track_wt  &&  styp == type_tram; }
+	bool is_narrowgauge_tram() const { return wtyp == narrowgauge_wt  &&  styp == type_tram; }
 
 	image_id get_image_id(ribi_t::ribi ribi, uint8 season, bool front = false) const
 	{

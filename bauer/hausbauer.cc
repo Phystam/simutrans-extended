@@ -829,6 +829,9 @@ gebaeude_t *hausbauer_t::build_station_extension_depot(player_t *player, koord3d
 			case narrowgauge_wt:
 				gb = new narrowgaugedepot_t(pos, player, tile);
 				break;
+			case narrowgauge_tram_wt:
+				gb = new narrowgaugetramdepot_t(pos, player, tile);
+				break;
 			case road_wt:
 				gb = new strassendepot_t(pos, player, tile);
 				break;
@@ -839,7 +842,7 @@ gebaeude_t *hausbauer_t::build_station_extension_depot(player_t *player, koord3d
 				gb = new airdepot_t(pos, player, tile);
 				break;
 			default:
-				dbg->fatal("hausbauer_t::build_station_extension_depot()","waytpe %i has no depots!", desc->get_extra() );
+				dbg->fatal("hausbauer_t::build_station_extension_depot()","waytype %i has no depots!", desc->get_extra() );
 				break;
 		}
 	}
