@@ -62,7 +62,7 @@ private:
 	 * As long we do not have resource scripts, we display make
 	 * some tables for the main attributes of each button.
 	 */
-	enum { FILTER_BUTTONS=16 };
+	enum { FILTER_BUTTONS=17 };
 
 	static scr_coord filter_buttons_pos[FILTER_BUTTONS];
 	static halt_list_frame_t::filter_flag_t filter_buttons_types[FILTER_BUTTONS];

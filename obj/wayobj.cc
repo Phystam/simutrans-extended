@@ -270,7 +270,7 @@ void wayobj_t::finish_rd()
 	// (re)set dir
 	if(dir==255) {
 		const waytype_t wt = (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_tram_wt);
-		tweg_t *w=welt->lookup(get_pos())->get_weg(wt);
+		weg_t *w=welt->lookup(get_pos())->get_weg(wt);
 		if(w) {
 			dir = w->get_ribi_unmasked();
 		}

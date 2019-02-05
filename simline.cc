@@ -130,7 +130,7 @@ void simline_t::create_schedule()
 		case simline_t::tramline:        set_schedule(new tram_schedule_t()); break;
 		case simline_t::maglevline:      set_schedule(new maglev_schedule_t()); break;
 		case simline_t::narrowgaugeline: set_schedule(new narrowgauge_schedule_t()); break;
-		case simline_t::narrowgaugetramline: set_schedule(new narrowgaugetram_schedule_t()); break;
+		case simline_t::narrowgaugetramline: set_schedule(new narrowgauge_tram_schedule_t()); break;
 		default:
 			dbg->fatal( "simline_t::create_schedule()", "Cannot create default schedule!" );
 	}

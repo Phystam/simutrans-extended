@@ -7885,7 +7885,7 @@ void convoi_t::clear_replace()
 		 return obj_t::tramdepot;
 	 case narrowgauge_wt:
 		 return obj_t::narrowgaugedepot;
-	 case narrowgauge_wt:
+	 case narrowgauge_tram_wt:
 		 return obj_t::narrowgaugetramdepot;
 	 case air_wt:
 		 return obj_t::airdepot;

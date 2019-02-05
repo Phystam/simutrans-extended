@@ -416,8 +416,7 @@ void way_builder_t::fill_menu(tool_selector_t *tool_selector, const waytype_t wt
  */
 bool way_builder_t::check_crossing(const koord zv, const grund_t *bd, waytype_t wtyp0, const player_t *player) const
 {
-	const waytype_t wtyp = wtyp0==tram_wt ? track_wt : wtyp0;
-	wtyp = narrowgauge_tram_wt ? narrowgauge_wt : wtyp;
+	const waytype_t wtyp = wtyp0==tram_wt ? track_wt : (wtyp0==narrowgauge_tram_wt ? narrowgauge_wt : wtyp0);
 	// nothing to cross here
 	if (!bd->hat_wege()) {
 		return true;
@@ -443,7 +442,7 @@ bool way_builder_t::check_crossing(const koord zv, const grund_t *bd, waytype_t 
 		return true;
 	}
 	if ( (wtyp==road_wt  &&  w->get_waytype()==narrowgauge_wt  &&  w->get_desc()->get_styp()==type_tram)  ||
-		     (wtyp0==narrogauge_tram_wt  &&  w->get_waytype()==road_wt) ) {
+		     (wtyp0==narrowgauge_tram_wt  &&  w->get_waytype()==road_wt) ) {
 		return true;
 	}
 	// right owner of the other way

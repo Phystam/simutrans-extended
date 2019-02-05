@@ -77,7 +77,7 @@ enum transport_type {
 	TT_MAGLEV,
 	TT_TRAM,
 	TT_NARROWGAUGE,
-	TT_NARROWGUGETRAM,
+	TT_NARROWGAUGETRAM,
 	TT_AIR,
 	TT_OTHER,  ///< everything else that can not be differentiated (e.g. houses), not powerlines
 	TT_MAX_VEH = TT_OTHER,

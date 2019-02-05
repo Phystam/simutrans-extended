@@ -370,12 +370,13 @@ public:
 	waytype_t get_waytype() const { return narrowgauge_wt; }
 };
 
-class narrowgauge_tram_schedule_t : public train_schedule_t
+class narrowgauge_tram_schedule_t : public narrowgauge_schedule_t
 {
 public:
 	narrowgauge_tram_schedule_t() {}
-	narrowgauge_tram_schedule_t(loadsave_t* const file) : train_schedule_t(file) {}
+	narrowgauge_tram_schedule_t(loadsave_t* const file) : narrowgauge_schedule_t(file) {}
 	schedule_t* copy() { schedule_t *s = new narrowgauge_tram_schedule_t(); s->copy_from(this); return s; }
+	const char *get_error_msg() const { return "On narrowgauge track only!\n"; }
 
 	schedule_type get_type() const { return narrowgauge_tram_schedule; }
 

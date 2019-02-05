@@ -102,7 +102,7 @@ weg_t* weg_t::alloc(waytype_t wt)
 		case maglev_wt:
 			weg = new maglev_t();
 			break;
-	  case narrowgauge_tram_track:
+	  case narrowgauge_tram_wt:
 		case narrowgauge_wt:
 			weg = new narrowgauge_t();
 			break;
