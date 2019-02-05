@@ -1221,7 +1221,13 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_byte(congestion_density_factor);
 
 			waytype_t wt = road_wt;
-			for(int n = 1; n < 8; n ++)
+			int n_max;
+			if(file->get_extended_version() >= 14 && file->get_extended_revision() >= 4){
+				n_max=8;
+			}else{
+				n_max=7;
+			}
+			for(int n = 1; n < n_max; n ++)
 			{
 				switch(n)
 				{
