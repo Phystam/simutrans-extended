@@ -349,7 +349,7 @@ bool route_t::find_route(karte_t *welt, const koord3d start, test_driver_t *tdri
 
 		// testing all four possible directions
 		ribi_t::ribi ribi;
-		if(tdriver->get_waytype() == track_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == monorail_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == maglev_wt)
+		if(tdriver->get_waytype() == track_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == monorail_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == narrowgauge_tram_wt || tdriver->get_waytype() == maglev_wt)
 		{
 			const weg_t* way = gr->get_weg(tdriver->get_waytype());
 			if(way && way->has_signal())
@@ -710,7 +710,7 @@ route_t::route_result_t route_t::intern_calc_route(karte_t *welt, const koord3d 
 				ribi_t::ribi go_dir = (w == NULL) ? 0 : w->get_ribi_maske();
 				if ((last_dir&go_dir) != 0)
 				{
-					if (tdriver->get_waytype() == track_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == maglev_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == monorail_wt)
+					if (tdriver->get_waytype() == track_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == maglev_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == narrowgauge_tram_wt || tdriver->get_waytype() == monorail_wt)
 					{
 						// Unidirectional signals allow routing in both directions but only act in one direction. Check whether this is one of those.					
 						if (!w->has_signal())
@@ -1145,7 +1145,7 @@ void route_t::postprocess_water_route(karte_t *welt)
 
 			const waytype_t wegtyp = tdriver->get_waytype();
 
-			const bool is_rail_type = tdriver->get_waytype() == track_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == maglev_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == monorail_wt;
+			const bool is_rail_type = tdriver->get_waytype() == track_wt || tdriver->get_waytype() == narrowgauge_wt || tdriver->get_waytype() == maglev_wt || tdriver->get_waytype() == tram_wt || tdriver->get_waytype() == narrowgauge_tram_wt || tdriver->get_waytype() == monorail_wt;
 			bool first_run = true;
 
 			bool ribi_check = (tdriver->get_ribi(gr) & ribi) != 0;

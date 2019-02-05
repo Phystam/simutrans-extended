@@ -1567,7 +1567,7 @@ grund_t* vehicle_t::hop_check()
 		if(  air_wt != wt  &&  route_index < cnv->get_route()->get_count()-1  ) {
 			uint8 dir;
 			const weg_t* way = bd->get_weg(wt);
-			if(way && way->has_signal() && (wt == track_wt || wt == tram_wt || wt == narrowgauge_wt || wt == maglev_wt || wt == monorail_wt))
+			if(way && way->has_signal() && (wt == track_wt || wt == tram_wt || wt == narrowgauge_wt || wt == narrowgauge_tram_wt || wt == maglev_wt || wt == monorail_wt))
 			{
 				dir = bd->get_weg_ribi_unmasked(wt);
 			}
@@ -5715,7 +5715,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 	if(working_method == drive_by_sight)
 	{
 		const sint32 max_speed_drive_by_sight = welt->get_settings().get_max_speed_drive_by_sight();
-		if(max_speed_drive_by_sight && get_desc()->get_waytype() != tram_wt)
+		if(max_speed_drive_by_sight && get_desc()->get_waytype() != tram_wt && get_desc()->get_waytype() != narrowgauge_tram_wt)
 		{
 			cnv->set_maximum_signal_speed(max_speed_drive_by_sight);
 		}
@@ -7735,7 +7735,7 @@ schedule_t * maglev_rail_vehicle_t::generate_new_schedule() const
 
 schedule_t * narrowgauge_rail_vehicle_t::generate_new_schedule() const
 {
-	return new narrowgauge_schedule_t();
+	return desc->get_waytype()==narrowgauge_tram_wt ? new narrowgauge_tram_schedule_t() : new narrowgauge_schedule_t();
 }
 
 

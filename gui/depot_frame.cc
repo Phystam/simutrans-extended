@@ -859,7 +859,7 @@ void depot_frame_t::open_schedule_editor()
 bool depot_frame_t::check_way_electrified(bool init)
 {
 	const waytype_t wt = depot->get_wegtyp();
-	const weg_t *w = welt->lookup(depot->get_pos())->get_weg(wt!=tram_wt ? wt : track_wt);
+	const weg_t *w = welt->lookup(depot->get_pos())->get_weg( (wt!=tram_wt||wt!=narrowgauge_tram_wt) ? wt : (wt==tram_wt ? track_wt : narrowgauge_wt) );
 	const bool way_electrified = w ? w->is_electrified() : false;
 	if(!init)
 	{

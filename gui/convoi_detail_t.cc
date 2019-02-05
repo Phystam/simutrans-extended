@@ -181,7 +181,7 @@ void convoi_detail_t::draw(scr_coord pos, scr_size size)
 
 		vehicle_t* v1 = cnv->get_vehicle(0); 
 
-		if(v1->get_waytype() == track_wt || v1->get_waytype() == maglev_wt || v1->get_waytype() == tram_wt || v1->get_waytype() == narrowgauge_wt || v1->get_waytype() == monorail_wt)
+		if(v1->get_waytype() == track_wt || v1->get_waytype() == maglev_wt || v1->get_waytype() == tram_wt || v1->get_waytype() == narrowgauge_wt || v1->get_waytype() == narrowgauge_tram_wt || v1->get_waytype() == monorail_wt)
 		{
 			// Current working method
 			rail_vehicle_t* rv1 = (rail_vehicle_t*)v1;

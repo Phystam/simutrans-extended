@@ -213,6 +213,10 @@ obj_desc_t * way_reader_t::read_node(FILE *fp, obj_node_info_t &node)
 		desc->styp = type_tram;
 		desc->wtyp = track_wt;
 	}
+	if(desc->wtyp==narrowgauge_tram_wt) {
+		desc->styp = type_tram;
+		desc->wtyp = narrowgauge_wt;
+	}
 	else if(desc->styp==5  &&  desc->wtyp==track_wt) {
 		desc->wtyp = monorail_wt;
 		desc->styp = type_flat;

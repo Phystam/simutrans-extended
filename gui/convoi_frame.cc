@@ -99,7 +99,13 @@ bool convoi_frame_t::passes_filter(convoihandle_t cnv)
 				}
 				break;
 			case obj_t::narrowgauge_vehicle:
-				if(!get_filter(convoi_filter_frame_t::narrowgauge_filter)) {
+				// filter trams: a convoi is considered tram if the first vehicle is a tram vehicle
+				if(tdriver->get_desc()->get_waytype()==narrowgauge_tram_wt) {
+					if (!get_filter(convoi_filter_frame_t::narrowgauge_tram_filter)) {
+						return false;
+					}
+				}
+				else if(!get_filter(convoi_filter_frame_t::narrowgauge_filter)) {
 					return false;
 				}
 				break;

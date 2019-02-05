@@ -414,6 +414,7 @@ static void line_segment_draw( waytype_t type, scr_coord start, uint8 start_offs
 				break;
 			case tram_wt:
 			case narrowgauge_wt:
+			case narrowgauge_tram_wt:
 				thickness = 3;
 				break;
 			default:
@@ -1620,7 +1621,7 @@ void reliefkarte_t::draw(scr_coord pos)
 			// invalid=0, loadingbay=1, railstation = 2, dock = 4, busstop = 8, airstop = 16, monorailstop = 32, tramstop = 64, maglevstop=128, narrowgaugestop=256
 			if(  stype > 0  ) {
 				radius = 1;
-				if(  stype & ~(haltestelle_t::loadingbay | haltestelle_t::busstop | haltestelle_t::tramstop)  ) {
+				if(  stype & ~(haltestelle_t::loadingbay | haltestelle_t::busstop | haltestelle_t::tramstop | haltestelle_t::narrowgaugetramstop)  ) {
 					radius = 3;
 				}
 			}

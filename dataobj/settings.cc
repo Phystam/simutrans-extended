@@ -298,13 +298,15 @@ settings_t::settings_t() :
 	corner_force_divider[waytype_t(monorail_wt)] = 10;
 	corner_force_divider[waytype_t(maglev_wt)] = 10;
 	corner_force_divider[waytype_t(narrowgauge_wt)] = 10;
-
+	corner_force_divider[waytype_t(narrowgauge_tram_wt)] = 10;
+	
 	curve_friction_factor[waytype_t(road_wt)] = 0;
 	curve_friction_factor[waytype_t(track_wt)] = 0;
 	curve_friction_factor[waytype_t(tram_wt)] = 0;
 	curve_friction_factor[waytype_t(monorail_wt)] =0;
 	curve_friction_factor[waytype_t(maglev_wt)] = 0;
 	curve_friction_factor[waytype_t(narrowgauge_wt)] = 0;
+	curve_friction_factor[waytype_t(narrowgauge_tram_wt)] = 0;
 
 	tilting_min_radius_effect = 1000;
 
@@ -490,6 +492,7 @@ settings_t::settings_t() :
 	forge_cost_maglev = 30000;
 	forge_cost_tram = 5000;
 	forge_cost_narrowgauge = 10000;
+	forge_cost_narrowgauge_tram = 2500;
 	forge_cost_air = 25000;
 
 	parallel_ways_forge_cost_percentage_road = 50;
@@ -499,6 +502,7 @@ settings_t::settings_t() :
 	parallel_ways_forge_cost_percentage_maglev = 40;
 	parallel_ways_forge_cost_percentage_tram = 85;
 	parallel_ways_forge_cost_percentage_narrowgauge = 35;
+	parallel_ways_forge_cost_percentage_narrowgauge_tram = 55;
 	parallel_ways_forge_cost_percentage_air = 85;
 
 	passenger_trips_per_month_hundredths = 200;
@@ -1217,7 +1221,7 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_byte(congestion_density_factor);
 
 			waytype_t wt = road_wt;
-			for(int n = 1; n < 7; n ++)
+			for(int n = 1; n < 8; n ++)
 			{
 				switch(n)
 				{
@@ -1238,6 +1242,9 @@ void settings_t::rdwr(loadsave_t *file)
 					break;
 				case 6:
 					wt = narrowgauge_wt;
+					break;
+				case 7:
+					wt = narrowgauge_tram_wt;
 					break;
 				default:
 					dbg->fatal("settings_t::rdwr", "Invalid waytype");
@@ -1674,6 +1681,9 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_longlong(forge_cost_maglev);
 			file->rdwr_longlong(forge_cost_tram);
 			file->rdwr_longlong(forge_cost_narrowgauge);
+			if(file->get_extended_version() >=14 && file->get_extended_revision() >=4){
+				file->rdwr_longlong(forge_cost_narrowgauge_tram);
+			}
 			file->rdwr_longlong(forge_cost_air);
 
 			file->rdwr_short(parallel_ways_forge_cost_percentage_road);
@@ -1683,6 +1693,9 @@ void settings_t::rdwr(loadsave_t *file)
 			file->rdwr_short(parallel_ways_forge_cost_percentage_maglev);
 			file->rdwr_short(parallel_ways_forge_cost_percentage_tram);
 			file->rdwr_short(parallel_ways_forge_cost_percentage_narrowgauge);
+			if(file->get_extended_version() >=14 && file->get_extended_revision() >=4){
+				file->rdwr_short(parallel_ways_forge_cost_percentage_narrowgauge_tram);
+			}
 			file->rdwr_short(parallel_ways_forge_cost_percentage_air);
 
 			file->rdwr_long(max_diversion_tiles);
@@ -2442,6 +2455,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	corner_force_divider[waytype_t(monorail_wt)] = contents.get_int("corner_force_divider_monorail", corner_force_divider[waytype_t(monorail_wt)]);
 	corner_force_divider[waytype_t(maglev_wt)] = contents.get_int("corner_force_divider_maglev", corner_force_divider[waytype_t(maglev_wt)]);
 	corner_force_divider[waytype_t(narrowgauge_wt)] = contents.get_int("corner_force_divider_narrowgauge", corner_force_divider[waytype_t(narrowgauge_wt)]);
+	corner_force_divider[waytype_t(narrowgauge_tram_wt)] = contents.get_int("corner_force_divider_narrowgauge_tram", corner_force_divider[waytype_t(narrowgauge_tram_wt)]);
 
 	curve_friction_factor[waytype_t(road_wt)] = contents.get_int("curve_friction_factor_road", curve_friction_factor[waytype_t(road_wt)]);
 	curve_friction_factor[waytype_t(track_wt)] = contents.get_int("curve_friction_factor_track", curve_friction_factor[waytype_t(track_wt)]);
@@ -2449,6 +2463,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	curve_friction_factor[waytype_t(monorail_wt)] = contents.get_int("curve_friction_factor_monorail", curve_friction_factor[waytype_t(monorail_wt)]);
 	curve_friction_factor[waytype_t(maglev_wt)] = contents.get_int("curve_friction_factor_maglev", curve_friction_factor[waytype_t(maglev_wt)]);
 	curve_friction_factor[waytype_t(narrowgauge_wt)] = contents.get_int("curve_friction_factor_narrowgauge", curve_friction_factor[waytype_t(narrowgauge_wt)]);
+	curve_friction_factor[waytype_t(narrowgauge_tram_wt)] = contents.get_int("curve_friction_factor_narrowgauge", curve_friction_factor[waytype_t(narrowgauge_tram_wt)]);
 
 	tilting_min_radius_effect = contents.get_int("tilting_min_radius_effect", tilting_min_radius_effect);
 
@@ -2550,6 +2565,9 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 		case narrowgauge_wt:
 			buf = "default_increase_maintenance_after_years_narrowgauge";
 			break;
+		case narrowgauge_tram_wt:
+			buf = "default_increase_maintenance_after_years_narrowgauge_tram";
+			break;
 		case air_wt:
 			buf = "default_increase_maintenance_after_years_air";
 			break;
@@ -2585,6 +2603,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	forge_cost_maglev = contents.get_int("forge_cost_maglev", forge_cost_maglev);
 	forge_cost_tram = contents.get_int("forge_cost_tram", forge_cost_tram);
 	forge_cost_narrowgauge = contents.get_int("forge_cost_narrowgauge", forge_cost_narrowgauge);
+	forge_cost_narrowgauge_tram = contents.get_int("forge_cost_narrowgauge_tram", forge_cost_narrowgauge_tram);
 	forge_cost_air = contents.get_int("forge_cost_air", forge_cost_air);
 	
 	parallel_ways_forge_cost_percentage_road = contents.get_int("parallel_ways_forge_cost_percentage_road", parallel_ways_forge_cost_percentage_road);
@@ -2594,6 +2613,7 @@ void settings_t::parse_simuconf(tabfile_t& simuconf, sint16& disp_width, sint16&
 	parallel_ways_forge_cost_percentage_maglev = contents.get_int("parallel_ways_forge_cost_percentage_maglev", parallel_ways_forge_cost_percentage_maglev);
 	parallel_ways_forge_cost_percentage_tram = contents.get_int("parallel_ways_forge_cost_percentage_tram", parallel_ways_forge_cost_percentage_tram);
 	parallel_ways_forge_cost_percentage_narrowgauge = contents.get_int("parallel_ways_forge_cost_percentage_narrowgauge", parallel_ways_forge_cost_percentage_narrowgauge);
+	parallel_ways_forge_cost_percentage_narrowgauge_tram = contents.get_int("parallel_ways_forge_cost_percentage_narrowgauge_tram", parallel_ways_forge_cost_percentage_narrowgauge_tram);
 	parallel_ways_forge_cost_percentage_air = contents.get_int("parallel_ways_forge_cost_percentage_air", parallel_ways_forge_cost_percentage_air);
 
 	max_diversion_tiles = contents.get_int("max_diversion_tiles", max_diversion_tiles);
@@ -3104,6 +3124,9 @@ sint64 settings_t::get_forge_cost(waytype_t wt) const
 	case narrowgauge_wt:
 		return (forge_cost_narrowgauge * (sint64)meters_per_tile) / 1000ll;
 
+	case narrowgauge_tram_wt:
+		return (forge_cost_narrowgauge_tram * (sint64)meters_per_tile) / 1000ll;
+
 	case air_wt:
 		return (forge_cost_air * (sint64)meters_per_tile) / 1000ll;
 	};
@@ -3134,6 +3157,9 @@ sint64 settings_t::get_parallel_ways_forge_cost_percentage(waytype_t wt) const
 
 	case narrowgauge_wt:
 		return parallel_ways_forge_cost_percentage_narrowgauge;
+
+	case narrowgauge_tram_wt:
+		return parallel_ways_forge_cost_percentage_narrowgauge_tram;
 
 	case air_wt:
 		return parallel_ways_forge_cost_percentage_air;

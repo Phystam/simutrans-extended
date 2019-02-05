@@ -112,7 +112,7 @@ map_button_t button_init[MAP_MAX_BUTTONS] = {
 	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Mail delivery", "Show the success rate for mail delivery", reliefkarte_t::MAP_MAIL_DELIVERY }
 };
 
-#define MAP_TRANSPORT_TYPE_ITEMS (9)
+#define MAP_TRANSPORT_TYPE_ITEMS (10)
 typedef struct {
 	const char * name;
 	simline_t::linetype line_type;
@@ -125,6 +125,7 @@ transport_type_item_t transport_type_items[MAP_TRANSPORT_TYPE_ITEMS] = {
 	{"Train", simline_t::trainline},
 	{"Narrowgauge", simline_t::narrowgaugeline},
 	{"Tram", simline_t::tramline},
+	{"NarrowgaugeTram", simline_t::narrowgaugetramline},
 	{"Truck", simline_t::truckline},
 	{"Ship", simline_t::shipline},
 	{"Air", simline_t::airline}

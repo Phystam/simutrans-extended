@@ -874,6 +874,7 @@ void vehicle_writer_t::write_obj(FILE* fp, obj_node_t& parent, tabfileobj_t& obj
 		case monorail_wt:
 		case maglev_wt:
 		case narrowgauge_wt:
+		case narrowgauge_tram_wt:
 		case track_wt:
 			default_loading_time = 4000;
 			break;

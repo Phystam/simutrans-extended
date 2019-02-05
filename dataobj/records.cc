@@ -20,7 +20,8 @@ sint32 records_t::get_record_speed( waytype_t w ) const
 		case tram_wt: return max_rail_speed.speed;
 		case monorail_wt: return max_monorail_speed.speed;
 		case maglev_wt: return max_maglev_speed.speed;
-		case narrowgauge_wt: return max_narrowgauge_speed.speed;
+		case narrowgauge_wt:
+  	case narrowgauge_tram_wt: return max_narrowgauge_speed.speed;
 		case water_wt: return max_ship_speed.speed;
 		case air_wt: return max_air_speed.speed;
 		default: return 0;
@@ -47,7 +48,8 @@ void records_t::notify_record( convoihandle_t cnv, sint32 max_speed, koord k, ui
 		case tram_wt: sr = &max_rail_speed; break;
 		case monorail_wt: sr = &max_monorail_speed; break;
 		case maglev_wt: sr = &max_maglev_speed; break;
-		case narrowgauge_wt: sr = &max_narrowgauge_speed; break;
+		case narrowgauge_wt: 
+	  case narrowgauge_tram_wt: sr = &max_narrowgauge_speed; break;
 		case water_wt: sr = &max_ship_speed; break;
 		case air_wt: sr = &max_air_speed; break;
 		default: assert(0);
@@ -77,7 +79,8 @@ void records_t::notify_record( convoihandle_t cnv, sint32 max_speed, koord k, ui
 				case tram_wt:     text = "New world record for railways: %.1f km/h by %s.";  break;
 				case monorail_wt: text = "New world record for monorails: %.1f km/h by %s."; break;
 				case maglev_wt: text = "New world record for maglevs: %.1f km/h by %s."; break;
-				case narrowgauge_wt: text = "New world record for narrowgauges: %.1f km/h by %s."; break;
+			  case narrowgauge_tram_wt:
+			  case narrowgauge_wt: text = "New world record for narrowgauges: %.1f km/h by %s."; break;
 				case water_wt:    text = "New world record for ship: %.1f km/h by %s.";      break;
 				case air_wt:      text = "New world record for planes: %.1f km/h by %s.";    break;
 			}

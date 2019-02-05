@@ -363,6 +363,10 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 			display_color_img(skinverwaltung_t::narrowgaugehaltsymbol->get_image_id(0), pos.x+left, top, 0, false, false);
 			left += 23;
 		}
+		if (halttype & haltestelle_t::narrowgaugetramstop && skinverwaltung_t::narrowgaugetramhaltsymbol) {
+			display_color_img(skinverwaltung_t::narrowgaugetramhaltsymbol->get_image_id(0), pos.x+left, top, 0, false, false);
+			left += 23;
+		}
 		top += 44;
 		top += D_LABEL_HEIGHT;
 		left = pos.x + D_MARGIN_LEFT;

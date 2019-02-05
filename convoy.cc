@@ -109,12 +109,13 @@ void adverse_summary_t::add_vehicle(const vehicle_desc_t &b, bool is_leading)
 		
 			case track_wt:
 			case narrowgauge_wt:
-			case overheadlines_wt: 
+	  	case overheadlines_wt: 
 				br = BR_TRACK;
 				break;
 
 			case tram_wt:
-			case monorail_wt:      
+	  	case narrowgauge_tram_wt:
+		  case monorail_wt:      
 				br = BR_TRAM;
 				break;
 			

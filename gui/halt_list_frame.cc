@@ -119,15 +119,16 @@ static bool passes_filter_type(haltestelle_t const& s)
 	if (!halt_list_frame_t::get_filter(halt_list_frame_t::typ_filter)) return true;
 
 	haltestelle_t::stationtyp const t = s.get_station_type();
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::frachthof_filter)       && t & haltestelle_t::loadingbay)      return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::bahnhof_filter)         && t & haltestelle_t::railstation)     return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::bushalt_filter)         && t & haltestelle_t::busstop)         return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::airport_filter)         && t & haltestelle_t::airstop)         return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::dock_filter)            && t & haltestelle_t::dock)            return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::monorailstop_filter)    && t & haltestelle_t::monorailstop)    return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::maglevstop_filter)      && t & haltestelle_t::maglevstop)      return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::narrowgaugestop_filter) && t & haltestelle_t::narrowgaugestop) return true;
-	if (halt_list_frame_t::get_filter(halt_list_frame_t::tramstop_filter)        && t & haltestelle_t::tramstop)        return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::frachthof_filter)           && t & haltestelle_t::loadingbay)          return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::bahnhof_filter)             && t & haltestelle_t::railstation)         return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::bushalt_filter)             && t & haltestelle_t::busstop)             return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::airport_filter)             && t & haltestelle_t::airstop)             return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::dock_filter)                && t & haltestelle_t::dock)                return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::monorailstop_filter)        && t & haltestelle_t::monorailstop)        return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::maglevstop_filter)          && t & haltestelle_t::maglevstop)          return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::narrowgaugestop_filter)     && t & haltestelle_t::narrowgaugestop)     return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::tramstop_filter)            && t & haltestelle_t::tramstop)            return true;
+	if (halt_list_frame_t::get_filter(halt_list_frame_t::narrowgaugetramstop_filter) && t & haltestelle_t::narrowgaugetramstop) return true;
 	return false;
 }
 

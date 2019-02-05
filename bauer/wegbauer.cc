@@ -186,8 +186,9 @@ const way_desc_t* way_builder_t::weg_search(const waytype_t wtyp, const sint32 s
 	bool best_allowed = false; // Does the best way fulfill the timeline?
 	FOR(stringhashtable_tpl<way_desc_t *>, const& i, desc_table) {
 		way_desc_t const* const test = i.value;
-		if(  ((test->get_wtyp()==wtyp  &&
-			(test->get_styp()==system_type  ||  system_type==type_all))  ||  (test->get_wtyp()==track_wt  &&  test->get_styp()==type_tram  &&  wtyp==tram_wt))
+		if(  ((test->get_wtyp()==wtyp  && (test->get_styp()==system_type  ||  system_type==type_all))
+					||  (test->get_wtyp()==track_wt  &&  test->get_styp()==type_tram  &&  wtyp==tram_wt)
+					||  (test->get_wtyp()==narrowgauge_wt  &&  test->get_styp()==type_tram  &&  wtyp==narrowgauge_tram_wt) )
 			&&  test->get_cursor()->get_image_id(1)!=IMG_EMPTY  )
 		{
 			bool test_allowed = (time == 0 || (test->get_intro_year_month() <= time && time < test->get_retire_year_month())) && !test->is_mothballed();
@@ -223,7 +224,10 @@ const way_desc_t* way_builder_t::weg_search(const waytype_t wtyp, const sint32 s
 				 system_type == type_all)) ||
 				 (test->get_wtyp() == track_wt &&
 				 test->get_styp() == type_tram &&
-				 wtyp == tram_wt))
+				 wtyp == tram_wt) ||
+				(test->get_wtyp() == narrowgauge_wt &&
+				 test->get_styp() == type_tram &&
+				 wtyp == narrowgauge_tram_wt))
 			     && test->get_cursor()->get_image_id(1) != IMG_EMPTY)
 		{
 			const missing_way_constraints_t missing_constraints(way_constraints, test->get_way_constraints());
@@ -413,6 +417,7 @@ void way_builder_t::fill_menu(tool_selector_t *tool_selector, const waytype_t wt
 bool way_builder_t::check_crossing(const koord zv, const grund_t *bd, waytype_t wtyp0, const player_t *player) const
 {
 	const waytype_t wtyp = wtyp0==tram_wt ? track_wt : wtyp0;
+	wtyp = narrowgauge_tram_wt ? narrowgauge_wt : wtyp;
 	// nothing to cross here
 	if (!bd->hat_wege()) {
 		return true;
@@ -435,6 +440,10 @@ bool way_builder_t::check_crossing(const koord zv, const grund_t *bd, waytype_t 
 	// special case: tram track on road
 	if ( (wtyp==road_wt  &&  w->get_waytype()==track_wt  &&  w->get_desc()->get_styp()==type_tram)  ||
 		     (wtyp0==tram_wt  &&  w->get_waytype()==road_wt) ) {
+		return true;
+	}
+	if ( (wtyp==road_wt  &&  w->get_waytype()==narrowgauge_wt  &&  w->get_desc()->get_styp()==type_tram)  ||
+		     (wtyp0==narrogauge_tram_wt  &&  w->get_waytype()==road_wt) ) {
 		return true;
 	}
 	// right owner of the other way
@@ -624,6 +633,12 @@ bool way_builder_t::is_allowed_step( const grund_t *from, const grund_t *to, sin
 		return false;
 	}
 
+	if(bautyp == narrowgauge_tram && !from->get_weg(road_wt) && !to->get_weg(road_wt))
+	{
+		// Trams can only be built on roads, or one tile off a road (to allow for depots and rail connexions).
+		return false;
+	}
+
 	if(bautyp==luft  &&  (from->get_grund_hang()+to->get_grund_hang()!=0  ||  (from->hat_wege()  &&  from->hat_weg(air_wt)==0)  ||  (to->hat_wege()  &&  to->hat_weg(air_wt)==0))) {
 		// absolutely no slopes for runways, neither other ways
 		return false;
@@ -740,13 +755,13 @@ bool way_builder_t::is_allowed_step( const grund_t *from, const grund_t *to, sin
 	if(  welt->get_settings().get_way_height_clearance()==2  ) {
 		// cannot build if conversion factor 2, we aren't powerline and way with maximum speed > 0 or powerline 1 tile below except for roads, waterways and tram lines: but mark those as being a "low bridge" type that only allows some vehicles to pass.
 		grund_t *to2 = welt->lookup( to->get_pos() + koord3d(0, 0, -1) );
-		if(  to2 && (((bautyp&bautyp_mask)!=leitung && to2->get_weg_nr(0) && to2->get_weg_nr(0)->get_desc()->get_topspeed() > 0 && to2->get_weg_nr(0)->get_desc()->get_waytype() != water_wt && to2->get_weg_nr(0)->get_desc()->get_waytype() != road_wt && to2->get_weg_nr(0)->get_desc()->get_waytype() != tram_wt) || to2->get_leitung())  )
+		if(  to2 && (((bautyp&bautyp_mask)!=leitung && to2->get_weg_nr(0) && to2->get_weg_nr(0)->get_desc()->get_topspeed() > 0 && to2->get_weg_nr(0)->get_desc()->get_waytype() != water_wt && to2->get_weg_nr(0)->get_desc()->get_waytype() != road_wt && to2->get_weg_nr(0)->get_desc()->get_waytype() != tram_wt && to2->get_weg_nr(0)->get_desc()->get_waytype() != narrowgauge_tram_wt) || to2->get_leitung())  )
 		{
 			return false;
 		}
 		// tile above cannot have way unless we are a way (not powerline) with a maximum speed of 0 (and is not a road, waterway or tram line as above), or be surface if we are underground
 		to2 = welt->lookup( to->get_pos() + koord3d(0, 0, 1) );
-		if(  to2  &&  ((to2->get_weg_nr(0)  &&  ((desc->get_topspeed() > 0 && desc->get_waytype() != water_wt && desc->get_waytype() != road_wt && desc->get_waytype() != tram_wt) || (bautyp&bautyp_mask)==leitung))  ||  (bautyp & tunnel_flag) != 0)  )
+		if(  to2  &&  ((to2->get_weg_nr(0)  &&  ((desc->get_topspeed() > 0 && desc->get_waytype() != water_wt && desc->get_waytype() != road_wt && desc->get_waytype() != tram_wt && desc->get_waytype() != narrowgauge_tram_wt) || (bautyp&bautyp_mask)==leitung))  ||  (bautyp & tunnel_flag) != 0)  )
 		{
 			return false;
 		}
@@ -890,6 +905,39 @@ bool way_builder_t::is_allowed_step( const grund_t *from, const grund_t *to, sin
 		}
 		break;
 
+		case narrowgauge_tram: // Dario: Tramway
+		{
+			const weg_t *sch=to->get_weg(track_wt);
+			// roads are checked in check_crossing
+			// if no way there: check for right ground type, otherwise check owner
+			ok = sch == NULL ? (!fundament && !to->is_water()) : check_owner(sch->get_owner(),player) || check_access(sch, player);
+			// tram track allowed in road tunnels, but only along existing roads / tracks
+			if(from!=to) {
+				if(from->ist_tunnel()) {
+					const ribi_t::ribi ribi = from->get_weg_ribi_unmasked(road_wt)  |  from->get_weg_ribi_unmasked(track_wt)  |  ribi_t::doubles(ribi_type(from->get_grund_hang()));
+					ok = ok && ((ribi & ribi_type(zv))==ribi_type(zv));
+				}
+				if(to->ist_tunnel()) {
+					const ribi_t::ribi ribi = to->get_weg_ribi_unmasked(road_wt)  |  to->get_weg_ribi_unmasked(track_wt)  |  ribi_t::doubles(ribi_type(to->get_grund_hang()));
+					ok = ok && ((ribi & ribi_type(-zv))==ribi_type(-zv));
+				}
+			}
+			if(ok) {
+				// calculate costs
+				*costs = s.way_count_straight;
+				if (!to->hat_weg(track_wt)) *costs += 1; // only prefer existing rails a little
+				// prefer own track
+				if(to->hat_weg(road_wt)) {
+					*costs += s.way_count_straight;
+				}
+				if(to->get_weg_hang()!=0  &&  !to_flat) {
+					*costs += s.way_count_slope;
+				}
+			}
+		}
+		break;
+
+		
 		case leitung:
 			ok = !to->is_water()  &&  (to->get_weg(air_wt)==NULL);
 			ok &= !(to->ist_tunnel() && to->hat_wege());
@@ -1184,6 +1232,7 @@ void way_builder_t::check_for_bridge(const grund_t* parent_from, const grund_t* 
 	if(  way0  ) {
 		switch(  bautyp&bautyp_mask  ) {
 			case schiene_tram:
+		  case narrowgauge_tram:
 			case strasse: {
 				const weg_t *other = way1;
 				if (  way0->get_waytype() != desc->get_wtyp()  ) {
@@ -2966,6 +3015,7 @@ INT_CHECK("simbau 1072");
 		case monorail:
 		case maglev:
 		case narrowgauge:
+	  case narrowgauge_tram:
 		case luft:
 			DBG_MESSAGE("way_builder_t::build", "schiene");
 			build_track();

@@ -5185,6 +5185,7 @@ void karte_t::recalc_average_speed()
 					vehicle_type = "maglev vehicle";
 					break;
 				case narrowgauge_wt:
+				case narrowgauge_tram_wt:
 					vehicle_type = "narrowgauge vehicle";
 					break;
 				default:

@@ -35,6 +35,7 @@ const char *halt_list_filter_frame_t::filter_buttons_text[FILTER_BUTTONS] = {
 	"hlf_chk_monorailstop",
 	"hlf_chk_maglevstop",
 	"hlf_chk_narrowgaugestop",
+	"hlf_chk_narrowgaugetramstop",
 	"hlf_chk_spezial_filter",
 	"hlf_chk_overflow",
 	"hlf_chk_keine_verb"
@@ -54,6 +55,7 @@ halt_list_frame_t::filter_flag_t halt_list_filter_frame_t::filter_buttons_types[
 	halt_list_frame_t::monorailstop_filter,
 	halt_list_frame_t::maglevstop_filter,
 	halt_list_frame_t::narrowgaugestop_filter,
+	halt_list_frame_t::narrowgaugetramstop_filter,
 	halt_list_frame_t::spezial_filter,
 	halt_list_frame_t::ueberfuellt_filter,
 	halt_list_frame_t::ohneverb_filter

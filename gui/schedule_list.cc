@@ -166,6 +166,10 @@ schedule_list_gui_t::schedule_list_gui_t(player_t *player_) :
 		tabs.add_tab(&scl, translator::translate("Tram"), skinverwaltung_t::tramhaltsymbol, translator::translate("Tram"));
 		tabs_to_lineindex[max_idx++] = simline_t::tramline;
 	}
+	if (!vehicle_builder_t::get_info(narrowgauge_tram_wt).empty()) {
+		tabs.add_tab(&scl, translator::translate("NarrowgaugeTram"), skinverwaltung_t::narrowgaugetramhaltsymbol, translator::translate("NarrowgaugeTram"));
+		tabs_to_lineindex[max_idx++] = simline_t::narrowgaugetramline;
+	}
 	if(strasse_t::default_strasse) {
 		tabs.add_tab(&scl, translator::translate("Truck"), skinverwaltung_t::autohaltsymbol, translator::translate("Truck"));
 		tabs_to_lineindex[max_idx++] = simline_t::truckline;

@@ -14,7 +14,7 @@
 
 waytype_t way_desc_t::get_finance_waytype() const
 {
-	return get_styp() == type_tram ? tram_wt : get_wtyp();
+	return get_styp() == type_tram ? (get_wtyp()==tram_wt?tram_wt:narrowgauge_tram_wt) : get_wtyp();
 }
 
 void way_desc_t::calc_checksum(checksum_t *chk) const

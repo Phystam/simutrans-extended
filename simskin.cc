@@ -40,6 +40,7 @@ const skin_desc_t* skinverwaltung_t::airhaltsymbol      = NULL;
 const skin_desc_t* skinverwaltung_t::monorailhaltsymbol = NULL;
 const skin_desc_t* skinverwaltung_t::maglevhaltsymbol   = NULL;
 const skin_desc_t* skinverwaltung_t::narrowgaugehaltsymbol = NULL;
+const skin_desc_t* skinverwaltung_t::narrowgaugetramhaltsymbol = NULL;
 const skin_desc_t* skinverwaltung_t::bushaltsymbol      = NULL;
 const skin_desc_t* skinverwaltung_t::tramhaltsymbol     = NULL;
 const skin_desc_t* skinverwaltung_t::networksymbol      = NULL;
@@ -143,6 +144,7 @@ static spezial_obj_tpl<skin_desc_t> const fakultative_objekte[] = {
 	{ &skinverwaltung_t::monorailhaltsymbol, "MonorailStop"   },
 	{ &skinverwaltung_t::maglevhaltsymbol,   "MaglevStop"     },
 	{ &skinverwaltung_t::narrowgaugehaltsymbol,"NarrowgaugeStop"},
+	{ &skinverwaltung_t::narrowgaugetramhaltsymbol,"NarrowgaugeTramStop"},
 	{ &skinverwaltung_t::tramhaltsymbol,     "TramStop"       },
 	{ &skinverwaltung_t::networksymbol,      "networksym"     },
 	{ &skinverwaltung_t::timelinesymbol,     "timelinesym"    },

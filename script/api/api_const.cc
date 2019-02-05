@@ -220,6 +220,8 @@ void export_global_constants(HSQUIRRELVM vm)
 	enum_slot(vm, "mo_groundobj", obj_t::groundobj);
 	/// depot: narrowgauge
 	enum_slot(vm, "mo_depot_narrowgauge", obj_t::narrowgaugedepot);
+	/// depot: narrowgauge tram
+	enum_slot(vm, "mo_depot_narrowgaugetram", obj_t::narrowgaugetramdepot);
 	/// pedestrian
 	enum_slot(vm, "mo_pedestrian", obj_t::pedestrian);
 	/// city car - not player owned

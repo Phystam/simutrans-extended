@@ -104,6 +104,7 @@ void schiene_t::info(cbuffer_t & buf, bool is_bridge) const
 		case track_wt:
 		case narrowgauge_wt:
 		case tram_wt:
+		case narrowgauge_tram_wt:
 		case monorail_wt:
 		case maglev_wt:
 			rail_vehicle = (rail_vehicle_t*)reserved->front();

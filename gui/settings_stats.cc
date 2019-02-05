@@ -72,7 +72,8 @@ static const char *version_ex[] =
 	".10",
 	".11",
 	".12",
-	".13"
+	".13",
+	".14"
 };
 
 static const char *revision_ex[] =
@@ -253,6 +254,7 @@ void settings_extended_general_stats_t::init( settings_t *sets )
 	INIT_NUM("forge_cost_maglev", sets->get_forge_cost_maglev(), 0, 1000000, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("forge_cost_tram", sets->get_forge_cost_tram(), 0, 1000000, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("forge_cost_narrowgauge", sets->get_forge_cost_narrowgauge(), 0, 1000000, gui_numberinput_t::PLAIN, false);
+	INIT_NUM("forge_cost_narrowgauge_tram", sets->get_forge_cost_narrowgauge_tram(), 0, 1000000, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("forge_cost_air", sets->get_forge_cost_air(), 0, 1000000, gui_numberinput_t::PLAIN, false);
 
 	SEPERATOR;
@@ -263,6 +265,7 @@ void settings_extended_general_stats_t::init( settings_t *sets )
 	INIT_NUM("parallel_ways_forge_cost_percentage_maglev", sets->get_parallel_ways_forge_cost_percentage_maglev(), 0, 100, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("parallel_ways_forge_cost_percentage_tram", sets->get_parallel_ways_forge_cost_percentage_tram(), 0, 100, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("parallel_ways_forge_cost_percentage_narrowgauge", sets->get_parallel_ways_forge_cost_percentage_narrowgauge(), 0, 100, gui_numberinput_t::PLAIN, false);
+	INIT_NUM("parallel_ways_forge_cost_percentage_narrowgauge_tram", sets->get_parallel_ways_forge_cost_percentage_narrowgauge_tram(), 0, 100, gui_numberinput_t::PLAIN, false);
 	INIT_NUM("parallel_ways_forge_cost_percentage_air", sets->get_parallel_ways_forge_cost_percentage_air(), 0, 100, gui_numberinput_t::PLAIN, false);
 
 	SEPERATOR;
@@ -292,6 +295,9 @@ void settings_extended_general_stats_t::init( settings_t *sets )
 		row++;
 		set_cell_component(tbl, new_numinp(scr_coord(0, 0), sets->get_default_increase_maintenance_after_years(narrowgauge_wt), 0, 1000, 1), 0, row);
 		set_cell_component(tbl, new_label(scr_coord(2, 0), "default_increase_maintenance_after_years_narrowgauge"), 1, row);
+		row++;
+		set_cell_component(tbl, new_numinp(scr_coord(0, 0), sets->get_default_increase_maintenance_after_years(narrowgauge_tram_wt), 0, 1000, 1), 0, row);
+		set_cell_component(tbl, new_label(scr_coord(2, 0), "default_increase_maintenance_after_years_narrowgauge_tram"), 1, row);
 		row++;
 		set_cell_component(tbl, new_numinp(scr_coord(0, 0), sets->get_default_increase_maintenance_after_years(air_wt), 0, 1000, 1), 0, row);
 		set_cell_component(tbl, new_label(scr_coord(2, 0), "default_increase_maintenance_after_years_air"), 1, row);
@@ -351,6 +357,7 @@ void settings_extended_general_stats_t::read(settings_t *sets)
 	READ_NUM_VALUE(sets->forge_cost_maglev);
 	READ_NUM_VALUE(sets->forge_cost_tram);
 	READ_NUM_VALUE(sets->forge_cost_narrowgauge);
+	READ_NUM_VALUE(sets->forge_cost_narrowgauge_tram);
 	READ_NUM_VALUE(sets->forge_cost_air);
 
 	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_road);
@@ -360,6 +367,7 @@ void settings_extended_general_stats_t::read(settings_t *sets)
 	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_maglev);
 	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_tram);
 	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_narrowgauge);
+	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_narrowgauge_tram);
 	READ_NUM_VALUE(sets->parallel_ways_forge_cost_percentage_air);
 
 	uint16 default_increase_maintenance_after_years_other;
@@ -375,6 +383,7 @@ void settings_extended_general_stats_t::read(settings_t *sets)
 		case maglev_wt:
 		case tram_wt:
 		case narrowgauge_wt:
+		case narrowgauge_tram_wt:
 		case air_wt:
 			sets->set_default_increase_maintenance_after_years((waytype_t)i, (*numiter++)->get_value());
 			break;

@@ -85,6 +85,7 @@ float32e8_t vehicle_desc_t::get_power_force_ratio() const
 		case maglev_wt:
 		case tram_wt:
 		case narrowgauge_wt:
+		case narrowgauge_tram_wt:
 			if (topspeed && get_engine_type() == steam)
 			{
 				/** This is a steam engine on tracks. Steam engines on tracks are constant force engines.

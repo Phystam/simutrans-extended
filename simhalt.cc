@@ -215,7 +215,7 @@ halthandle_t haltestelle_t::get_halt(const koord3d pos, const player_t *player )
 		// Stops on public roads, even those belonging to other players, should be able to be used by all players.
 		if(gr->get_halt().is_bound() && (gr->get_halt()->check_access(player) ||
 			(w && player_t::check_owner(w->get_owner(), player))) ||
-			(w && (w->get_waytype() == road_wt || w->get_waytype() == tram_wt) && (w->get_owner() == NULL || w->get_owner()->is_public_service())))
+			 (w && (w->get_waytype() == road_wt || w->get_waytype() == tram_wt || w->get_waytype() == narrowgauge_tram_wt) && (w->get_owner() == NULL || w->get_owner()->is_public_service())))
 		{
 			return gr->get_halt();
 		}
@@ -3625,6 +3625,7 @@ void haltestelle_t::add_to_station_type( grund_t *gr )
 					station_type |= (desc->get_enabled()&3)!=0 ? busstop : loadingbay;
 					if (gr->has_two_ways()) { // tram track on street
 						station_type |= tramstop;
+						station_type |= narrowgaugetramstop;
 					}
 					break;
 				case water_wt:       station_type |= dock;            break;
@@ -3639,6 +3640,12 @@ void haltestelle_t::add_to_station_type( grund_t *gr )
 					break;
 				case maglev_wt:      station_type |= maglevstop;      break;
 				case narrowgauge_wt: station_type |= narrowgaugestop; break;
+				case narrowgauge_tram_wt:
+					station_type |= narrowgaugetramstop;
+					if (gr->has_two_ways()) { // narrowgauge tram track on street
+						station_type |= (desc->get_enabled()&3)!=0 ? busstop : loadingbay;
+					}
+					break;
 				default: ;
 			}
 			break;

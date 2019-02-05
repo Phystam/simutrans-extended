@@ -280,6 +280,16 @@ static grund_t *tool_intern_koord_to_weg_grund(player_t *player, karte_t *welt, 
 		}
 	}
 
+	if(wt==narrowgauge_tram_wt) {
+		weg_t *way = gr->get_weg(narrowgauge_wt);
+		if (way && way->get_desc()->get_styp() == type_tram &&  way-> is_deletable(player)==NULL) {
+			return gr;
+		}
+		else {
+			return NULL;
+		}
+	}
+
 
 	// has some rail or monorail?
 	if(  !gr->hat_weg(wt)  ) {
@@ -550,6 +560,9 @@ DBG_MESSAGE("tool_remover()",  "removing roadsign at (%s)", pos.get_str());
 		weg_t *weg = gr->get_weg(rs->get_desc()->get_wtyp());
 		if(  weg==NULL  &&  rs->get_desc()->get_wtyp()==tram_wt  ) {
 			weg = gr->get_weg(track_wt);
+		}
+		if(  weg==NULL  &&  rs->get_desc()->get_wtyp()==narrowgauge_tram_wt  ) {
+			weg = gr->get_weg(narrowgauge_wt);
 		}
 		rs->cleanup(player);
 		delete rs;
@@ -1657,7 +1670,7 @@ const char *tool_clear_reservation_t::work( player_t *player, koord3d k )
 						cnv->suche_neue_route();
 					}
 					vehicle_t* veh = cnv->front();
-					if (veh->get_waytype() == track_wt || veh->get_waytype() == tram_wt || veh->get_waytype() == narrowgauge_wt || veh->get_waytype() == maglev_wt || veh->get_waytype() == monorail_wt)
+					if (veh->get_waytype() == track_wt || veh->get_waytype() == tram_wt || veh->get_waytype() == narrowgauge_wt || veh->get_waytype() == narrowgauge_tram_wt || veh->get_waytype() == maglev_wt || veh->get_waytype() == monorail_wt)
 					{
 						rail_vehicle_t* rv = (rail_vehicle_t*)veh;
 						rv->set_working_method(drive_by_sight);
@@ -2368,6 +2381,10 @@ static const char *tool_schedule_insert_aux(karte_t *welt, player_t *player, koo
 		{
 			w = bd->get_weg( track_wt );
 		}
+		if(w == NULL && schedule->get_waytype() == narrowgauge_tram_wt)
+		{
+			w = bd->get_weg( narrowgauge_wt );
+		}
 		if(!bd->is_halt())
 		{
 			if(w != NULL && w->get_owner() && !w->get_owner()->allows_access_to(player->get_player_nr()))
@@ -2568,7 +2585,7 @@ waytype_t tool_build_way_t::get_waytype() const
 {
 	const way_desc_t *desc = get_desc( welt->get_timeline_year_month(), false );
 	if (desc) {
-		return desc->is_tram() ? tram_wt : desc->get_wtyp();
+		return desc->is_tram() ? tram_wt : (desc->is_narrowgauge_tram() ? narrowgauge_tram_wt : desc->get_wtyp());
 	}
 	return invalid_wt;
 }
@@ -2640,6 +2657,9 @@ void tool_build_way_t::calc_route( way_builder_t &bauigel, const koord3d &start,
 	way_builder_t::bautyp_t bautyp = (way_builder_t::bautyp_t)desc->get_wtyp();
 	if (desc->is_tram()) {
 		bautyp = way_builder_t::schiene_tram;
+	}
+	if (desc->is_narrowgauge_tram()) {
+		bautyp = way_builder_t::narrowgauge_tram;
 	}
 	// elevated track?
 	if(desc->get_styp()==type_elevated  &&  desc->get_wtyp()!=air_wt) {
@@ -3116,7 +3136,7 @@ uint8 tool_build_bridge_t::is_valid_pos(  player_t *player, const koord3d &pos, 
 				for(int i=0;i<2;i++) {
 					const weg_t *w = gr->get_weg_nr(i);
 					if (w) {
-						if (w->get_waytype()!=road_wt  && !w->get_desc()->is_tram()) {
+						if (w->get_waytype()!=road_wt  && (!w->get_desc()->is_tram() || !w->get_desc()->is_narrowgauge_tram())) {
 							return 0;
 						}
 						rw |= w->get_ribi_unmasked();
@@ -3429,6 +3449,7 @@ char const* tool_wayremover_t::get_tooltip(player_t const*) const
 		case tram_wt:
 		case track_wt: return translator::translate("remove tracks");
 		case maglev_wt: return translator::translate("remove maglev tracks");
+		case narrowgauge_tram_wt:
 		case narrowgauge_wt: return translator::translate("remove narrowgauge tracks");
 		case monorail_wt: return translator::translate("remove monorails");
 		case water_wt: return translator::translate("remove channels");
@@ -3537,6 +3558,9 @@ bool tool_wayremover_t::calc_route( route_t &verbindung, player_t *player, const
 	waytype_t wt = get_waytype();
 	if (wt == tram_wt) {
 		wt = track_wt;
+	}
+	if (wt == narrowgauge_tram_wt) {
+		wt = narrowgauge_wt;
 	}
 
 	if(  start == end  ) {
@@ -4983,6 +5007,7 @@ DBG_MESSAGE("tool_halt_aux()", "building %s on square %d,%d for waytype %x", des
 					case monorail_wt:
 					case maglev_wt:
 					case narrowgauge_wt:
+					case narrowgauge_tram_wt:
 					case tram_wt:
 						old_cost = welt->get_settings().cst_multiply_station * old_desc->get_level();
 						break;
@@ -5058,6 +5083,7 @@ DBG_MESSAGE("tool_halt_aux()", "building %s on square %d,%d for waytype %x", des
 			case monorail_wt:
 			case maglev_wt:
 			case narrowgauge_wt:
+			case narrowgauge_tram_wt:
 			case tram_wt:
 				cost = welt->get_settings().cst_multiply_station * desc->get_level();
 				break;
@@ -5260,6 +5286,7 @@ char const* tool_build_station_t::get_tooltip(player_t const*player) const
 			case maglev_wt:
 			case tram_wt:
 			case narrowgauge_wt:
+			case narrowgauge_tram_wt:
 				price = welt->get_settings().cst_multiply_station * desc->get_level();
 				break;
 			case road_wt:
@@ -5446,6 +5473,7 @@ const char *tool_build_station_t::work( player_t *player, koord3d pos )
 				case monorail_wt:
 				case maglev_wt:
 				case narrowgauge_wt:
+				case narrowgauge_tram_wt:
 				case tram_wt:
 					msg = tool_build_station_t::tool_station_aux(player, pos, desc, (waytype_t)desc->get_extra(), "BF");
 					break;
@@ -5540,7 +5568,7 @@ const char* tool_build_roadsign_t::check_pos_intern(player_t *player, koord3d po
 		}
 
 		// get the sign direction
-		weg_t *weg = gr->get_weg( desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt);
+		weg_t *weg = gr->get_weg( desc->get_wtyp()!=tram_wt ? (desc->get_wtyp()!=narrowgauge_tram_wt ? desc->get_wtyp() : narrowgauge_tram_wt) : track_wt);
 		ribi_t::ribi dir = weg->get_ribi_unmasked();
 
 		// no signs on runways
@@ -5937,7 +5965,7 @@ const char *tool_build_roadsign_t::place_sign_intern( player_t *player, grund_t*
 	// search for starting ground
 	if(gr) {
 		// get the sign direction
-		weg_t *weg = gr->get_weg( desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt);
+		weg_t *weg = gr->get_weg( desc->get_wtyp()!=tram_wt ? (desc->get_wtyp()!=narrowgauge_tram_wt ? desc->get_wtyp() : narrowgauge_tram_wt) : track_wt );
 		roadsign_t *s = gr->find<signal_t>();
 		if(s==NULL) {
 			s = gr->find<roadsign_t>();
@@ -6419,6 +6447,7 @@ const char* tool_depot_t::get_tooltip(const player_t *) const
 		case monorail_wt:    price = settings.cst_depot_rail; break;
 		case maglev_wt:      price = settings.cst_depot_rail; break;
 		case narrowgauge_wt: price = settings.cst_depot_rail; break;
+		case narrowgauge_tram_wt: price = settings.cst_depot_rail; break;
 		case tram_wt:        price = settings.cst_depot_rail; break;
 		case water_wt:       price = settings.cst_depot_ship; break;
 		case air_wt:         price = settings.cst_depot_air; break;
@@ -6469,6 +6498,8 @@ const char *tool_depot_t::work( player_t *player, koord3d pos )
 		case maglev_wt:
 			return tool_depot_t::tool_depot_aux(player, pos, desc, maglev_wt, s.cst_depot_rail * desc->get_level());
 		case narrowgauge_wt:
+			return tool_depot_t::tool_depot_aux(player, pos, desc, narrowgauge_wt, s.cst_depot_rail * desc->get_level());
+		case narrowgauge_tram_wt:
 			return tool_depot_t::tool_depot_aux(player, pos, desc, narrowgauge_wt, s.cst_depot_rail * desc->get_level());
 
 		default:
@@ -9326,7 +9357,7 @@ bool tool_access_t::init(player_t *player)
 					if(halt.is_bound())
 					{
 						const grund_t* gr = welt->lookup(schedule->get_current_entry().pos);
-						if(schedule->get_waytype() == tram_wt)
+						if(schedule->get_waytype() == tram_wt || schedule->get_waytype() == narrowgauge_tram_wt)
 						{
 							const weg_t *street = gr ? gr->get_weg(road_wt) : NULL;
 							if(street && (street->get_owner() == receiving_player || street->get_owner() == NULL || street->get_owner()->allows_access_to(receiving_player->get_player_nr())))
@@ -9389,7 +9420,7 @@ bool tool_access_t::init(player_t *player)
 				if(halt.is_bound())
 				{
 					const grund_t* gr = welt->lookup(schedule->get_current_entry().pos);
-					if(schedule->get_waytype() == tram_wt)
+					if(schedule->get_waytype() == tram_wt || schedule->get_waytype() == narrowgauge_tram_wt)
 					{
 						const weg_t *street = gr ? gr->get_weg(road_wt) : NULL;
 						if(street && (street->get_owner() == receiving_player || street->get_owner() == NULL || street->get_owner()->allows_access_to(receiving_player->get_player_nr())))

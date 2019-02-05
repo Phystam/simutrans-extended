@@ -113,6 +113,7 @@ simline_t::linetype simline_t::get_linetype(const waytype_t wt)
 		case maglev_wt: return simline_t::maglevline;
 		case tram_wt: return simline_t::tramline;
 		case narrowgauge_wt: return simline_t::narrowgaugeline;
+		case narrowgauge_tram_wt: return simline_t::narrowgaugetramline;
 		case air_wt: return simline_t::airline;
 		default: return simline_t::MAX_LINE_TYPE;
 	}
@@ -129,6 +130,7 @@ void simline_t::create_schedule()
 		case simline_t::tramline:        set_schedule(new tram_schedule_t()); break;
 		case simline_t::maglevline:      set_schedule(new maglev_schedule_t()); break;
 		case simline_t::narrowgaugeline: set_schedule(new narrowgauge_schedule_t()); break;
+		case simline_t::narrowgaugetramline: set_schedule(new narrowgaugetram_schedule_t()); break;
 		default:
 			dbg->fatal( "simline_t::create_schedule()", "Cannot create default schedule!" );
 	}
@@ -149,6 +151,7 @@ void simline_t::add_convoy(convoihandle_t cnv, bool from_loading)
 		if (vehicle_t const* const v = cnv->front()) {
 			switch (v->get_desc()->get_waytype()) {
 				case tram_wt:     type = simline_t::tramline;     break;
+				case narrowgauge_tram_wt:     type = simline_t::narrowgaugetramline;     break;
 				// elevated monorail were saved with wrong coordinates for some versions.
 				// We try to recover here
 				case monorail_wt: type = simline_t::monorailline; break;

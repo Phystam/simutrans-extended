@@ -133,6 +133,7 @@ const char * money_frame_t::transport_type_values[TT_MAX] = {
 	"Maglev",
 	"Tram",
 	"Narrowgauge",
+	"NarrowgaugeTram",
 	"Air",
 	"tt_Other",
 	"Powerlines",

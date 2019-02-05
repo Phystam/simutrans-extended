@@ -156,7 +156,7 @@ roadsign_t::~roadsign_t()
 	if(  desc  ) {
 		const grund_t *gr = welt->lookup(get_pos());
 		if(gr) {
-			weg_t* weg = gr->get_weg(desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt);
+			weg_t* weg = gr->get_weg( (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_wt));
 			if(weg) {
 				player_t* owner = get_owner();
 				if(owner)
@@ -190,7 +190,7 @@ void roadsign_t::set_dir(ribi_t::ribi dir)
 
 	this->dir = dir;
 	if (!preview) {
-		weg_t *weg = welt->lookup(get_pos())->get_weg(desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt);
+		weg_t *weg = welt->lookup(get_pos())->get_weg( (desc->get_wtyp()!=tram_wt||desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_wt));
 		if(  desc->get_wtyp()!=track_wt  &&  desc->get_wtyp()!=monorail_wt  &&  desc->get_wtyp()!=maglev_wt  &&  desc->get_wtyp()!=narrowgauge_wt  ) {
 			weg->count_sign();
 		}
@@ -293,7 +293,7 @@ void roadsign_t::info(cbuffer_t & buf, bool dummy) const
 	koord3d rs_pos = rs->get_pos();
 
 	const grund_t* rs_gr3d = welt->lookup(rs_pos);
-	const weg_t* way = rs_gr3d->get_weg(desc->get_wtyp() != tram_wt ? desc->get_wtyp() : track_wt);
+	const weg_t* way = rs_gr3d->get_weg((desc->get_wtyp() != tram_wt||desc->get_wtyp() != narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_wt));
 	if (way->get_max_speed() * 2 >= speed_to_kmh(desc->get_max_speed()))
 	{
 		buf.printf("%s%s%d%s%s", translator::translate("Max. speed:"), " ", speed_to_kmh(desc->get_max_speed()), " ", "km/h");
@@ -800,13 +800,13 @@ void roadsign_t::cleanup(player_t *player)
 void roadsign_t::finish_rd()
 {
 	grund_t *gr=welt->lookup(get_pos());
-	if(  gr==NULL  ||  !gr->hat_weg(desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt)  ) {
+	if(  gr==NULL  ||  !gr->hat_weg((desc->get_wtyp()!=tram_wt||desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_wt ))  ) {
 		dbg->error("roadsign_t::finish_rd","roadsing: way/ground missing at %i,%i => ignore", get_pos().x, get_pos().y );
 	}
 	else {
 		// after loading restore directions
 		set_dir(dir);
-		gr->get_weg(desc->get_wtyp()!=tram_wt ? desc->get_wtyp() : track_wt)->count_sign();
+		gr->get_weg((desc->get_wtyp()!=tram_wt||desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_wt ))->count_sign();
 	}
 }
 

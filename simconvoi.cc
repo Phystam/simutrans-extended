@@ -973,6 +973,7 @@ route_t::route_result_t convoi_t::calc_route(koord3d start, koord3d ziel, sint32
 	case track_wt:
 	case narrowgauge_wt:
 	case tram_wt:
+	case narrowgauge_tram_wt:
 	case monorail_wt:
 	case maglev_wt:
 		rail_vehicle = (rail_vehicle_t*)front();
@@ -1470,7 +1471,7 @@ bool convoi_t::drive_to()
 	koord3d start = front()->get_pos();
 	koord3d ziel = schedule->get_current_entry().pos;
 
-	const bool check_onwards = front()->get_waytype() == road_wt || front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt;
+	const bool check_onwards = front()->get_waytype() == road_wt || front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt;
 
 	route_t::route_result_t success = calc_route(start, ziel, speed_to_kmh(get_min_top_speed()));
 
@@ -2167,7 +2168,7 @@ end_loop:
 		case ROUTE_JUST_FOUND:
 			gr = welt->lookup(get_route()->back());
 
-			if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt && gr && !gr->get_depot())
+			if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt && gr && !gr->get_depot())
 			{
 				rail_vehicle_t* rv = (rail_vehicle_t*)back();
 				rail_vehicle_t* rv_front = (rail_vehicle_t*)front();
@@ -2539,7 +2540,7 @@ void convoi_t::enter_depot(depot_t *dep)
 	// first remove reservation, if train is still on track
 	unreserve_route();
 
-	if(front()->get_waytype() == track_wt || front()->get_waytype()  == tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
+	if(front()->get_waytype() == track_wt || front()->get_waytype()  == tram_wt || front()->get_waytype()  == narrowgauge_wt || front()->get_waytype()  == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
 	{
 		rail_vehicle_t* w = (rail_vehicle_t*)front();
 		w->set_working_method(drive_by_sight);
@@ -3385,7 +3386,7 @@ void convoi_t::vorfahren()
 							book_departure_time(welt->get_ticks() + reverse_delay);
 						}
 
-						if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
+						if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
 						{
 							const rail_vehicle_t* rv = (rail_vehicle_t*)front();
 							if (rv->get_working_method() == drive_by_sight || rv->get_working_method() == time_interval || rv->get_working_method() == time_interval_with_telegraph)
@@ -3396,7 +3397,7 @@ void convoi_t::vorfahren()
 
 						reverse_order(reversable);
 
-						if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
+						if (front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
 						{
 							const rail_vehicle_t* rv = (rail_vehicle_t*)front();
 							if (rv->get_working_method() == drive_by_sight || rv->get_working_method() == time_interval || rv->get_working_method() == time_interval_with_telegraph)
@@ -3561,7 +3562,7 @@ void convoi_t::vorfahren()
 			{
 				// If a rail type vehicle is reversing in a station, reserve the entire platform.
 				const waytype_t wt = front()->get_waytype();
-				const bool rail_type = front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt;
+				const bool rail_type = front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt;
 				if(rail_type)
 				{
 					grund_t* vgr = gr;
@@ -3658,7 +3659,7 @@ void convoi_t::reverse_order(bool rev)
 	uint8 b  = vehicle_count;
 
 	working_method_t wm = drive_by_sight;
-	if(front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
+	if(front()->get_waytype() == track_wt || front()->get_waytype() == tram_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
 	{
 		rail_vehicle_t* w = (rail_vehicle_t*)front();
 		wm = w->get_working_method();
@@ -3759,7 +3760,7 @@ void convoi_t::reverse_order(bool rev)
 		(*i)->set_reversed(reversed);
 	}
 
-	if(front()->get_waytype() == track_wt || front()->get_waytype()  == tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
+	if(front()->get_waytype() == track_wt || front()->get_waytype()  == tram_wt || front()->get_waytype() == narrowgauge_tram_wt || front()->get_waytype() == maglev_wt || front()->get_waytype() == monorail_wt)
 	{
 		rail_vehicle_t* w = (rail_vehicle_t*)front();
 		w->set_working_method(wm);
@@ -5425,7 +5426,7 @@ void convoi_t::laden() //"load" (Babelfish)
 		const grund_t* gr = welt->lookup(schedule->get_current_entry().pos);
 		const weg_t *w = gr ? gr->get_weg(schedule->get_waytype()) : NULL;
 		bool tram_stop_public = false;
-		if(schedule->get_waytype() == tram_wt)
+		if(schedule->get_waytype() == tram_wt || schedule->get_waytype() == narrowgauge_tram_wt)
 		{
 			const grund_t* gr = welt->lookup(schedule->get_current_entry().pos);
 			const weg_t *street = gr ? gr->get_weg(road_wt) : NULL;
@@ -7884,6 +7885,8 @@ void convoi_t::clear_replace()
 		 return obj_t::tramdepot;
 	 case narrowgauge_wt:
 		 return obj_t::narrowgaugedepot;
+	 case narrowgauge_wt:
+		 return obj_t::narrowgaugetramdepot;
 	 case air_wt:
 		 return obj_t::airdepot;
 	 default:

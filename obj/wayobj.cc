@@ -88,7 +88,7 @@ wayobj_t::~wayobj_t()
 		grund_t *gr=welt->lookup(get_pos());
 		weg_t *weg=NULL;
 		if(gr) {
-			const waytype_t wt = (desc->get_wtyp()==tram_wt) ? track_wt : desc->get_wtyp();
+			const waytype_t wt = (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_tram_wt);
 			weg = gr->get_weg(wt);
 			if (wt == any_wt) {
 				weg_t *weg2 = welt->lookup(get_pos())->get_weg_nr(1);
@@ -269,8 +269,8 @@ void wayobj_t::finish_rd()
 {
 	// (re)set dir
 	if(dir==255) {
-		const waytype_t wt = (desc->get_wtyp()==tram_wt) ? track_wt : desc->get_wtyp();
-		weg_t *w=welt->lookup(get_pos())->get_weg(wt);
+		const waytype_t wt = (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_tram_wt);
+		tweg_t *w=welt->lookup(get_pos())->get_weg(wt);
 		if(w) {
 			dir = w->get_ribi_unmasked();
 		}
@@ -279,7 +279,7 @@ void wayobj_t::finish_rd()
 		}
 	}
 
-	const waytype_t wt = (desc->get_wtyp()==tram_wt) ? track_wt : desc->get_wtyp();
+	const waytype_t wt = (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_tram_wt);
 	const grund_t* gr = welt->lookup(get_pos());
 	weg_t *weg = gr->get_weg(wt);
 
@@ -356,7 +356,7 @@ void wayobj_t::calc_image()
 	grund_t *gr = welt->lookup(get_pos());
 	diagonal = false;
 	if(gr) {
-		const waytype_t wt = (desc->get_wtyp()==tram_wt) ? track_wt : desc->get_wtyp();
+		const waytype_t wt = (desc->get_wtyp()!=tram_wt || desc->get_wtyp()!=narrowgauge_tram_wt) ? desc->get_wtyp() : (desc->get_wtyp()==tram_wt ? track_wt : narrowgauge_tram_wt);
 		weg_t *w=gr->get_weg(wt);
 		if(!w) {
 			dbg->error("wayobj_t::calc_image()","without way at (%s)", get_pos().get_str() );

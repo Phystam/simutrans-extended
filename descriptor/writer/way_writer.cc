@@ -71,6 +71,9 @@ void way_writer_t::write_obj(FILE* outfp, obj_node_t& parent, tabfileobj_t& obj)
 	else if (wtyp == track_wt && styp == 7) {
 		wtyp = tram_wt;
 	}
+	else if (wtyp == narrowgauge_wt && styp == 7) {
+		wtyp = narrowgauge_tram_wt;
+	}
 
 	// Must use get_int64 here, as get_int is limited to the length of a *signed* 32-bit integer.
 	uint32 wear_capacity		= obj.get_int64("wear_capacity", wtyp == road_wt ? 100000000 : 4000000000);

@@ -515,6 +515,7 @@ transport_type finance_t::translate_waytype_to_tt(const waytype_t wt)
 		case maglev_wt:    return TT_MAGLEV;
 		case tram_wt:      return TT_TRAM;
 		case narrowgauge_wt: return TT_NARROWGAUGE;
+		case narrowgauge_tram_wt: return TT_NARROWGAUGETRAM;
 		case air_wt:       return TT_AIR;
 		case powerline_wt: return TT_POWERLINE;
 		case ignore_wt:

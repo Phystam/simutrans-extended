@@ -25,6 +25,8 @@ waytype_t get_waytype(const char* waytype)
 		uv8 = monorail_wt;
 	} else if (!STRICMP(waytype, "narrowgauge_track")) {
 		uv8 = narrowgauge_wt;
+	} else if (!STRICMP(waytype, "narrowgauge_tram_track")) {
+		uv8 = narrowgauge_tram_wt;
 	} else if (!STRICMP(waytype, "water")) {
 		uv8 = water_wt;
 	} else if (!STRICMP(waytype, "air")) {

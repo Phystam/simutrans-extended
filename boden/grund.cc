@@ -388,6 +388,13 @@ void grund_t::rdwr(loadsave_t *file)
 						}
 						break;
 
+				  case narrowgauge_tram_wt:
+						weg = new narrowgauge_t(file);
+						if(weg->get_desc()->get_styp()!=type_tram) {
+							weg->set_desc(way_builder_t::weg_search(narrowgauge_tram_wt,weg->get_max_speed(),0,type_tram), true);
+						}
+						break;
+
 					case water_wt:
 						// ignore old type dock ...
 						if(file->get_version()>=87000) {
@@ -663,6 +670,7 @@ void grund_t::info(cbuffer_t& buf, bool dummy) const
 				case monorail_wt: sprintf(waytype_name, "cap_monorail_track"); break;
 				case maglev_wt: sprintf(waytype_name, "cap_maglev_track"); break;
 				case narrowgauge_wt: sprintf(waytype_name, "cap_narrowgauge_track"); break;
+				case narrowgauge_tram_wt: sprintf(waytype_name, "cap_narrowgauge_tram_track"); break;
 				case road_wt:	sprintf(waytype_name, "cap_road"); break;
 				case water_wt:	sprintf(waytype_name, "cap_water_canal"); break;
 				case air_wt:	sprintf(waytype_name, "cap_taxiway/runway"); break;
@@ -2550,7 +2558,7 @@ bool grund_t::remove_everything_from_way(player_t* player, waytype_t wt, ribi_t:
 				gebaeude_t *gb = find<gebaeude_t>();
 				if (gb) {
 					waytype_t halt_wt = (waytype_t)gb->get_tile()->get_desc()->get_extra();
-					if (halt_wt == wt || (wt==track_wt && halt_wt==tram_wt) || (wt==tram_wt && halt_wt==track_wt)) {
+					if (halt_wt == wt || (wt==track_wt && halt_wt==tramy_wt) || (wt==tram_wt && halt_wt==track_wt)) {
 						remove_halt = true;
 					}
 				}

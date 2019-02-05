@@ -618,6 +618,7 @@ obj_desc_t *vehicle_reader_t::read_node(FILE *fp, obj_node_info_t &node)
 		case monorail_wt:
 		case maglev_wt:
 		case narrowgauge_wt:
+		case narrowgauge_tram_wt:
 		case track_wt:
 			desc->min_loading_time = desc->max_loading_time = 4000;
 			break;

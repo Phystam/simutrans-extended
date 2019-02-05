@@ -103,6 +103,10 @@ void halt_list_stats_t::draw(scr_coord offset)
 			display_color_img(skinverwaltung_t::narrowgaugehaltsymbol->get_image_id(0), pos.x+left, pos_y, 0, false, true);
 			left += 23;
 		}
+		if (halttype & haltestelle_t::narrowgaugetramstop && skinverwaltung_t::narrowgaugetramhaltsymbol) {
+			display_color_img(skinverwaltung_t::narrowgaugetramhaltsymbol->get_image_id(0), pos.x+left, pos_y, 0, false, true);
+			left += 23;
+		}
 
 		// now what do we accept here?
 		pos_y = pos.y+offset.y+14;

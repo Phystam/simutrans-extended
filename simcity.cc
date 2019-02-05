@@ -1008,6 +1008,9 @@ class monument_placefinder_t : public placefinder_t {
 				if (gr->hat_weg(tram_wt)) {
 					return false;
 				}
+				if (gr->hat_weg(narrowgauge_tram_wt)) {
+					return false;
+				}
 			}
 
 			return true;

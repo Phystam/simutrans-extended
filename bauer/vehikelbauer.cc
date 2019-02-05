@@ -65,7 +65,9 @@ vehicle_t* vehicle_builder_t::build(koord3d k, player_t* player, convoi_t* cnv, 
 		case water_wt:    v = new water_vehicle_t(         k, vb, player, cnv); break;
 		case air_wt:      v = new air_vehicle_t(       k, vb, player, cnv); break;
 		case maglev_wt:   v = new maglev_rail_vehicle_t(  k, vb, player, cnv); break;
-		case narrowgauge_wt:v = new narrowgauge_rail_vehicle_t(k, vb, player, cnv); break;
+
+	  case narrowgauge_wt:
+	  case narrowgauge_tram_wt: v = new narrowgauge_rail_vehicle_t(k, vb, player, cnv); break;
 
 		default:
 			dbg->fatal("vehicle_builder_t::build()", "cannot built a vehicle with waytype %i", vb->get_waytype());

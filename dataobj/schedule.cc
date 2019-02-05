@@ -75,6 +75,10 @@ bool schedule_t::is_stop_allowed(const grund_t *gr) const
 			// tram rails are track internally
 			ok = gr->hat_weg(track_wt);
 		}
+		else if(  my_waytype==narrowgauge_tram_wt  ) {
+			// tram rails are track internally
+			ok = gr->hat_weg(narrowgauge_wt);
+		}
 	}
 
 	if(  ok  ) {

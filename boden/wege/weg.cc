@@ -102,6 +102,7 @@ weg_t* weg_t::alloc(waytype_t wt)
 		case maglev_wt:
 			weg = new maglev_t();
 			break;
+	  case narrowgauge_tram_track:
 		case narrowgauge_wt:
 			weg = new narrowgauge_t();
 			break;
@@ -132,6 +133,7 @@ const char *weg_t::waytype_to_string(waytype_t wt)
 		case monorail_wt: return "monorail_track";
 		case maglev_wt: return "maglev_track";
 		case narrowgauge_wt: return "narrowgauge_track";
+		case narrowgauge_tram_wt: return "narrowgauge_tram_track";
 		case road_wt:	return "road";
 		case water_wt:	return "water";
 		case air_wt:	return "air";
