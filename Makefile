@@ -359,6 +359,7 @@ SOURCES += gui/vehicle_class_manager.cc
 SOURCES += gui/welt.cc
 SOURCES += gui/tool_selector
 SOURCES += gui/vehicle_manager.cc
+SOURCES += gui/vehicle_manager_gui_list_info.cc
 SOURCES += network/checksum.cc
 SOURCES += network/memory_rw.cc
 SOURCES += network/network.cc

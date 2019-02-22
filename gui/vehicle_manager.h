@@ -269,7 +269,7 @@ public:
 	void draw_general_information(const scr_coord& pos);
 	void draw_maintenance_information(const scr_coord& pos);
 
-	void vehicle_manager_t::display_tab_objects();
+	void display_tab_objects();
 
 	void update_desc_text_input_display();
 	void update_veh_text_input_display();

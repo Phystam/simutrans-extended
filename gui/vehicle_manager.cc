@@ -14,6 +14,7 @@
 #include "schedule_list.h"
 #include "times_history.h"
 #include "vehicle_manager.h"
+#include "vehicle_manager_gui_list_info.h"
 #include "components/gui_convoiinfo.h"
 #include "line_item.h"
 
