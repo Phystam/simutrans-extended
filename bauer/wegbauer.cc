@@ -1478,7 +1478,7 @@ DBG_DEBUG("insert to close","(%i,%i,%i)  f=%i",gr->get_pos().x,gr->get_pos().y,g
 		next_gr.clear();
 
 		// only one direction allowed ...
-		const ribi_t::ribi straight_dir = tmp->parent!=NULL ? ribi_type(gr->get_pos().get_2d()-tmp->parent->gr->get_pos().get_2d()) : (ribi_t::ribi)ribi_t::all;
+		const ribi_t::ribi straight_dir = tmp->parent!=NULL ? ribi_type(gr->get_pos()-tmp->parent->gr->get_pos()) : (ribi_t::ribi)ribi_t::all;
 
 		// test directions
 		// .. use only those that are allowed by current slope
@@ -1551,7 +1551,7 @@ DBG_DEBUG("insert to close","(%i,%i,%i)  f=%i",gr->get_pos().x,gr->get_pos().y,g
 			// if not there, then we could just take the last
 			uint8 current_dir;
 			if(tmp->parent!=NULL) {
-				current_dir = ribi_type( tmp->parent->gr->get_pos().get_2d(), to->get_pos().get_2d() );
+				current_dir = ribi_type( tmp->parent->gr->get_pos(), to->get_pos() );
 				if(tmp->dir!=current_dir) {
 					new_g += s.way_count_curve;
 					if(tmp->parent->dir!=tmp->dir) {
@@ -1576,7 +1576,7 @@ DBG_DEBUG("insert to close","(%i,%i,%i)  f=%i",gr->get_pos().x,gr->get_pos().y,g
 				}
 			}
 			else {
-				 current_dir = ribi_type( gr->get_pos().get_2d(), to->get_pos().get_2d() );
+				 current_dir = ribi_type( gr->get_pos(), to->get_pos() );
 			}
 
 			const uint32 new_dist = calc_distance( to->get_pos(), mini, maxi );
@@ -2377,37 +2377,39 @@ bool way_builder_t::build_tunnel_tile()
 			tunnel_t *tunnel = gr->find<tunnel_t>();
 			assert( tunnel );
 			// take the faster way
-			if(  !keep_existing_faster_ways  ||  (tunnel->get_desc()->get_topspeed() < tunnel_desc->get_topspeed())  ) {
+			if (!keep_existing_faster_ways || (tunnel->get_desc()->get_topspeed() < tunnel_desc->get_topspeed())) {
 				tunnel->set_desc(tunnel_desc);
 				weg_t *weg = gr->get_weg(tunnel_desc->get_waytype());
-				weg->set_desc(desc);
-				const slope_t::type hang = gr->get_weg_hang();
-				if(hang != slope_t::flat)
+				if (weg)
 				{
-					const uint slope_height = (hang & 7) ? 1 : 2;
-					if(slope_height == 1)
+					weg->set_desc(desc);
+					const slope_t::type hang = gr->get_weg_hang();
+					if (hang != slope_t::flat)
 					{
-						weg->set_max_speed(min(desc->get_topspeed_gradient_1(), tunnel_desc->get_topspeed_gradient_1()));
+						const uint slope_height = (hang & 7) ? 1 : 2;
+						if (slope_height == 1)
+						{
+							weg->set_max_speed(min(desc->get_topspeed_gradient_1(), tunnel_desc->get_topspeed_gradient_1()));
+						}
+						else
+						{
+							weg->set_max_speed(min(desc->get_topspeed_gradient_2(), tunnel_desc->get_topspeed_gradient_2()));
+						}
 					}
 					else
 					{
-						weg->set_max_speed(min(desc->get_topspeed_gradient_2(), tunnel_desc->get_topspeed_gradient_2()));
+						weg->set_max_speed(min(desc->get_topspeed(), tunnel_desc->get_topspeed()));
 					}
+					weg->set_max_axle_load(tunnel_desc->get_max_axle_load());
+					// respect max speed of catenary
+					wayobj_t const* const wo = gr->get_wayobj(tunnel_desc->get_waytype());
+					if (wo  &&  wo->get_desc()->get_topspeed() < weg->get_max_speed()) {
+						weg->set_max_speed(wo->get_desc()->get_topspeed());
+					}
+					gr->calc_image();
+					// respect speed limit of crossing
+					weg->count_sign();
 				}
-				else
-				{
-					weg->set_max_speed(min(desc->get_topspeed(), tunnel_desc->get_topspeed()));
-				}
-				weg->set_max_axle_load(tunnel_desc->get_max_axle_load());
-				// respect max speed of catenary
-				wayobj_t const* const wo = gr->get_wayobj(tunnel_desc->get_waytype());
-				if (wo  &&  wo->get_desc()->get_topspeed() < weg->get_max_speed()) {
-					weg->set_max_speed( wo->get_desc()->get_topspeed() );
-				}
-				gr->calc_image();
-				// respect speed limit of crossing
-				weg->count_sign();
-
 				cost -= tunnel_desc->get_value();
 			}
 		}
