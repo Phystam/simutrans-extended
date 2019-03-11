@@ -4557,6 +4557,11 @@ stadt_t *karte_t::find_nearest_city(const koord k) const
 
 stadt_t *karte_t::get_city(const koord pos) const
 {
+	planquadrat_t* plan = access(pos);
+	stadt_t* city = NULL;
+	city = plan->get_city();
+	return city;
+	
 	stadt_t* city = NULL;
 
 	if(is_within_limits(pos)) 
