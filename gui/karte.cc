@@ -1710,39 +1710,86 @@ void reliefkarte_t::draw(scr_coord pos)
 	// draw city limit
 	if(  mode & MAP_CITYLIMIT  ) {
 
-		// for all cities
-		FOR(  weighted_vector_tpl<stadt_t*>,  const stadt,  welt->get_cities()  ) {
-			koord k[4];
-			k[0] = stadt->get_linksoben(); // top left
-			k[2] = stadt->get_rechtsunten(); // bottom right
-			k[1] =  koord(k[0].x, k[2].y); // bottom left
-			k[3] =  koord(k[2].x, k[0].y); // top right
+		// for all touching tiles
+		for(sint16 x=0;welt->is_within_limits_x(x);x++){
+			for(sint16 y=0;welt->is_within_limits_y(y);y++){
+				koord k[4];
+				scr_coord c[4];
+				//center tile
+				planquadrat_t* plan_center=welt->access(x,y);
+				//see right tile
+				planquadrat_t* plan_right=welt->is_within_limits_x(x+1) ? welt->access(x+1,y) : NULL;
+				planquadrat_t* plan_bottom=welt->is_within_limits_y(y+1) ? welt->access(x,y+1) : NULL;
+				k[0]=koord(x+1,y);
+				k[1]=koord(x+1,y+1);
+				k[2]=koord(x,y+1);	
+				k[3]=koord(x+1,y+1);
+							
+				if(plan_right && plan_right->get_city()!=plan_center->get_city()){//the right tile is different city
+					//let's draw
+					scr_coord adjustment = pos;
+					if (isometric && zoom_out == 1) {
+						// Correct adjustment is to the right (positive x) by
+						// zoom_in * sqrt(2) * 1/2.  Approximate sqrt(2)/2 by 7/10,
+						// which is good enough up to at least 16x zoom-in.
+						adjustment += scr_coord( zoom_in * 7 / 10, 0);
+					}
+					c[0] = karte_to_screen(k[0]) + adjustment;
+					c[1] = karte_to_screen(k[1]) + adjustment;
 
-			// Ones on bottom and right must have 1 added to put dotted line "past" them
-			k[1] += koord(0, 1); // bottom left
-			k[2] += koord(1, 1); // bottom right
-			k[3] += koord(1, 0); // top right
+					display_direct_line_dotted( c[0].x, c[0].y, c[1].x, c[1].y, 3, 3, COL_ORANGE );
+				}
 
-			// calculate and draw the rotated coordinates
-			scr_coord adjustment = pos;
-			if (isometric && zoom_out == 1) {
-				// Correct adjustment is to the right (positive x) by
-				// zoom_in * sqrt(2) * 1/2.  Approximate sqrt(2)/2 by 7/10,
-				// which is good enough up to at least 16x zoom-in.
-				adjustment += scr_coord( zoom_in * 7 / 10, 0);
+				if(plan_bottom && plan_bottom->get_city()!=plan_center->get_city()){//the bottom tile is different city
+					//let's draw
+					scr_coord adjustment = pos;
+					if (isometric && zoom_out == 1) {
+						// Correct adjustment is to the bottom (positive x) by
+						// zoom_in * sqrt(2) * 1/2.  Approximate sqrt(2)/2 by 7/10,
+						// which is good enough up to at least 16x zoom-in.
+						adjustment += scr_coord( zoom_in * 7 / 10, 0);
+					}
+					c[2] = karte_to_screen(k[2]) + adjustment;
+					c[3] = karte_to_screen(k[3]) + adjustment;
+
+					display_direct_line_dotted( c[2].x, c[2].y, c[3].x, c[3].y, 3, 3, COL_ORANGE );
+				}
 			}
-
-			scr_coord c[4];
-			c[0] = karte_to_screen(k[0]) + adjustment;
-			c[1] = karte_to_screen(k[1]) + adjustment;
-			c[2] = karte_to_screen(k[2]) + adjustment;
-			c[3] = karte_to_screen(k[3]) + adjustment;
-
-			display_direct_line_dotted( c[0].x, c[0].y, c[1].x, c[1].y, 3, 3, COL_ORANGE );
-			display_direct_line_dotted( c[1].x, c[1].y, c[2].x, c[2].y, 3, 3, COL_ORANGE );
-			display_direct_line_dotted( c[2].x, c[2].y, c[3].x, c[3].y, 3, 3, COL_ORANGE );
-			display_direct_line_dotted( c[3].x, c[3].y, c[0].x, c[0].y, 3, 3, COL_ORANGE );
 		}
+					
+				
+		// FOR(  weighted_vector_tpl<stadt_t*>,  const stadt,  welt->get_cities()  ) {
+		// 	koord k[4];
+		// 	k[0] = stadt->get_linksoben(); // top left
+		// 	k[2] = stadt->get_rechtsunten(); // bottom right
+		// 	k[1] =  koord(k[0].x, k[2].y); // bottom left
+		// 	k[3] =  koord(k[2].x, k[0].y); // top right
+
+		// 	// Ones on bottom and right must have 1 added to put dotted line "past" them
+		// 	k[1] += koord(0, 1); // bottom left
+		// 	k[2] += koord(1, 1); // bottom right
+		// 	k[3] += koord(1, 0); // top right
+
+		// 	// calculate and draw the rotated coordinates
+		// 	scr_coord adjustment = pos;
+		// 	if (isometric && zoom_out == 1) {
+		// 		// Correct adjustment is to the right (positive x) by
+		// 		// zoom_in * sqrt(2) * 1/2.  Approximate sqrt(2)/2 by 7/10,
+		// 		// which is good enough up to at least 16x zoom-in.
+		// 		adjustment += scr_coord( zoom_in * 7 / 10, 0);
+		// 	}
+
+		// 	scr_coord c[4];
+		// 	c[0] = karte_to_screen(k[0]) + adjustment;
+		// 	c[1] = karte_to_screen(k[1]) + adjustment;
+		// 	c[2] = karte_to_screen(k[2]) + adjustment;
+		// 	c[3] = karte_to_screen(k[3]) + adjustment;
+
+		// 	display_direct_line_dotted( c[0].x, c[0].y, c[1].x, c[1].y, 3, 3, COL_ORANGE );
+		// 	display_direct_line_dotted( c[1].x, c[1].y, c[2].x, c[2].y, 3, 3, COL_ORANGE );
+		// 	display_direct_line_dotted( c[2].x, c[2].y, c[3].x, c[3].y, 3, 3, COL_ORANGE );
+		// 	display_direct_line_dotted( c[3].x, c[3].y, c[0].x, c[0].y, 3, 3, COL_ORANGE );
+		// }
 	}
 
 	// since we do iterate the tourist info list, this must be done here

@@ -4562,33 +4562,33 @@ stadt_t *karte_t::get_city(const koord pos) const
 	city = plan->get_city();
 	return city;
 	
-	stadt_t* city = NULL;
+	// stadt_t* city = NULL;
 
-	if(is_within_limits(pos)) 
-	{
-		int cities = 0;
-		FOR(weighted_vector_tpl<stadt_t*>, const c, stadt) 
-		{
-			if(c->is_within_city_limits(pos))
-			{
-				cities ++;
-				if(cities > 1)
-				{
-					// We have a city within a city. Make sure to return the *inner* city.
-					if(city->is_within_city_limits(c->get_pos()))
-					{
-						// "c" is the inner city: c's town hall is within the city limits of "city".
-						city = c;
-					}
-				}
-				else
-				{
-					city = c;
-				}
-			}
-		}
-	}
-	return city;
+	// if(is_within_limits(pos)) 
+	// {
+	// 	int cities = 0;
+	// 	FOR(weighted_vector_tpl<stadt_t*>, const c, stadt) 
+	// 	{
+	// 		if(c->is_within_city_limits(pos))
+	// 		{
+	// 			cities ++;
+	// 			if(cities > 1)
+	// 			{
+	// 				// We have a city within a city. Make sure to return the *inner* city.
+	// 				if(city->is_within_city_limits(c->get_pos()))
+	// 				{
+	// 					// "c" is the inner city: c's town hall is within the city limits of "city".
+	// 					city = c;
+	// 				}
+	// 			}
+	// 			else
+	// 			{
+	// 				city = c;
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// return city;
 }
 
 // -------- Verwaltung von synchronen Objekten ------------------

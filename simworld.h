@@ -1985,6 +1985,17 @@ public:
 	inline bool is_within_limits(koord k) const { return is_within_limits(k.x, k.y); }
 
 	/**
+	 * @return True if the specified x/y coodinate is inside the world tiles limits.
+	 */
+	inline bool is_within_limits_x(sint16 x) const {
+		return (x|(cached_size.x-x))>=0;
+	}
+
+	inline bool is_within_limits_y(sint16 y) const {
+		return (y|(cached_size.y-y))>=0;
+	}
+																													
+	/**
 	 * @return True if the specified coordinate is inside the world height grid limits, false otherwise.
 	 * @param x X coordinate.
 	 * @param y Y coordinate.
