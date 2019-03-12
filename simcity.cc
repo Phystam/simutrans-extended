@@ -1180,121 +1180,15 @@ bool stadt_t::take_citybuilding_from(stadt_t* old_city, gebaeude_t* gb)
 }
 #endif
 
-/**
- * Expand the city in a particular direction
- * North, south, east, and west are the only choices
-Return true if it is OK for the city to expand to these borders,
- * and false if it is not OK
- *
- * It is not OK if it would overlap another city
- */
-bool stadt_t::enlarge_city_borders(ribi_t::ribi direction) {
-	koord new_lo, new_ur;
-	koord test_first, test_stop, test_increment;
-	switch (direction) {
-		case ribi_t::north:
-			// North
-			new_lo = lo + koord(0, -1);
-			new_ur = ur;
-			test_first = koord(new_lo.x, new_lo.y);
-			test_stop = koord(new_ur.x + 1, new_lo.y);
-			test_increment = koord(1,0);
-			break;
-		case ribi_t::south:
-			// South
-			new_lo = lo;
-			new_ur = ur + koord(0, 1);
-			test_first = koord(new_lo.x, new_ur.y);
-			test_stop = koord(new_ur.x + 1, new_ur.y);
-			test_increment = koord(1,0);
-			break;
-		case ribi_t::east:
-			// East
-			new_lo = lo;
-			new_ur = ur + koord(1, 0);
-			test_first = koord(new_ur.x, new_lo.y);
-			test_stop = koord(new_ur.x, new_ur.y + 1);
-			test_increment = koord(0,1);
-			break;
-		case ribi_t::west:
-			// West
-			new_lo = lo + koord(-1, 0);
-			new_ur = ur;
-			test_first = koord(new_lo.x, new_lo.y);
-			test_stop = koord(new_lo.x, new_ur.y + 1);
-			test_increment = koord(0,1);
-			break;
-		default:
-			// This is not allowed
-			return false;
-			break;
-	}
-	if (  !welt->is_within_limits(new_lo) || !welt->is_within_limits(new_ur)  ) {
-		// Expansion would take us outside the map
-		// Note that due to the square nature of the limits, we only need to test
-		// opposite corners
-		return false;
-	}
-	// Now check a row along that side to see if it's safe to expand
-	for (koord test = test_first; test != test_stop; test = test + test_increment) {
-		stadt_t* found_city = welt->access(test)->get_city();
-		if (found_city && found_city != this) {
-			// We'd be expanding into another city.  Don't!
-			return false;
-		}
-	}
-	// OK, it's safe to expand in this direction.  Do so.
-	lo = new_lo;
-	ur = new_ur;
-	// Mark the tiles as owned by this city.
-	for (koord test = test_first; test != test_stop; test = test + test_increment) {
-		planquadrat_t* pl = welt->access(test);
-		pl->set_city(this);
-	}
-	return true;
-}
-
-/**
- * Enlarge city limits.
- * Attempts to expand by one tile on one (random) side.
- * Refuses to expand off the map or into another city.
- * Returns false in the case of failure to expand.
- */
-bool stadt_t::enlarge_city_borders() {
-	// First, pick a direction, randomly.
-	int offset_i = simrand(4, "stadt_t::enlarge_city_borders()");
-	// We will try all four directions if necessary,
-	// but start with a random choice.
-	for (int i = 0; i < 4 ; i++) {
-		ribi_t::ribi direction;
-		switch (  (i + offset_i) % 4 ) {
-			case 0:
-				direction = ribi_t::north;
-				break;
-			case 1:
-			default:
-				direction = ribi_t::south;
-				break;
-			case 2:
-				direction = ribi_t::east;
-				break;
-			case 3:
-				direction = ribi_t::west;
-				break;
-		}
-		if (enlarge_city_borders(direction)) {
-			return true;
-		}
-		// otherwise try the next direction
-	}
-	// no directions worked
-	return false;
-}
-
-
 bool stadt_t::is_within_city_limits(koord k) const
 {
-	return lo.x <= k.x  &&  ur.x >= k.x  &&  lo.y <= k.y  &&  ur.y >= k.y;
+	planquadrat_t* plan = welt->access(k);
+	if(plan->get_city()==this){
+		return true;
+	}else{
+		return false;
+	}
+	//	return lo.x <= k.x  &&  ur.x >= k.x  &&  lo.y <= k.y  &&  ur.y >= k.y;
 }
 
 
@@ -1304,6 +1198,7 @@ void stadt_t::check_city_tiles(bool del)
 	// lo = NW corner
 	// x = W - E
 	// y = N - S
+	return;
 	const sint16 limit_west = lo.x;
 	const sint16 limit_east = ur.x;
 	const sint16 limit_north = lo.y;
@@ -1340,6 +1235,7 @@ void stadt_t::check_city_tiles(bool del)
  */
 void stadt_t::reset_city_borders()
 {
+	return;
 	// Unmark all city tiles
 	check_city_tiles(true);
 
@@ -4859,7 +4755,6 @@ bool stadt_t::build_bridge(grund_t* bd, ribi_t::ribi direction, bool map_generat
 			}
 		} else {
 			// not part of a city, see if we can expand
-			expanded_successfully = enlarge_city_borders(direction);
 		}
 		if (!expanded_successfully) {
 			// If we didn't expand this far, don't expand further
@@ -5233,70 +5128,56 @@ void stadt_t::build(bool new_town, bool map_generation)
 		return;
 	}
 
-	int num_enlarge_tries = 4;
-	do {
-
-		// firstly, determine all potential candidate coordinates
-		vector_tpl<koord> candidates( (ur.x - lo.x + 1) * (ur.y - lo.y + 1) );
-		for(  sint16 j=lo.y;  j<=ur.y;  ++j  ) {
-			for(  sint16 i=lo.x;  i<=ur.x;  ++i  ) {
-				const koord k(i, j);
-				// do not build on any border tile
-				if(  !welt->is_within_limits( k+koord(1,1) )  ||  k.x<=0  ||  k.y<=0  ) {
-					continue;
-				}
-
-				// checks only make sense on empty ground
-				const grund_t *const gr = welt->lookup_kartenboden(k);
-				if(  gr==NULL  ||  !gr->ist_natur()  ) {
-					continue;
-				}
-
-				// a potential candidate coordinate
-				candidates.append(k);
+	// firstly, determine all potential candidate coordinates
+	vector_tpl<koord> candidates;
+	for(  sint16 i=0;  welt->is_within_limits_x(i);  ++i  ) {
+		for(  sint16 j=0; welt->is_within_limits_y(j);  ++j  ) {
+			const koord k(i, j);
+			//check if this tile is in this city
+			if( welt->access(k)->get_city()!=this){
+				continue;
 			}
+			
+			// checks only make sense on empty ground
+			const grund_t *const gr = welt->lookup_kartenboden(k);
+			if(  gr==NULL  ||  !gr->ist_natur()  ) {
+				continue;
+			}
+			
+			// a potential candidate coordinate
+			candidates.append(k);
 		}
+	}
 
-		// loop until all candidates are exhausted or until we find a suitable location to build road or city building
-		while(  candidates.get_count()>0  ) {
-			const uint32 idx = simrand( candidates.get_count(), "void stadt_t::build" );
-			const koord k = candidates[idx];
-
-			if (maybe_build_road(k, map_generation)) {
-				INT_CHECK("simcity 5095");
-				return;
-			}
-			// not good for road => test for house
-
-			// we can stop after we have found a positive rule
-			best_haus.reset(k);
-			const uint32 num_house_rules = house_rules.get_count();
-			uint32 offset = simrand(num_house_rules, "void stadt_t::build");	// start with random rule
-			for (uint32 i = 0; i < num_house_rules  &&  !best_haus.found(); i++) {
-				uint32 rule = ( i+offset ) % num_house_rules;
-				bewerte_haus(k, 8 + house_rules[rule]->distribution_weight, *house_rules[rule]);
-			}
-			// one rule applied?
-			if (best_haus.found()) {
-				build_city_building(best_haus.get_pos(), new_town, map_generation);
-				INT_CHECK("simcity 5192");
-				return;
-			}
-
-			candidates.remove_at(idx, false);
+	// loop until all candidates are exhausted or until we find a suitable location to build road or city building
+	while(  candidates.get_count()>0  ) {
+		const uint32 idx = simrand( candidates.get_count(), "void stadt_t::build" );
+		const koord k = candidates[idx];
+		
+		if (maybe_build_road(k, map_generation)) {
+			INT_CHECK("simcity 5095");
+			return;
 		}
-		// Oooh.  We tried every candidate location and we couldn't build.
-		// (Admittedly, this may be because percentage-distribution_weight rules told us not to.)
-		// Anyway, if this happened, enlarge the city limits and try again.
-		bool could_enlarge = enlarge_city_borders();
-		if (!could_enlarge) {
-			// Oh boy.  It's not possible to enlarge.  Seriously?
-			// I guess we'd better try merging this city into a neighbor (not implemented yet).
-			num_enlarge_tries = 0;
-		} else {
-			num_enlarge_tries--;
+		// not good for road => test for house
+		
+		// we can stop after we have found a positive rule
+		best_haus.reset(k);
+		const uint32 num_house_rules = house_rules.get_count();
+		uint32 offset = simrand(num_house_rules, "void stadt_t::build");	// start with random rule
+		for (uint32 i = 0; i < num_house_rules  &&  !best_haus.found(); i++) {
+			uint32 rule = ( i+offset ) % num_house_rules;
+			bewerte_haus(k, 8 + house_rules[rule]->distribution_weight, *house_rules[rule]);
 		}
-	} while (num_enlarge_tries > 0);
+		// one rule applied?
+		if (best_haus.found()) {
+			build_city_building(best_haus.get_pos(), new_town, map_generation);
+			INT_CHECK("simcity 5192");
+			return;
+		}
+		
+		candidates.remove_at(idx, false);
+	}
+	
 	return;
 }
 

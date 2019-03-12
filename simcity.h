@@ -356,17 +356,6 @@ public:
 
 private:
 
-	/**
-	 * Enlarges city borders (after being unable to build a building, before trying again)
-	 * Returns false if there are other cities on all four sides
-	 */
-	bool enlarge_city_borders();
-	/**
-	 * Enlarges city borders in a particular direction (N,S,E, or W)
-	 * Returns false if it can't
-	 */
-	bool enlarge_city_borders(ribi_t::ribi direction);
-
 	// calculates the growth rate for next growth_interval using all the different indicators
 	void calc_growth();
 

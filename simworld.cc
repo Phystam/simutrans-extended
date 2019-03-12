@@ -741,7 +741,34 @@ bool karte_t::remove_city(stadt_t *s)
 	return true;
 }
 
+stadt_t* karte_t::best_city_for_ground_at(koord k){
+	//city list
+	uint32 nearest_city_distance=99999;
+	stadt_t* best_city=NULL;
+	FOR(weighted_vector_tpl<stadt_t*>, const city, stadt){
+		uint32 distance = shortest_distance(k,city->get_pos());
+		if(nearest_city_distance>distance){
+			nearest_city_distance=distance;
+			best_city=city;
+		}
+	}
+	return best_city;
+}
 
+void karte_t::calc_city_area(){
+	for(sint16 x=0;is_within_limits_x(x);x++){
+		for(sint16 y=0;is_within_limits_y(y);y++){
+			koord k=koord(x,y);
+			stadt_t* best_city=NULL;
+			if( get_climate(k)!=water_climate ){
+				best_city=best_city_for_ground_at(k);
+			}
+			planquadrat_t* plan=access(k);
+			plan->set_city(best_city);
+		}
+	}
+	return;
+}
 // just allocates space;
 void karte_t::init_tiles()
 {
@@ -1008,7 +1035,7 @@ void karte_t::distribute_cities(settings_t const * const sets, sint16 old_x, sin
 #ifdef DEBUG
 		dbg->message("karte_t::distribute_groundobjs_cities()", "took %lu ms for all towns", dr_time() - tbegin);
 #endif
-
+		calc_city_area();
 		uint32 game_start = current_month;
 		// townhalls available since?
 		FOR(vector_tpl<building_desc_t const*>, const desc, *hausbauer_t::get_list(building_desc_t::townhall)) {
@@ -4556,39 +4583,34 @@ stadt_t *karte_t::find_nearest_city(const koord k) const
 
 
 stadt_t *karte_t::get_city(const koord pos) const
-{
-	planquadrat_t* plan = access(pos);
+{	
 	stadt_t* city = NULL;
-	city = plan->get_city();
-	return city;
-	
-	// stadt_t* city = NULL;
 
-	// if(is_within_limits(pos)) 
-	// {
-	// 	int cities = 0;
-	// 	FOR(weighted_vector_tpl<stadt_t*>, const c, stadt) 
-	// 	{
-	// 		if(c->is_within_city_limits(pos))
-	// 		{
-	// 			cities ++;
-	// 			if(cities > 1)
-	// 			{
-	// 				// We have a city within a city. Make sure to return the *inner* city.
-	// 				if(city->is_within_city_limits(c->get_pos()))
-	// 				{
-	// 					// "c" is the inner city: c's town hall is within the city limits of "city".
-	// 					city = c;
-	// 				}
-	// 			}
-	// 			else
-	// 			{
-	// 				city = c;
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// return city;
+	if(is_within_limits(pos)) 
+	{
+		int cities = 0;
+		FOR(weighted_vector_tpl<stadt_t*>, const c, stadt) 
+		{
+			if(c->is_within_city_limits(pos))
+			{
+				cities ++;
+				if(cities > 1)
+				{
+					// We have a city within a city. Make sure to return the *inner* city.
+					if(city->is_within_city_limits(c->get_pos()))
+					{
+						// "c" is the inner city: c's town hall is within the city limits of "city".
+						city = c;
+					}
+				}
+				else
+				{
+					city = c;
+				}
+			}
+		}
+	}
+	return city;
 }
 
 // -------- Verwaltung von synchronen Objekten ------------------

@@ -2316,6 +2316,13 @@ public:
 	 */
 	bool remove_city(stadt_t *s);
 
+	/**
+	 * determine city borders
+	 * @author Phystam
+	 */
+	stadt_t* best_city_for_ground_at(koord k);
+	void calc_city_area();
+	
 	/* tourist attraction list */
 	void add_attraction(gebaeude_t *gb);
 	void remove_attraction(gebaeude_t *gb);

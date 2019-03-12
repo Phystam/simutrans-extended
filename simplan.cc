@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Hansjörg Malthaner
+ * Copyright (c) 1997 - 2001 Hansjî’šg Malthaner
  *
  * This file is part of the Simutrans project under the artistic license.
  * (see license.txt)
@@ -13,6 +13,7 @@
 #include "simplan.h"
 #include "simworld.h"
 #include "simhalt.h"
+#include "simcity.h"
 #include "player/simplay.h"
 #include "simconst.h"
 #include "macros.h"
@@ -34,8 +35,7 @@
 
 
 karte_ptr_t planquadrat_t::welt;
-
-
+class stadt_t;
 void swap(planquadrat_t& a, planquadrat_t& b)
 {
 	sim::swap(a.halt_list, b.halt_list);
@@ -206,7 +206,7 @@ void planquadrat_t::kartenboden_setzen(grund_t *bd)
 
 /**
  * replaces the map solid ground (or water) and deletes the old one
- * @author Hansjörg Malthaner
+ * @author Hansjî’šg Malthaner
  */
 void planquadrat_t::boden_ersetzen(grund_t *alt, grund_t *neu)
 {
@@ -353,6 +353,25 @@ void planquadrat_t::rdwr(loadsave_t *file, koord pos )
 			}
 		}
 
+	}
+	if(file->get_extended_version() >=15 ){
+		//saves the city pointer
+		if(file->is_saving()){
+			sint32 x,y;
+			x=get_city()->get_pos().x;
+			y=get_city()->get_pos().y;
+			std::cout<<"x="<<x<<" ,y="<<y<<std::endl;
+			file->rdwr_long(x);//city position
+			file->rdwr_long(y);
+		}
+		else{ //Loading
+			sint32 x,y;
+			file->rdwr_long(x);
+			file->rdwr_long(y);
+			//which city?
+			koord k(x,y);
+			city=welt->get_city(k);
+		}
 	}
 }
 
