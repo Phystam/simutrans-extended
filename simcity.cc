@@ -1236,54 +1236,6 @@ void stadt_t::check_city_tiles(bool del)
 void stadt_t::reset_city_borders()
 {
 	return;
-	// Unmark all city tiles
-	check_city_tiles(true);
-
-	koord new_lo = pos;
-	koord new_ur = pos;
-	koord const& thr = get_townhall_road();
-	// often thr is still (0,0) and corrupts this check.
-	if (thr.x && thr.y)
-	{
-		if (new_lo.x > thr.x) {
-			new_lo.x = thr.x;
-		}
-		if (new_lo.y > thr.y) {
-			new_lo.y = thr.y;
-		}
-		if (new_ur.x < thr.x) {
-			new_ur.x = thr.x;
-		}
-		if (new_ur.y < thr.y) {
-			new_ur.y = thr.y;
-		}
-	}
-
-	for (
-			weighted_vector_tpl<gebaeude_t*>::const_iterator i = buildings.begin();
-			i != buildings.end(); ++i) {
-		gebaeude_t* gb = *i;
-		if (gb->get_tile()->get_desc()->get_type() != building_desc_t::headquarters) {
-			// Not an HQ
-			koord gb_pos = gb->get_pos().get_2d();
-			if (new_lo.x > gb_pos.x) {
-				new_lo.x = gb_pos.x;
-			}
-			if (new_lo.y > gb_pos.y) {
-				new_lo.y = gb_pos.y;
-			}
-			if (new_ur.x < gb_pos.x) {
-				new_ur.x = gb_pos.x;
-			}
-			if (new_ur.y < gb_pos.y) {
-				new_ur.y = gb_pos.y;
-			}
-		}
-	}
-	lo = new_lo;
-	ur = new_ur;
-	// Remark all city tiles
-	check_city_tiles(false);
 }
 
 stadt_t::~stadt_t()
@@ -2130,6 +2082,30 @@ void stadt_t::rdwr(loadsave_t* file)
 		city_history_month[0][HIST_VISITOR_DEMAND] = 0;
 		city_history_year[0][HIST_VISITOR_DEMAND] = 0;
 	}
+	if(file->get_extended_version() >=15){
+		if(file->is_saving()){
+			uint32 city_area_count = city_area.get_count();
+			file->rdwr_long(city_area_count);
+			for(uint32 i=0;i<city_area_count;i++){
+				sint32 x=city_area[i].x;
+				sint32 y=city_area[i].y;
+				file->rdwr_long(x);
+				file->rdwr_long(y);
+			}
+		}else{//loading
+			uint32 city_area_count;
+			file->rdwr_long(city_area_count);
+			for(uint32 i=0;i<city_area_count;i++){
+				sint32 x,y;
+				file->rdwr_long(x);
+				file->rdwr_long(y);
+				koord k(x,y);
+				add_city_area(k);
+				planquadrat_t* plan=welt->access(k);
+				plan->set_city(this);
+			}
+		}
+	}
 }
 
 
@@ -2207,6 +2183,9 @@ void stadt_t::rotate90( const sint16 y_size )
 	sint16 lox = lo.x;
 	lo.x = ur.x;
 	ur.x = lox;
+	FOR(vector_tpl<koord>, tile, city_area){
+		tile.rotate90(y_size);
+	}
 	// reset building search
 	best_strasse.reset(pos);
 	best_haus.reset(pos);
@@ -5129,25 +5108,7 @@ void stadt_t::build(bool new_town, bool map_generation)
 	}
 
 	// firstly, determine all potential candidate coordinates
-	vector_tpl<koord> candidates;
-	for(  sint16 i=0;  welt->is_within_limits_x(i);  ++i  ) {
-		for(  sint16 j=0; welt->is_within_limits_y(j);  ++j  ) {
-			const koord k(i, j);
-			//check if this tile is in this city
-			if( welt->access(k)->get_city()!=this){
-				continue;
-			}
-			
-			// checks only make sense on empty ground
-			const grund_t *const gr = welt->lookup_kartenboden(k);
-			if(  gr==NULL  ||  !gr->ist_natur()  ) {
-				continue;
-			}
-			
-			// a potential candidate coordinate
-			candidates.append(k);
-		}
-	}
+	vector_tpl<koord> candidates=city_area;
 
 	// loop until all candidates are exhausted or until we find a suitable location to build road or city building
 	while(  candidates.get_count()>0  ) {
@@ -5638,12 +5599,8 @@ void stadt_t::remove_connected_attraction(gebaeude_t* attraction)
 
 double stadt_t::get_land_area() const
 {
-	const uint16 x_dimension = ur.x - lo.x;
-	const uint16 y_dimension = ur.y - lo.y;
 	const uint16 meters_per_tile = welt->get_settings().get_meters_per_tile();
-	const uint16 x_dimension_meters = x_dimension * meters_per_tile;
-	const uint16 y_dimension_meters = y_dimension * meters_per_tile;
-	const uint32 area_square_meters = (uint32)x_dimension_meters * (uint32)y_dimension_meters;
+	const uint32 area_square_meters = (uint32)meters_per_tile * (uint32)meters_per_tile * city_area.get_count();
 	const double area_square_km = (double)area_square_meters / 1000000.0;
 	return area_square_km;
 }

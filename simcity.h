@@ -182,6 +182,7 @@ private:
 	koord pos;				// Gruendungsplanquadrat der City ("founding grid square" - Google)
 	koord townhall_road;	// road in front of townhall
 	koord lo, ur;			// max size of housing area
+	vector_tpl<koord> city_area;
 
 	bool allow_citygrowth;	// Whether growth is permitted (true by default)
 
@@ -671,6 +672,13 @@ public:
 
 	koord get_center() const { return (lo+ur)/2; }
 
+	const vector_tpl<koord>& get_city_area() const {
+		return city_area;
+	}
+	void add_city_area(koord k){
+		city_area.append_unique(k);
+	}
+	
 	// Checks whether any given postition is within the city limits.
 	bool is_within_city_limits(koord k) const;
 

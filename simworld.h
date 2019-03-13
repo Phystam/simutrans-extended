@@ -2320,6 +2320,8 @@ public:
 	 * determine city borders
 	 * @author Phystam
 	 */
+	vector_tpl<uint32> quick_sort_nearest_city_index(koord k);
+	void quick_sort(vector_tpl<uint32> numbers, vector_tpl<uint32> &index,int left, int right);
 	stadt_t* best_city_for_ground_at(koord k);
 	void calc_city_area();
 	

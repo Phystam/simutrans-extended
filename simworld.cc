@@ -741,16 +741,150 @@ bool karte_t::remove_city(stadt_t *s)
 	return true;
 }
 
-stadt_t* karte_t::best_city_for_ground_at(koord k){
-	//city list
-	uint32 nearest_city_distance=99999;
-	stadt_t* best_city=NULL;
+vector_tpl<uint32> karte_t::quick_sort_nearest_city_index(koord k){
+	vector_tpl<uint32> distance_vect;
+	vector_tpl<uint32> index;//return value
+
+	int size=stadt.get_count();
+	for(int i=0;i<size;i++){
+		index.append(i);
+	}
+
+	uint32 ind=0;
 	FOR(weighted_vector_tpl<stadt_t*>, const city, stadt){
-		uint32 distance = shortest_distance(k,city->get_pos());
-		if(nearest_city_distance>distance){
-			nearest_city_distance=distance;
-			best_city=city;
+		uint32 distance=shortest_distance(k,city->get_pos());
+		distance_vect.append(distance);
+		index.append(ind++);
+	}
+	if(ind<2){
+		return index;
+	}
+	quick_sort(distance_vect,index,0,size-1);
+	return index;
+}
+
+void karte_t::quick_sort(vector_tpl<uint32> numbers, vector_tpl<uint32> &index,int l, int r){
+		if (l < r){
+		int p=index[(l+r-1)/2];
+		int p_val=numbers[p];
+		int i= l-1;
+		int j= r+1;
+		int temp;
+		while(true){
+			while (numbers[index[++i]] <p_val);
+			while (numbers[index[--j]] >p_val);
+			if (i>=j) break;
+			temp=index[i];
+			index[i]=index[j];
+			index[j]=temp;
 		}
+		quick_sort(numbers,index, l, i-1);
+		quick_sort(numbers,index, j+1,r);
+	}
+}
+
+stadt_t* karte_t::best_city_for_ground_at(koord k){
+	stadt_t* best_city=NULL;
+	//let's go to 1st nearest city
+	if(stadt.get_count()<1){
+		return NULL;
+	}
+	if(stadt.get_count()<2){
+		return stadt[0];
+	}
+
+	bool success=false;
+	
+	vector_tpl<uint32> index=quick_sort_nearest_city_index(k);
+	for(int j=0;j<stadt.get_count();j++){
+		stadt_t* jth_nearest_city=stadt[index[j]];
+		if(success){
+			break;
+		}
+		success=false;
+		
+		if(jth_nearest_city){
+			koord city_pos = jth_nearest_city->get_pos();
+			koord step=city_pos-k;
+			int distance = shortest_distance(k,city_pos);
+			if(distance==0){
+				//start is goal.
+				best_city=jth_nearest_city;
+				success=true;
+				break;
+			}
+			step = step*100/distance;
+			koord k100=k*100;
+			success=true;
+			int water_path=0;
+			bool now_uphill=false;
+			bool now_downhill=false;
+			bool first_uphill=false;
+			int uphill_count=0;
+			int downhill_count=0;
+			int current_height;
+			
+			for(int i=0;i<distance;i++){//walking along shortest path to the city
+				k100+=step;
+				koord here=k100/100;
+				sint8 height=lookup_hgt(here);
+				if(i!=0){
+					if(	!now_uphill && !now_downhill){
+						if(height>current_height){
+							now_uphill=true;
+							now_downhill=false;
+							first_uphill=true;
+							uphill_count++;
+						}
+						else if(height<current_height){
+							now_uphill=false;
+							now_downhill=true;
+							first_uphill=false;
+							downhill_count++;
+						}
+					}else if(!now_uphill){
+						if(height>current_height){
+							now_uphill=true;
+							now_downhill=false;
+							uphill_count++;
+						}
+					}else if(!now_downhill){	
+						if(height<current_height){
+							now_uphill=false;
+							now_downhill=true;
+							downhill_count++;
+						}
+					}
+				}
+				current_height=height;
+				if(get_climate(here)==water_climate){
+					//cannot reach to city...
+					water_path++;
+				}
+			}//end of walking.
+			//start evaluation
+			// if(water_path>10){
+			// 	std::cout<<"water_fail"<<std::endl;
+			// 	success=false;
+			// }
+			// if(first_uphill && downhill_count>0){
+			// 	std::cout<<"first uphill fail"<<std::endl;
+			// 	success=false;
+			// }
+			// if(!first_uphill && downhill_count>1){
+			// 	std::cout<<"first downhill fail"<<std::endl;
+			// 	success=false;
+			// }
+			std::cout<<j<<"rd try: "<<(success?"success":"failed")<<std::endl;
+			if(success){
+				best_city=jth_nearest_city;
+				break;
+			}
+		}
+	}
+	//cannot find suitable city finally...
+	if(!success){
+		best_city=stadt[index[0]];
 	}
 	return best_city;
 }
@@ -765,6 +899,9 @@ void karte_t::calc_city_area(){
 			}
 			planquadrat_t* plan=access(k);
 			plan->set_city(best_city);
+			if(best_city!=NULL){
+				best_city->add_city_area(k);
+			}
 		}
 	}
 	return;
@@ -8553,7 +8690,11 @@ DBG_MESSAGE("karte_t::load()","Savegame version is %d", file.get_version());
 	calc_generic_road_time_per_tile_city();
 	calc_generic_road_time_per_tile_intercity();
 	calc_max_road_check_depth();
+	if(file.get_extended_version()<15){
+		calc_city_area();
+	}
 
+	
 	return ok;
 }
 

@@ -43,6 +43,7 @@ void swap(planquadrat_t& a, planquadrat_t& b)
 	sim::swap(a.halt_list_count, b.halt_list_count);
 	sim::swap(a.data, b.data);
 	sim::swap(a.climate_data, b.climate_data);
+	sim::swap(a.city, b.city);
 }
 
 // deletes also all grounds in this array!
@@ -351,26 +352,6 @@ void planquadrat_t::rdwr(loadsave_t *file, koord pos )
 
 				halt_list_insert_at(halt, i, distance);
 			}
-		}
-
-	}
-	if(file->get_extended_version() >=15 ){
-		//saves the city pointer
-		if(file->is_saving()){
-			sint32 x,y;
-			x=get_city()->get_pos().x;
-			y=get_city()->get_pos().y;
-			std::cout<<"x="<<x<<" ,y="<<y<<std::endl;
-			file->rdwr_long(x);//city position
-			file->rdwr_long(y);
-		}
-		else{ //Loading
-			sint32 x,y;
-			file->rdwr_long(x);
-			file->rdwr_long(y);
-			//which city?
-			koord k(x,y);
-			city=welt->get_city(k);
 		}
 	}
 }
