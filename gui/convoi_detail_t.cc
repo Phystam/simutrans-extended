@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Hansjörg Malthaner
+ * Copyright (c) 1997 - 2001 Hansjî’šg Malthaner
  *
  * This file is part of the Simutrans project under the artistic licence.
  * (see licence.txt)
@@ -502,7 +502,12 @@ void gui_vehicleinfo_t::draw(scr_coord offset)
 			if (v->get_desc()->get_tilting())
 			{
 				buf.clear();
-				buf.printf("%s", translator::translate("This is a tilting vehicle\n"));
+				if(v->get_desc()->get_tilting()==1){
+					buf.printf("%s", translator::translate("This is a tilting vehicle\n"));
+				}
+				else if(v->get_desc()->get_tilting()==2){
+					buf.printf("%s", translator::translate("This is a bogie vehicle\n"));
+				}
 				display_proportional_clip(pos.x + w + offset.x, pos.y + offset.y + total_height + extra_y, buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 				extra_y += LINESPACE;
 			}

@@ -131,7 +131,7 @@ private:
 	uint8 freight_image_type;		// number of freight images (displayed for different goods)
 	uint8 livery_image_type;		// Number of different liveries (@author: jamespetts, April 2011)
 	
-	bool is_tilting;				// Whether it is a tilting train (can take corners at higher speeds). 0 for no, 1 for yes. Anything other than 1 is assumed to be no.
+	uint8 is_tilting;				// Whether it is a tilting train (can take corners at higher speeds). 0 for no, 1 for yes. 2 means bogie, faster than fixed-axle train but slower than tilting train. Anything other than 1 is assumed to be no.
 	
 	way_constraints_of_vehicle_t way_constraints;
 
@@ -246,7 +246,8 @@ public:
 		weight = weight;
 		engine_type = (uint8)engine;
 		topspeed = speed;
-		is_tilting = bidirectional = can_lead_from_rear = available_only_as_upgrade = false;
+		is_tilting=0;
+		bidirectional = can_lead_from_rear = available_only_as_upgrade = false;
 		// These two lines are necessary for the building of way objects, so that they
 		// do not get stuck with constraints. 
 		way_constraints.set_permissive(0);
@@ -735,7 +736,7 @@ public:
 	
 	/*Whether this is a tilting train (and can take coerners faster
 	*@author: jamespetts*/
-	bool get_tilting() const { return is_tilting;	}
+	uint8 get_tilting() const { return is_tilting;	}
 
 	bool get_can_be_at_rear() const { return can_be_at_rear; }
 

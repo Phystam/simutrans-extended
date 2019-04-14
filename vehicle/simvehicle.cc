@@ -1786,7 +1786,7 @@ sint32 vehicle_t::calc_speed_limit(const weg_t *w, const weg_t *weg_previous, fi
 	}
 	const bool is_corner = current_direction != previous_direction;
 
-	const bool is_tilting = desc->get_tilting();
+	const uint8 is_tilting = desc->get_tilting();
 	const sint32 base_limit = kmh_to_speed(w->get_max_speed());
 	const uint32 max_axle_load = w->get_max_axle_load();
 	const uint32 bridge_weight_limit = w->get_bridge_weight_limit();
@@ -1935,11 +1935,16 @@ sint32 vehicle_t::calc_speed_limit(const weg_t *w, const weg_t *weg_previous, fi
 
 			// Adjust for tilting.
 			// Tilting only makes a difference to reasonably wide corners.
-			if(is_tilting && radius < tilting_min_radius_effect)
+			if(is_tilting==1 && radius < tilting_min_radius_effect)
 			{
 				// Tilting trains can take corners faster
 				corner_limit = (corner_limit * 130) / 100;
+			}else if(is_tilting==2 && radius < tilting_min_radius_effect)
+			{
+				// Bogie trains can take corners faster
+				corner_limit = (corner_limit * 110) / 100;
 			}
+
 
 			// Now apply the adjusted corner limit
 			if (direction_difference > 0)

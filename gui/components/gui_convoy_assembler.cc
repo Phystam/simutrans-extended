@@ -2413,7 +2413,12 @@ void gui_convoy_assembler_t::draw_vehicle_info_text(const scr_coord& pos)
 		{
 			n += sprintf(buf + n, "\n");
 			n += sprintf(buf + n, "%s: ", translator::translate("equipped_with"));
-			n += sprintf(buf + n, "%s", translator::translate("tilting_vehicle_equipment"));
+			if(veh_type->get_tilting()==1){
+				n += sprintf(buf + n, "%s", translator::translate("tilting_vehicle_equipment"));
+			}
+			else if(veh_type->get_tilting()==2){
+				n += sprintf(buf + n, "%s", translator::translate("bogie_vehicle_equipment"));
+			}
 		}
 
 		display_multiline_text(pos.x + 335/*370*/, pos.y + tabs.get_pos().y + tabs.get_size().h + 31 + LINESPACE * 2 + 4 + 16, buf, SYSCOL_TEXT);

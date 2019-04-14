@@ -141,6 +141,10 @@ name=tilting_vehicle_equipment
 note=depot/replacer window, displayed when true
 -
 obj=program_text
+name=bogie_vehicle_equipment
+note=depot/replacer window, displayed when true
+-
+obj=program_text
 name=classes
 note=depot/replacer window, displayed in a sentence when there are more than one class
 -

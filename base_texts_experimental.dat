@@ -211,6 +211,10 @@ name=This is a tilting vehicle\n
 note=From the depot window
 -
 obj=program_text
+name=This is a bogie vehicle\n
+note=From the depot window
+-
+obj=program_text
 name=Catering level: %i\n
 note=From the depot window
 -

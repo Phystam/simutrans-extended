@@ -318,7 +318,7 @@ void vehicle_desc_t::calc_checksum(checksum_t *chk) const
 	chk->input(overcrowded_capacity);
 	chk->input(base_fixed_cost);
 	chk->input(upgrades);
-	chk->input(is_tilting ? 1 : 0);
+	chk->input(is_tilting ? is_tilting : 0);
 	chk->input(way_constraints.get_permissive());
 	chk->input(way_constraints.get_prohibitive());
 	chk->input(bidirectional ? 1 : 0);
