@@ -25,6 +25,8 @@ private:
 	tool_build_roadsign_t* tool;
 	gui_numberinput_t signal_spacing_inp;
 	gui_label_t signal_label;
+	gui_label_t meter_label;
+	char str_meter_label[32];
 	button_t remove_button, replace_button;
 
 public:
