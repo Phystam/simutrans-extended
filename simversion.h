@@ -33,8 +33,8 @@ extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
 
 // Do not forget to increment the save game versions in settings_stats.cc when changing this
 
-#define MAKEOBJ_VERSION "60.0"
-// Transparency and new factories
+#define MAKEOBJ_VERSION "60.01"
+// Transparency and new factories(60.0), railcar_tab(60.01). NOTE: standard now 60.2
 
 #ifndef QUOTEME
 #	define QUOTEME_(x) #x

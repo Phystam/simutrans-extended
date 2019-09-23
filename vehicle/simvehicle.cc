@@ -1177,7 +1177,7 @@ bool vehicle_t::load_freight_internal(halthandle_t halt, bool overcrowd, bool *s
 
 void vehicle_t::fix_class_accommodations()
 {
-	if (desc->get_total_capacity() == 0)
+	if (!desc || desc->get_total_capacity() == 0)
 	{
 		// Vehicle ought to be empty - perhaps we should check this.
 		return;
@@ -1366,6 +1366,7 @@ void vehicle_t::initialise_journey(uint16 start_route_index, bool recalc)
 			pos_next = r.at(route_index);
 		}
 		else {
+			// already at end of route
 			check_for_finish = true;
 		}
 		set_pos(r.at(start_route_index));
@@ -1730,7 +1731,18 @@ void vehicle_t::hop(grund_t* gr)
 	if(  weg  )	{
 		//const grund_t *gr_prev = welt->lookup(pos_prev);
 		//const weg_t * weg_prev = gr_prev != NULL ? gr_prev->get_weg(get_waytype()) : NULL;
-		speed_limit = calc_speed_limit(weg, weg_prev, &pre_corner_direction, direction, previous_direction);
+
+		// Calculating the speed limit on the fly has the advantage of using up to date data - but there is no algorithm for taking into account the number of tiles of a bridge and thus the bridge weight limit using this mehtod.
+		//speed_limit = calc_speed_limit(weg, weg_prev, &pre_corner_direction, direction, previous_direction);
+		if (get_route_index() < cnv->get_route_infos().get_count())
+		{
+			speed_limit = cnv->get_route_infos().get_element(get_route_index()).speed_limit;
+		}
+		else
+		{
+			// This does not take into account bridge length (assuming any bridge to be infinitely long)
+			speed_limit = calc_speed_limit(weg, weg_prev, &pre_corner_direction, cnv->get_tile_length(), direction, previous_direction);
+		}
 
 		// Weight limit needed for GUI flag
 		const uint32 max_axle_load = weg->get_max_axle_load() > 0 ? weg->get_max_axle_load() : 1;
@@ -1740,6 +1752,15 @@ void vehicle_t::hop(grund_t* gr)
 
 		// This is just used for the GUI display, so only set to true if the weight limit is set to enforce by speed restriction.
 		is_overweight = ((cnv->get_highest_axle_load() > max_axle_load || cnv->get_weight_summary().weight / 1000 > bridge_weight_limit) && (welt->get_settings().get_enforce_weight_limits() == 1 || welt->get_settings().get_enforce_weight_limits() == 3));
+		if (is_overweight && bridge_weight_limit)
+		{
+			// This may be triggered incorrectly if the convoy is longer than the bridge and the part of the convoy that can fit onto the bridge at any one time is not overweight. Check for this.
+			const sint32 calced_speed_limit = calc_speed_limit(weg, weg_prev, &pre_corner_direction, cnv->get_tile_length(), direction, previous_direction);
+			if (speed_limit > calced_speed_limit || calced_speed_limit > calc_speed_limit(weg, weg_prev, &pre_corner_direction, 1, direction, previous_direction))
+			{
+				is_overweight = false;
+			}
+		}
 
 		if(weg->is_crossing())
 		{
@@ -1774,7 +1795,7 @@ void vehicle_t::hop(grund_t* gr)
  * taking into account the curve and weight limit.
  * @author: jamespetts/Bernd Gabriel
  */
-sint32 vehicle_t::calc_speed_limit(const weg_t *w, const weg_t *weg_previous, fixed_list_tpl<sint16, 192>* cornering_data, ribi_t::ribi current_direction, ribi_t::ribi previous_direction)
+sint32 vehicle_t::calc_speed_limit(const weg_t *w, const weg_t *weg_previous, fixed_list_tpl<sint16, 192>* cornering_data, uint32 bridge_tiles, ribi_t::ribi current_direction, ribi_t::ribi previous_direction)
 {
 	if (weg_previous)
 	{
@@ -1798,14 +1819,17 @@ sint32 vehicle_t::calc_speed_limit(const weg_t *w, const weg_t *weg_previous, fi
 
 	// Reduce speed for overweight vehicles
 
-	if((highest_axle_load > max_axle_load || total_weight > bridge_weight_limit) && (welt->get_settings().get_enforce_weight_limits() == 1 || welt->get_settings().get_enforce_weight_limits() == 3))
+	uint32 adjusted_convoy_weight = cnv->get_tile_length() == 0 ? total_weight : (total_weight * max(bridge_tiles - 2, 1)) / cnv->get_tile_length();
+	adjusted_convoy_weight = min(adjusted_convoy_weight, total_weight);
+
+	if((highest_axle_load > max_axle_load || adjusted_convoy_weight > bridge_weight_limit) && (welt->get_settings().get_enforce_weight_limits() == 1 || welt->get_settings().get_enforce_weight_limits() == 3))
 	{
-		if((max_axle_load != 0 && (highest_axle_load * 100) / max_axle_load <= 110) && (bridge_weight_limit != 0 && (total_weight * 100) / bridge_weight_limit <= 110))
+		if((max_axle_load != 0 && (highest_axle_load * 100) / max_axle_load <= 110) && (bridge_weight_limit != 0 && (adjusted_convoy_weight * 100) / bridge_weight_limit <= 110))
 		{
 			// Overweight by up to 10% - reduce speed limit to a third.
 			overweight_speed_limit = base_limit / 3;
 		}
-		else if((max_axle_load == 0 || (highest_axle_load * 100) / max_axle_load > 110) || (bridge_weight_limit == 0 || (total_weight * 100) / bridge_weight_limit > 110))
+		else if((max_axle_load == 0 || (highest_axle_load * 100) / max_axle_load > 110) || (bridge_weight_limit == 0 || (adjusted_convoy_weight * 100) / bridge_weight_limit > 110))
 		{
 			// Overweight by more than 10% - reduce speed limit by a factor of 10.
 			overweight_speed_limit = base_limit / 10;
@@ -2984,12 +3008,17 @@ bool vehicle_t::check_access(const weg_t* way) const
 		return true;
 	}
 	const grund_t* const gr = welt->lookup(get_pos());
-	const weg_t* const current_way = gr ? gr->get_weg(get_waytype()) : NULL;
-	if(current_way == NULL)
+	const weg_t* const current_way = gr ? gr->get_weg(get_waytype()) : nullptr;
+	if(current_way == nullptr)
 	{
 		return true;
 	}
-	return way && (way->is_public_right_of_way() || way->get_owner() == NULL || way->get_owner() == get_owner() || get_owner() == NULL || way->get_owner() == current_way->get_owner() || way->get_owner()->allows_access_to(get_owner()->get_player_nr()));
+	if (desc->get_engine_type() == vehicle_desc_t::MAX_TRACTION_TYPE && desc->get_topspeed() == 8888)
+	{
+		// This is a wayobj checker - only allow on ways actually owned by the player or wholly unowned.
+		return way && (way->get_owner() == nullptr || (way->get_owner() == get_owner())); 
+	}
+	return way && (way->is_public_right_of_way() || way->get_owner() == nullptr || way->get_owner() == get_owner() || get_owner() == nullptr || way->get_owner() == current_way->get_owner() || way->get_owner()->allows_access_to(get_owner()->get_player_nr()));
 }
 
 
@@ -4468,7 +4497,7 @@ void rail_vehicle_t::set_convoi(convoi_t *c)
 					target_halt = halthandle_t();
 				}
 			}
-			else if(c->get_next_reservation_index() == 0 && c->get_state() != convoi_t::REVERSING)
+			else if(c->get_next_reservation_index() == 0 && c->get_next_stop_index() == 0 && c->get_state() != convoi_t::REVERSING)
 			{
 				assert(c!=NULL);
 				// eventually search new route
@@ -4729,9 +4758,14 @@ sint32 rail_vehicle_t::activate_choose_signal(const uint16 start_block, uint16 &
 			{
 				if(rs->get_desc()->is_end_choose_signal())
 				{
-					target = gr;
-					break_index = idx;
-					break;
+					if (!(gr->is_halt() && gr->get_halt() != target->get_halt()))
+					{
+						// Ignore end of choose signals on platforms: these make no sense
+						// and cause problems. 
+						target = gr;
+						break_index = idx;
+						break;
+					}
 				}
 			}
 		}
@@ -4766,7 +4800,8 @@ sint32 rail_vehicle_t::activate_choose_signal(const uint16 start_block, uint16 &
 	route_t target_rt;
 	const uint16 first_block = start_block == 0 ? start_block : start_block - 1;
 	const uint16 second_block = start_block == 0 ? start_block + 1 : start_block;
-	const uint16 third_block = start_block == 0 ? start_block + 2 : start_block + 1;
+	uint16 third_block = start_block == 0 ? start_block + 2 : start_block + 1;
+	third_block = min(third_block, route->get_count() - 1); 
 	const koord3d first_tile = route->at(first_block);
 	const koord3d second_tile = route->at(second_block);
 	const koord3d third_tile = route->at(third_block);
@@ -5087,7 +5122,7 @@ bool rail_vehicle_t::can_enter_tile(const grund_t *gr, sint32 &restart_speed, ui
 
 	//const signal_t* signal_next_tile = welt->lookup(cnv->get_route()->at(min(cnv->get_route()->get_count() - 1u, route_index)))->find<signal_t>();
 
-	if(starting_from_stand && cnv->get_next_stop_index() == route_index /*&& !signal_next_tile*/ && !signal_current && working_method != drive_by_sight && working_method != moving_block)
+	if(starting_from_stand && cnv->get_next_stop_index() <= route_index /*&& !signal_next_tile*/ && !signal_current && working_method != drive_by_sight && working_method != moving_block)
 	{
 		// If we are starting from stand, have no reservation beyond here and there is no signal, assume that it has been deleted and revert to drive by sight.
 		// This might also occur when a train in the time interval working method has had a collision from the rear and has gone into an emergency stop.
@@ -5967,7 +6002,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 					// An ordinary signal on plain track
 					signal = gr->get_weg(get_waytype())->get_signal(ribi);
 					// But, do not select a station signal here, as this will lead to capricious behaviour depending on whether the train passes the track on which the station signal happens to be situated or not.
-					if(signal && signal->get_desc()->is_longblock_signal() && check_halt.is_bound() && (signal->get_desc()->get_working_method() == time_interval || signal->get_desc()->get_working_method() == time_interval_with_telegraph || signal->get_desc()->get_working_method() == absolute_block))
+					if(signal && check_halt.is_bound() && signal->get_desc()->is_station_signal())
 					{
 						signal = NULL;
 					}
@@ -6591,7 +6626,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 						{
 							next_signal_index = first_stop_signal_index;
 						}
-						if(next_signal_index == start_index)
+						if(next_signal_index == start_index && !is_choosing)
 						{
 							success = false;
 							directional_reservation_succeeded = false;
@@ -6942,7 +6977,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 	// or alternatively free that section reserved beyond the last signal to which reservation can take place
 	if(!success || !directional_reservation_succeeded || ((next_signal_index < INVALID_INDEX) && (next_signal_working_method == absolute_block || next_signal_working_method == token_block || next_signal_working_method == track_circuit_block || next_signal_working_method == cab_signalling || ((next_signal_working_method == time_interval || next_signal_working_method == time_interval_with_telegraph) && !next_signal_protects_no_junctions))))
 	{
-		const bool will_choose = last_choose_signal_index < INVALID_INDEX && !is_choosing && not_entirely_free && last_choose_signal_index == first_stop_signal_index;
+		const bool will_choose = (last_choose_signal_index < INVALID_INDEX) && !is_choosing && not_entirely_free && (last_choose_signal_index == first_stop_signal_index) && !is_from_token;
 		// free reservation
 		uint16 curtailment_index;
 		bool do_not_increment_curtailment_index_directional = false;
@@ -6986,7 +7021,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 			curtailment_index ++;
 		}
 
-		if(next_signal_index < INVALID_INDEX && (next_signal_index == start_index || platform_starter) && !is_from_token)
+		if(next_signal_index < INVALID_INDEX && (next_signal_index == start_index || platform_starter) && !is_from_token && !is_choosing)
 		{
 			// Cannot go anywhere either because this train is already on the tile of the last signal to which it can go, or is in the same station as it.
 			success = false;
@@ -7283,7 +7318,7 @@ sint32 rail_vehicle_t::block_reserver(route_t *route, uint16 start_index, uint16
 
 	if(next_signal_index != INVALID_INDEX && (next_signal_working_method == track_circuit_block || next_signal_working_method == absolute_block || next_signal_working_method == cab_signalling || next_signal_working_method == token_block))
 	{
-		if(platform_starter && !is_from_token && !is_from_starter)
+		if(platform_starter && !is_from_token && !is_from_starter && !is_choosing)
 		{
 			// This is a platform starter signal for this station: do not move until it clears.
 			/*const koord3d signal_dir = signal_pos - (route->at(min(next_signal_index + 1u, route->get_count() - 1u)));
@@ -7347,7 +7382,7 @@ void rail_vehicle_t::clear_token_reservation(signal_t* sig, rail_vehicle_t* w, s
 		{
 			grund_t* gr_route = route ? welt->lookup(route->at(i)) : NULL;
 			schiene_t* sch_route = gr_route ? (schiene_t *)gr_route->get_weg(get_waytype()) : NULL;
-			if (!is_one_train_staff && !sch_route->is_reserved() || (sch_route && sch_route->get_reserved_convoi() != cnv->self))
+			if (!is_one_train_staff && (sch_route && !sch_route->is_reserved()) || (sch_route && sch_route->get_reserved_convoi() != cnv->self))
 			{
 				if (!last_tile_was_break)
 				{
@@ -8045,62 +8080,65 @@ bool air_vehicle_t:: is_target(const grund_t *gr,const grund_t *)
 			if(ribi_t::is_single(ribi)  &&  (ribi&approach_dir)!=0)
 			{
 				// pointing in our direction
-				return true;
-				/* BELOW CODE NOT WORKING
+				
 				// Check for length
 				const uint16 min_runway_length_meters = desc->get_minimum_runway_length();
-				const uint16 min_runway_length_tiles = min_runway_length_meters / welt->get_settings().get_meters_per_tile();
-				for(uint16 i = 0; i <= min_runway_length_tiles; i ++)
+				uint16 min_runway_length_tiles = ignore_runway_length ? 0 : min_runway_length_meters / welt->get_settings().get_meters_per_tile();
+				if (!ignore_runway_length && min_runway_length_meters % welt->get_settings().get_meters_per_tile())
 				{
-					if (const ribi_t::ribi dir = ribi & approach_dir & ribi_t::nsew[i])
-					{
-						const grund_t* gr2 = welt->lookup_kartenboden(gr->get_pos().get_2d() + koord(dir));
-						if(gr2)
-						{
-							const weg_t* w2 = gr2->get_weg(air_wt);
-							if(
-								w2 &&
-								w2->get_desc()->get_styp() == 1 &&
-								ribi_t::is_single(w2->get_ribi_unmasked()) &&
-								(w2->get_ribi_unmasked() & approach_dir) != 0
-								)
-							{
-								// All is well - there is runway here.
-								continue;
-							}
-							else
-							{
-								goto bad_runway;
-							}
-						}
-						else
-						{
-							goto bad_runway;
-						}
-					}
+					// Without this, this will be rounded down incorrectly.
+					min_runway_length_tiles ++; 
+				}
+				uint32 runway_length_tiles;
 
-					else
-					{
-bad_runway:
-						// Reached end of runway before iteration for total number of minimum runway tiles exhausted:
-						// runway too short.
-						success = 0;
-						break;
-					}
+				bool runway_36_18 = false;
+				bool runway_09_27 = false;
+				
+				switch (ribi)
+				{
+				case 1: // north
+				case 4: // south
+				case 5: // north-south
+				case 7: // north-south-east
+				case 13: // north-south-west
+					runway_36_18 = true;
+					break;
+				case 2: // east
+				case 8: // west
+				case 10: // east-west
+				case 11: // east-west-north
+				case 14: // east-west-south
+					runway_09_27 = true;
+					break;
+				case 15: // all
+					runway_36_18 = true;
+					runway_09_27 = true;
+					break;
+				default:
+					runway_36_18 = false;
+					runway_09_27 = false;
+					break;
 				}
 
-				//return true;
-				return success;*/
+				if (!runway_36_18 && !runway_09_27)
+				{
+					dbg->warning("bool air_vehicle_t:: is_target(const grund_t *gr,const grund_t *)", "Invalid runway directions for %u at %u, %u", cnv->self.get_id(), w->get_pos().x, w->get_pos().y);
+					return false;
+				}
+
+				runway_length_tiles = w->get_runway_length(runway_36_18);
+
+				return runway_length_tiles >= min_runway_length_tiles;
 			}
 		}
 	}
 	else {
 		// otherwise we just check, if we reached a free stop position of this halt
 		if(gr->get_halt()==target_halt  &&  target_halt->is_reservable(gr,cnv->self)) {
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 
@@ -8295,8 +8333,7 @@ route_t::route_result_t air_vehicle_t::calc_route(koord3d start, koord3d ziel, s
 	target_halt = halthandle_t();	// no block reserved
 
 	takeoff = touchdown = search_for_stop = INVALID_INDEX;
-	const bool pre_result = calc_route_internal(welt, start, ziel, max_speed, cnv->get_highest_axle_load(), state, flying_height, target_height, runway_too_short, airport_too_close_to_the_edge, takeoff, touchdown, search_for_stop, *route);
-	const route_t::route_result_t result = pre_result ? route_t::valid_route : route_t::no_route;
+	const route_t::route_result_t result = calc_route_internal(welt, start, ziel, max_speed, cnv->get_highest_axle_load(), state, flying_height, target_height, runway_too_short, airport_too_close_to_the_edge, takeoff, touchdown, search_for_stop, *route);
 	cnv->set_next_stop_index(INVALID_INDEX);
 	return result;
 }
@@ -8394,9 +8431,21 @@ route_t::route_result_t air_vehicle_t::calc_route_internal(
 		approach_dir = ribi_t::northeast;	// reverse
 		DBG_MESSAGE("air_vehicle_t::calc_route()","search runway start near (%s)",start.get_str());
 #endif
-		if(!route.find_route( welt, start, this, max_speed, ribi_t::all, weight, cnv->get_tile_length(), cnv->get_weight_summary().weight / 1000, welt->get_settings().get_max_route_steps(), cnv->has_tall_vehicles())) {
-			DBG_MESSAGE("air_vehicle_t::calc_route()","failed");
-			return route_t::no_route;
+		if (!route.find_route(welt, start, this, max_speed, ribi_t::all, weight, cnv->get_tile_length(), cnv->get_weight_summary().weight / 1000, welt->get_settings().get_max_route_steps(), cnv->has_tall_vehicles()))
+		{
+			// There might be no route at all, or the runway might be too short. Test this case.
+			ignore_runway_length = true;
+			if (!route.find_route(welt, start, this, max_speed, ribi_t::all, weight, cnv->get_tile_length(), cnv->get_weight_summary().weight / 1000, welt->get_settings().get_max_route_steps(), cnv->has_tall_vehicles()))
+			{
+				DBG_MESSAGE("air_vehicle_t::calc_route()", "failed");
+				ignore_runway_length = false;
+				return route_t::no_route;
+			}
+			else
+			{
+				ignore_runway_length = false;
+				runway_too_short = true;
+			}
 		}
 		// save the route
 		search_start = route.back();
@@ -8477,7 +8526,6 @@ route_t::route_result_t air_vehicle_t::calc_route_internal(
 		route.clear();
 		route.append( start );
 		state = flying;
-		play_sound();
 		calc_altitude_level( desc->get_topspeed() ); // added for AFHP
 		if(flying_height==0) {
 			flying_height = 3*TILE_HEIGHT_STEP;
@@ -8781,7 +8829,7 @@ bool air_vehicle_t::can_enter_tile(const grund_t *gr, sint32 &restart_speed, uin
 			const int runway_state = block_reserver(takeoff,takeoff+100,true);
 			if(runway_state != 1)
 			{
-				// runway already blocked ...
+				// runway already blocked or too short
 				restart_speed = 0;
 
 				if(runway_state == 2)

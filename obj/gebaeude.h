@@ -254,6 +254,8 @@ public:
 
 	bool is_city_building() const;
 
+	bool is_signalbox() const;
+
 	/**
 	 * @return Einen Beschreibungsstring für das Objekt, der z.B. in einem
 	 * Beobachtungsfenster angezeigt wird.
@@ -264,6 +266,8 @@ public:
 	void get_class_percentage(cbuffer_t & buf) const;
 
 	void rdwr(loadsave_t *file);
+
+	void display_coverage_radius(bool display);
 
 	/**
 	 * Play animations of animated buildings.
@@ -384,9 +388,8 @@ public:
 	bool get_loaded_passenger_and_mail_figres() const { return loaded_passenger_and_mail_figres; }
 	void set_loaded_passenger_and_mail_figres(bool value) { loaded_passenger_and_mail_figres = value; }
 	
-	const minivec_tpl<const planquadrat_t*> &get_tiles();
-
-	void reset_tile_list() { building_tiles.clear(); }
+	const minivec_tpl<const planquadrat_t*> &get_tiles() { return building_tiles; }
+	void set_building_tiles();
 
 private:
 	// Calculate last 2 years(13-24 months) average percentage

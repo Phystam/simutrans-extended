@@ -43,7 +43,6 @@
 #include "simsound.h"
 #include "simsys.h"
 #include "simticker.h"
-#include "utils/simrandom.h"
 #include "simunits.h"
 #include "simversion.h"
 #include "display/simview.h"
@@ -99,7 +98,9 @@
 #include "dataobj/marker.h"
 
 #include "utils/cbuffer_t.h"
+#include "utils/simrandom.h"
 #include "utils/simstring.h"
+
 #include "network/memory_rw.h"
 
 #include "bauer/brueckenbauer.h"
@@ -141,22 +142,20 @@ static pthread_mutexattr_t mutex_attributes;
 
 //static pthread_mutex_t private_car_route_mutex = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t karte_t::step_passengers_and_mail_mutex = PTHREAD_MUTEX_INITIALIZER;
-//static pthread_mutex_t path_explorer_mutex = PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t path_explorer_await_mutex = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t karte_t::unreserve_route_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static pthread_mutex_t private_car_route_mutex;
 pthread_mutex_t karte_t::step_passengers_and_mail_mutex;
-static pthread_mutex_t path_explorer_mutex;
+static pthread_mutex_t path_explorer_await_mutex;
 pthread_mutex_t karte_t::unreserve_route_mutex;
 
 static simthread_barrier_t private_car_barrier;
 simthread_barrier_t karte_t::unreserve_route_barrier;
 static simthread_barrier_t step_passengers_and_mail_barrier;
-static simthread_barrier_t start_path_explorer_barrier;
+static simthread_barrier_t path_explorer_barrier;
 static simthread_barrier_t step_convoys_barrier_internal;
 simthread_barrier_t karte_t::step_convoys_barrier_external;
-
-static pthread_cond_t path_explorer_conditional_end = PTHREAD_COND_INITIALIZER;
 
 bool karte_t::threads_initialised = false;
 
@@ -165,7 +164,6 @@ thread_local uint32 karte_t::marker_index = UINT32_MAX_VALUE;
 
 sint32 karte_t::cities_to_process = 0;
 vector_tpl<convoihandle_t> convoys_next_step;
-sint32 karte_t::path_explorer_step_progress = -1;
 
 vector_tpl<pedestrian_t*> *karte_t::pedestrians_added_threaded;
 vector_tpl<private_car_t*> *karte_t::private_cars_added_threaded;
@@ -1736,7 +1734,6 @@ DBG_DEBUG("karte_t::init()","built timeline");
 
 #ifdef MULTI_THREAD
 	init_threads();
-	first_step = 1;
 #else
 	transferring_cargoes = new vector_tpl<transferring_cargo_t>[1];
 #endif
@@ -1843,7 +1840,7 @@ void *step_passengers_and_mail_threaded(void* args)
 	sint32 total_units_passenger;
 	sint32 total_units_mail;
 
-	do
+	while (true)
 	{
 	top:
 		simthread_barrier_wait(&step_passengers_and_mail_barrier);
@@ -1962,82 +1959,83 @@ void *step_passengers_and_mail_threaded(void* args)
 		mutex_error = pthread_mutex_unlock(&karte_t::step_passengers_and_mail_mutex);
 		simthread_barrier_wait(&step_passengers_and_mail_barrier);
 		assert(mutex_error == 0);
-	} while (!karte_t::world->is_terminating_threads());
+	}
 
-	pthread_exit(NULL);
 	return args;
 }
 
+void karte_t::start_passengers_and_mail_threads()
+{
+	simthread_barrier_wait(&step_passengers_and_mail_barrier);
+	passengers_and_mail_threads_working = true;
+}
+#endif //MULTI_THREAD
+
+void karte_t::await_passengers_and_mail_threads()
+{
+#ifdef MULTI_THREAD_PASSENGER_GENERATION
+#ifdef FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
+	if (!env_t::networkmode)
+	{
+#endif
+		if (passengers_and_mail_threads_working)
+		{
+			// Two barriers, to allow synchronised update of generation figures
+			simthread_barrier_wait(&step_passengers_and_mail_barrier);
+			simthread_barrier_wait(&step_passengers_and_mail_barrier);
+			passengers_and_mail_threads_working = false;
+		}
+#ifdef FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
+	}
+#endif
+#endif
+}
+
+#ifdef MULTI_THREAD
 void *step_convoys_threaded(void* args)
 {
 	karte_t* world = (karte_t*)args;
 	const sint32 parallel_operations = world->get_parallel_operations();
 
-	do
+	while (true)
 	{	
 		simthread_barrier_wait(&karte_t::step_convoys_barrier_external);
 		if (world->is_terminating_threads())
 		{
-			break;
+			return NULL;
 		}
+
 		// since convois will be deleted during stepping, we need to step backwards
 		for (uint32 i = world->convoi_array.get_count(); i-- != 0;)
 		{
 			convoihandle_t cnv = world->convoi_array[i];
 			convoys_next_step.append(cnv);
-
-			//  Needed here as the new method does not do this.
-			if (world->is_terminating_threads())
-			{
-				simthread_barrier_wait(&step_convoys_barrier_internal);
-				simthread_barrier_wait(&step_convoys_barrier_internal); // The multiples of these is intentional: we must stop the individual threads before the clear() command is executed.
-				convoys_next_step.clear();
-				break;
-			}
-			
-			// Old method: less efficient, as only processed 4 convoys at a time.
-			/*
-			if ((convoys_next_step.get_count() == parallel_operations - 2) || (i == world->convoi_array.get_count() - 1))
-			{
-				simthread_barrier_wait(&step_convoys_barrier_internal); 
-				simthread_barrier_wait(&step_convoys_barrier_internal); // The multiples of these is intentional: we must stop the individual threads before the clear() command is executed.
-				convoys_next_step.clear();
-				if (world->is_terminating_threads())
-				{
-					break;
-				}
-			}*/
 		}
 
-		// New method: process all convoys at once in all threads.
-		if (!world->is_terminating_threads())
-		{
-			simthread_barrier_wait(&step_convoys_barrier_internal);
-			simthread_barrier_wait(&step_convoys_barrier_internal); // The multiples of these is intentional: we must stop the individual threads before the clear() command is executed.
-			convoys_next_step.clear();
-		}
+		simthread_barrier_wait(&step_convoys_barrier_internal);
+		simthread_barrier_wait(&step_convoys_barrier_internal); // The multiples of these is intentional: we must wait for the individual threads to finish before the clear() command is executed.
+		convoys_next_step.clear();
 
 		simthread_barrier_wait(&karte_t::step_convoys_barrier_external);
-	} while (!world->is_terminating_threads());
+	}
 
-	pthread_exit(NULL);
 	return args;
 }
 
 void* step_individual_convoy_threaded(void* args)
 {
-	//pthread_cleanup_push(&route_t::TERM_NODES, NULL);
 	const uint32* thread_number_ptr = (const uint32*)args;
 	const uint32 thread_number = *thread_number_ptr; 
 	karte_t::marker_index = thread_number;
 	delete thread_number_ptr;
 
-	do
+	while (true)
 	{
 		simthread_barrier_wait(&step_convoys_barrier_internal);
 		if (karte_t::world->is_terminating_threads())
 		{
-			break;
+			route_t::TERM_NODES(); 
+			return NULL;
 		}
 		
 		const uint32 convoys_next_step_count = convoys_next_step.get_count();
@@ -2050,109 +2048,77 @@ void* step_individual_convoy_threaded(void* args)
 			}
 		}
 
-		/*
-		// Old method
-		if (convoys_next_step.get_count() > thread_number)
-		{
-			convoihandle_t cnv = convoys_next_step[thread_number];
-			if (cnv.is_bound())
-			{
-				cnv->threaded_step();
-			}
-		} 
-		*/
-
 		simthread_barrier_wait(&step_convoys_barrier_internal);
-	} while (!karte_t::world->is_terminating_threads());
-	
-	//pthread_cleanup_pop(1); 
-	route_t::TERM_NODES(); 
+	}
 
-	pthread_exit(NULL);
 	return args;
 }
 
-void* path_explorer_threaded(void* args)
+void karte_t::start_convoy_threads()
 {
-	karte_t* world = (karte_t*)args;
-	path_explorer_t::allow_path_explorer_on_this_thread = true;
-	karte_t::path_explorer_step_progress = 2;
-
-	do
-	{
-		simthread_barrier_wait(&start_path_explorer_barrier);
-		karte_t::path_explorer_step_progress = 0;
-		simthread_barrier_wait(&start_path_explorer_barrier);
-		int error = pthread_mutex_lock(&path_explorer_mutex);
-		assert(error == 0);
-
-		if (karte_t::world->is_terminating_threads())
-		{
-			karte_t::path_explorer_step_progress = -1;
-			error = pthread_mutex_unlock(&path_explorer_mutex);
-			assert(error == 0);
-			break;
-		}
-
-		path_explorer_t::step();
-
-		karte_t::path_explorer_step_progress = 1;
-
-		pthread_cond_signal(&path_explorer_conditional_end);
-		karte_t::path_explorer_step_progress = 2;
-		error = pthread_mutex_unlock(&path_explorer_mutex);
-		assert(error == 0);
-	} while (!karte_t::world->is_terminating_threads());
-
-	karte_t::path_explorer_step_progress = -1;
-	pthread_exit(NULL);
-	return args;
+	simthread_barrier_wait(&step_convoys_barrier_external);
+	convoy_threads_working = true;
 }
+#endif
 
-
-void karte_t::stop_path_explorer()
+void karte_t::await_convoy_threads()
 {
-#ifdef MULTI_THREAD_PATH_EXPLORER
-	if (path_explorer_step_progress == -1)
+#ifdef MULTI_THREAD_CONVOYS
+	if (convoy_threads_working)
 	{
-		return;
+		simthread_barrier_wait(&step_convoys_barrier_external);
+		convoy_threads_working = false;
 	}
-
-	int error = pthread_mutex_lock(&path_explorer_mutex);
-	assert(error == 0);
-
-	while (path_explorer_step_progress == 0 || path_explorer_step_progress == 1)
-	{
-		pthread_cond_wait(&path_explorer_conditional_end, &path_explorer_mutex);
-	}
-
-	error = pthread_mutex_unlock(&path_explorer_mutex);
-	assert(error == 0);
-
 #endif
 }
 
+#ifdef MULTI_THREAD
+void* path_explorer_threaded(void* args)
+{
+	path_explorer_t::allow_path_explorer_on_this_thread = true;
+	while (true)
+	{
+		simthread_barrier_wait(&path_explorer_barrier);
+		if (karte_t::world->is_terminating_threads())
+		{
+			return NULL;
+		}
+		path_explorer_t::step();
+		simthread_barrier_wait(&path_explorer_barrier);
+	}
+
+	return args;
+}
+#endif
+
+void karte_t::await_path_explorer()
+{
+#ifdef MULTI_THREAD_PATH_EXPLORER
+	// This first check isn't entirely redundant, because we need to
+	// protect against trying to lock a destroyed mutex.
+	if (path_explorer_working)
+	{
+		// This can be accessed by multiple threads, so we need to
+		// ensure only one thread reaches the barrier.
+		int error = pthread_mutex_lock(&path_explorer_await_mutex);
+		assert(error == 0);
+		if (path_explorer_working)
+		{
+			simthread_barrier_wait(&path_explorer_barrier);
+			path_explorer_working = false;
+		}
+		error = pthread_mutex_unlock(&path_explorer_await_mutex);
+		assert(error == 0);
+	}
+#endif
+}
+
+#ifdef MULTI_THREAD
 void karte_t::start_path_explorer()
 {
 #ifdef MULTI_THREAD_PATH_EXPLORER
-	if (path_explorer_step_progress == -1)
-	{
-		// The threaded path explorer has been terminated, so do not wait
-		// or else we will get a thread deadlock.
-		return;
-	}
-	int error = pthread_mutex_lock(&path_explorer_mutex);
-	assert(error == 0); 
-	if (path_explorer_step_progress > 0)
-	{
-		simthread_barrier_wait(&start_path_explorer_barrier);
-	}
-	if (path_explorer_step_progress > -1)
-	{
-		simthread_barrier_wait(&start_path_explorer_barrier);
-	}
-	error = pthread_mutex_unlock(&path_explorer_mutex);
-	assert(error == 0); 
+	simthread_barrier_wait(&path_explorer_barrier);
+	path_explorer_working = true;
 #endif 
 }
 
@@ -2201,7 +2167,19 @@ void* unreserve_route_threaded(void* args)
 	pthread_exit(NULL);
 	return args;
 }
+#endif
 
+void karte_t::await_all_threads()
+{
+#ifdef MULTI_THREAD
+	// Call this when saving or doing disruptive stuff like map rotation.
+	await_convoy_threads();
+	await_path_explorer();
+	await_passengers_and_mail_threads();
+#endif
+}
+
+#ifdef MULTI_THREAD
 void karte_t::init_threads()
 {
 	marker_index = UINT32_MAX_VALUE;
@@ -2226,7 +2204,7 @@ void karte_t::init_threads()
 	simthread_barrier_init(&step_passengers_and_mail_barrier, NULL, parallel_operations + 2); 
 	simthread_barrier_init(&step_convoys_barrier_external, NULL, 2);
 	simthread_barrier_init(&step_convoys_barrier_internal, NULL, parallel_operations + 1);	
-	simthread_barrier_init(&start_path_explorer_barrier, NULL, 2);
+	simthread_barrier_init(&path_explorer_barrier, NULL, 2);
 
 	// Initialise mutexes
 	pthread_mutexattr_init(&mutex_attributes);
@@ -2234,7 +2212,7 @@ void karte_t::init_threads()
 
 	pthread_mutex_init(&private_car_route_mutex, &mutex_attributes);
 	pthread_mutex_init(&step_passengers_and_mail_mutex, &mutex_attributes);
-	pthread_mutex_init(&path_explorer_mutex, &mutex_attributes);
+	pthread_mutex_init(&path_explorer_await_mutex, &mutex_attributes);
 	pthread_mutex_init(&unreserve_route_mutex, &mutex_attributes);
 
 	pthread_t thread;
@@ -2307,6 +2285,11 @@ void karte_t::init_threads()
 	{
 		dbg->fatal("void karte_t::init_threads()", "Failed to create convoy master thread, error %d. See here for a translation of the error numbers: http://epydoc.sourceforge.net/stdlib/errno-module.html", rc);
 	}
+	convoy_threads_working = false;
+#endif
+
+#ifdef MULTI_THREAD_PASSENGER_GENERATION
+	passengers_and_mail_threads_working = false;
 #endif
 
 #ifdef MULTI_THREAD_PATH_EXPLORER
@@ -2316,6 +2299,7 @@ void karte_t::init_threads()
 	{
 		dbg->fatal("void karte_t::init_threads()", "Failed to create path explorer thread, error %d. See here for a translation of the error numbers: http://epydoc.sourceforge.net/stdlib/errno-module.html", rc);
 	}
+	path_explorer_working = false;
 #endif
 
 	threads_initialised = true;
@@ -2327,11 +2311,15 @@ void karte_t::destroy_threads()
 	{
 		pthread_attr_destroy(&thread_attributes);
 
-		// Send waiting threads to their doom
-
-		// HACK: The below sleep allows the convoy threads to synchronise to avoid
-		// thread deadlocks that otherwise might result.
-		dr_sleep(100);
+#ifdef MULTI_THREAD_CONVOYS
+		await_convoy_threads();
+#endif
+#ifdef MULTI_THREAD_PATH_EXPLORER
+		await_path_explorer();
+#endif
+#ifdef MULTI_THREAD_PASSENGER_GENERATION
+		await_passengers_and_mail_threads();
+#endif
 
 		terminating_threads = true;
 #ifdef MULTI_THREAD_CONVOYS
@@ -2344,9 +2332,7 @@ void karte_t::destroy_threads()
 		simthread_barrier_wait(&private_car_barrier);
 		simthread_barrier_wait(&unreserve_route_barrier);
 #ifdef MULTI_THREAD_PATH_EXPLORER
-		start_path_explorer();
-#endif
-#ifdef MULTI_THREAD_PATH_EXPLORER
+		simthread_barrier_wait(&path_explorer_barrier);
 		pthread_join(path_explorer_thread, 0);
 #endif
 #ifdef MULTI_THREAD_CONVOYS
@@ -2374,19 +2360,17 @@ void karte_t::destroy_threads()
 		simthread_barrier_destroy(&private_car_barrier);
 		simthread_barrier_destroy(&unreserve_route_barrier);
 #ifdef MULTI_THREAD_PATH_EXPLORER
-		simthread_barrier_destroy(&start_path_explorer_barrier);
+		simthread_barrier_destroy(&path_explorer_barrier);
 #endif 
 
 		// Destroy mutexes
 		pthread_mutex_destroy(&private_car_route_mutex);
 		pthread_mutex_destroy(&step_passengers_and_mail_mutex);
-		pthread_mutex_destroy(&path_explorer_mutex);
+		pthread_mutex_destroy(&path_explorer_await_mutex);
 		pthread_mutex_destroy(&unreserve_route_mutex);
 
 		pthread_mutexattr_destroy(&mutex_attributes);
 	}
-
-	first_step = 1;
 
 	delete[] private_cars_added_threaded; 
 	private_cars_added_threaded = NULL;
@@ -2987,16 +2971,41 @@ void karte_t::enlarge_map(settings_t const* sets, sint8 const* const h_field)
 	FOR(weighted_vector_tpl<stadt_t*>, const city, stadt)
 	{
 		city->add_all_buildings_to_world_list();
+		city->reset_tiles_for_all_buildings();
 	}
+
+	for (uint8 i = 0; i < goods_manager_t::passengers->get_number_of_classes(); i++)
+	{
+		FOR(weighted_vector_tpl<gebaeude_t*>, const target, commuter_targets[i])
+		{
+			target->set_building_tiles();
+		}
+
+		FOR(weighted_vector_tpl<gebaeude_t*>, const target, visitor_targets[i])
+		{
+			target->set_building_tiles();
+		}
+	}
+
+	FOR(weighted_vector_tpl<gebaeude_t*>, const target, mail_origins_and_targets)
+	{
+		target->set_building_tiles();
+	}
+
+	FOR(const vector_tpl<halthandle_t>, const halt, haltestelle_t::get_alle_haltestellen())
+	{
+		halt->set_all_building_tiles();
+	}
+
 
 	// hausbauer_t::new_world(); <- this would reinit monuments! do not do this!
 	factory_builder_t::new_world();
 
 #ifdef MULTI_THREAD
-	stop_path_explorer();
+	await_path_explorer();
 #endif
 	// Modified by : Knightly
-	path_explorer_t::refresh_all_categories(true);
+	path_explorer_t::refresh_all_categories(false);
 
 	set_schedule_counter();
 
@@ -3058,6 +3067,7 @@ void karte_t::enlarge_map(settings_t const* sets, sint8 const* const h_field)
 	// Don't try to be clever; we don't do map enlargements often.
 	FOR(vector_tpl<fabrik_t*>, const fab, fab_list)
 	{
+		fab->get_building()->set_building_tiles();
 		fab->recalc_nearby_halts();
 	}
 	clear_random_mode( MAP_CREATE_RANDOM );
@@ -3183,7 +3193,9 @@ karte_t::karte_t() :
 	visitor_targets = new weighted_vector_tpl<gebaeude_t*>[number_of_passenger_classes];
 
 #ifdef MULTI_THREAD
-	first_step = 1;
+	passengers_and_mail_threads_working = false;
+	convoy_threads_working = false;
+	path_explorer_working = false;
 #endif
 }
 
@@ -4225,75 +4237,75 @@ bool karte_t::change_player_tool(uint8 cmd, uint8 player_nr, uint16 param, bool 
 }
 
 
-void karte_t::set_tool( tool_t *tool, player_t *player )
+void karte_t::set_tool( tool_t *tool_in, player_t *player )
 {
 	if(  get_random_mode()&LOAD_RANDOM  ) {
-		dbg->warning("karte_t::set_tool", "Ignored tool %i during loading.", tool->get_id() );
+		dbg->warning("karte_t::set_tool", "Ignored tool %i during loading.", tool_in->get_id() );
 		return;
 	}
-	bool scripted_call = tool->is_scripted();
+	bool scripted_call = tool_in->is_scripted();
 	// check for scenario conditions
-	if(  !scripted_call  &&  (scenario && !scenario->is_tool_allowed(player, tool->get_id(), tool->get_waytype()))  ) {
+	if(  !scripted_call  &&  (scenario && !scenario->is_tool_allowed(player, tool_in->get_id(), tool_in->get_waytype()))  ) {
 		return;
 	}
 
 	player_t* action_player = player;
-	if(tool->get_id() == (TOOL_ACCESS_TOOL | SIMPLE_TOOL))
+	if(tool_in->get_id() == (TOOL_ACCESS_TOOL | SIMPLE_TOOL))
 	{
 		uint16 id_setting_player;
 		uint16 id_receiving_player;
 		sint16 allow_access;
 
-		if(3 != sscanf(tool->get_default_param(), "g%hi,%hi,%hi", &id_setting_player, &id_receiving_player, &allow_access)) 
+		if(3 != sscanf(tool_in->get_default_param(), "g%hi,%hi,%hi", &id_setting_player, &id_receiving_player, &allow_access))
 		{
-			dbg->error( "karte_t::set_tool", "could not perform (%s)", tool->get_default_param() );
+			dbg->error( "karte_t::set_tool", "could not perform (%s)", tool_in->get_default_param() );
 			return;
 		}
 		action_player = this->get_player(id_setting_player);
 	}
 
 	// check for password-protected players
-	if(  (!tool->is_init_network_save()  ||  !tool->is_work_network_save())  &&  !scripted_call  &&
-		 !(tool->get_id()==(TOOL_CHANGE_PLAYER|SIMPLE_TOOL)  ||  tool->get_id()==(TOOL_ADD_MESSAGE|SIMPLE_TOOL))  &&
+	if(  (!tool_in->is_init_network_save()  ||  !tool_in->is_work_network_save())  &&  !scripted_call  &&
+		 !(tool_in->get_id()==(TOOL_CHANGE_PLAYER|SIMPLE_TOOL)  ||  tool_in->get_id()==(TOOL_ADD_MESSAGE|SIMPLE_TOOL))  &&
 		 action_player  &&  action_player->is_locked()  ) {
 		// player is currently password protected => request unlock first
 		create_win( -1, -1, new password_frame_t(action_player), w_info, magic_pwd_t + action_player->get_player_nr() );
 		return;
 	}
-	tool->flags |= event_get_last_control_shift();
-	if(!env_t::networkmode  ||  tool->is_init_network_save()  ) {
-		local_set_tool(tool, player);
+	tool_in->flags |= event_get_last_control_shift();
+	if(!env_t::networkmode  ||  tool_in->is_init_network_save()  ) {
+		local_set_tool(tool_in, player);
 	}
 	else {
 		// queue tool for network
-		nwc_tool_t *nwc = new nwc_tool_t(player, tool, zeiger->get_pos(), steps, map_counter, true);
+		nwc_tool_t *nwc = new nwc_tool_t(player, tool_in, zeiger->get_pos(), steps, map_counter, true);
 		network_send_server(nwc);
 	}
 }
 
 
 // set a new tool on our client, calls init
-void karte_t::local_set_tool( tool_t *tool, player_t * player )
+void karte_t::local_set_tool( tool_t *tool_in, player_t * player )
 {
-	tool->flags |= tool_t::WFL_LOCAL;
+	tool_in->flags |= tool_t::WFL_LOCAL;
 
 	if (get_scenario())
 	{
-		if (get_scenario()->is_scripted() && !get_scenario()->is_tool_allowed(player, tool->get_id())) {
-			tool->flags = 0;
+		if (get_scenario()->is_scripted() && !get_scenario()->is_tool_allowed(player, tool_in->get_id())) {
+			tool_in->flags = 0;
 			return;
 		}
 	}
 	// now call init
-	bool init_result = tool->init(player);
+	bool init_result = tool_in->init(player);
 	// for unsafe tools init() must return false
-	assert(tool->is_init_network_save()  ||  !init_result);
+	assert(tool_in->is_init_network_save()  ||  !init_result);
 
 	if (player && init_result) {
 
 		set_dirty();
 		tool_t *sp_tool = selected_tool[player->get_player_nr()];
-		if(tool != sp_tool) {
+		if(tool_in != sp_tool) {
 
 			// reinit same tool => do not play sound twice
 			sound_play(SFX_SELECT);
@@ -4315,18 +4327,18 @@ void karte_t::local_set_tool( tool_t *tool, player_t * player )
 			// remove marks
 			zeiger->change_pos( koord3d::invalid );
 			// set new cursor properties
-			tool->init_cursor(zeiger);
+			tool_in->init_cursor(zeiger);
 			// .. and mark again (if the position is acceptable for the tool)
-			if( tool->check_valid_pos(zpos.get_2d())) {
+			if( tool_in->check_valid_pos(zpos.get_2d())) {
 				zeiger->change_pos( zpos );
 			}
 			else {
 				zeiger->change_pos( koord3d::invalid );
 			}
 		}
-		selected_tool[player->get_player_nr()] = tool;
+		selected_tool[player->get_player_nr()] = tool_in;
 	}
-	tool->flags = 0;
+	tool_in->flags = 0;
 }
 
 
@@ -4456,6 +4468,9 @@ void karte_t::rotate90_plans(sint16 x_min, sint16 x_max, sint16 y_min, sint16 y_
 void karte_t::rotate90()
 {
 DBG_MESSAGE( "karte_t::rotate90()", "called" );
+	// Wait for any threaded work
+	await_all_threads();
+
 	// assume we can save this rotation
 	nosave_warning = nosave = false;
 
@@ -4544,6 +4559,27 @@ DBG_MESSAGE( "karte_t::rotate90()", "called" );
 		f->recalc_nearby_halts();
 	}
 
+	for (uint8 i = 0; i < goods_manager_t::passengers->get_number_of_classes(); i++)
+	{
+		FOR(weighted_vector_tpl<gebaeude_t*>, const building, visitor_targets[i])
+		{
+			building->set_building_tiles();
+		}
+		FOR(weighted_vector_tpl<gebaeude_t*>, const building, commuter_targets[i])
+		{
+			building->set_building_tiles();
+		}
+	}
+	FOR(weighted_vector_tpl<gebaeude_t*>, const building, passenger_origins)
+	{
+		building->set_building_tiles();
+	}
+	FOR(weighted_vector_tpl<gebaeude_t*>, const building, mail_origins_and_targets)
+	{
+		building->set_building_tiles();
+	}
+
+
 	FOR(vector_tpl<convoihandle_t>, const i, convoi_array) {
 		i->rotate90(cached_size.x);
 	}
@@ -4586,7 +4622,7 @@ DBG_MESSAGE( "karte_t::rotate90()", "called" );
 
 	// finally recalculate schedules for goods in transit ...
 	// Modified by : Knightly
-	path_explorer_t::refresh_all_categories(true);
+	path_explorer_t::refresh_all_categories(false);
 
 	set_dirty();
 }
@@ -5050,16 +5086,36 @@ void karte_t::new_month()
 		w->new_month();
 	}
 
-//	DBG_MESSAGE("karte_t::new_month()","depots");
-	// Bernd Gabriel - call new month for depots	
-	FOR(slist_tpl<depot_t *>, const dep, depot_t::get_depot_list()) {
-		dep->new_month();
-	}
-
 	// recalc old settings (and maybe update the stops with the current values)
 	reliefkarte_t::get_karte()->new_month();
 
 	INT_CHECK("simworld 3042");
+
+	// Put players before convoys and depots so as to make sure that the "fixed maintenance" graph does not always show 0 for the current month
+	// players
+	for(uint i=0; i<MAX_PLAYER_COUNT; i++) {
+		if( last_month == 0  &&  !settings.is_freeplay() ) {
+			// remove all player (but first and second) who went bankrupt during last year
+			if(  players[i] != NULL  &&  players[i]->get_finance()->is_bankrupted()  )
+			{
+				remove_player(i);
+			}
+		}
+
+		if(  players[i] != NULL  ) {
+			// if returns false -> remove player
+			if (!players[i]->new_month()) {
+				remove_player(i);
+			}
+		}
+	}
+	// update the window
+	ki_kontroll_t* playerwin = (ki_kontroll_t*)win_get_magic(magic_ki_kontroll_t);
+	if(  playerwin  ) {
+		playerwin->update_data();
+	}
+
+	INT_CHECK("simworld 3175");
 
 //	DBG_MESSAGE("karte_t::new_month()","convois");
 	// hsiegeln - call new month for convois
@@ -5164,31 +5220,6 @@ void karte_t::new_month()
 
 	INT_CHECK("simworld 3130");
 
-	// players
-	for(uint i=0; i<MAX_PLAYER_COUNT; i++) {
-		if( last_month == 0  &&  !settings.is_freeplay() ) {
-			// remove all player (but first and second) who went bankrupt during last year
-			if(  players[i] != NULL  &&  players[i]->get_finance()->is_bankrupted()  )
-			{
-				remove_player(i);
-			}
-		}
-
-		if(  players[i] != NULL  ) {
-			// if returns false -> remove player
-			if (!players[i]->new_month()) {
-				remove_player(i);
-			}
-		}
-	}
-	// update the window
-	ki_kontroll_t* playerwin = (ki_kontroll_t*)win_get_magic(magic_ki_kontroll_t);
-	if(  playerwin  ) {
-		playerwin->update_data();
-	}
-
-	INT_CHECK("simworld 3175");
-
 //	DBG_MESSAGE("karte_t::new_month()","halts");
 	FOR(vector_tpl<halthandle_t>, const s, haltestelle_t::get_alle_haltestellen()) {
 		s->new_month();
@@ -5259,12 +5290,12 @@ void karte_t::new_month()
 	pedestrian_t::check_timeline_pedestrians();
 
 #ifdef MULTI_THREAD
-	stop_path_explorer();
+	await_path_explorer();
 #endif
 
 	// Added by : Knightly
 	// Note		: This should be done after all lines and convoys have rolled their statistics
-	path_explorer_t::refresh_all_categories(true);
+	path_explorer_t::refresh_all_categories(false);
 }
 
 
@@ -5547,13 +5578,6 @@ void karte_t::step()
 
 	rands[10] = get_random_seed();
 
-#ifdef MULTI_THREAD_CONVOYS
-	if (first_step == 1)
-	{
-		simthread_barrier_wait(&step_convoys_barrier_external); // Start the threaded part of the convoys' steps: this is mainly route searches. Block reservation, etc., is in the single threaded part. 
-	}
-#endif
-
 	// check for pending seasons change
 	// This is not very computationally intensive.
 	const bool season_change = pending_season_change > 0;
@@ -5588,7 +5612,7 @@ void karte_t::step()
 
 #ifdef MULTI_THREAD_PATH_EXPLORER
 	// Stop the path explorer before we use its results.
-	stop_path_explorer();
+	await_path_explorer();
 #else
 	// Knightly : calling global path explorer
 	path_explorer_t::step();
@@ -5598,17 +5622,8 @@ void karte_t::step()
 	INT_CHECK("karte_t::step 2");
 
 #ifdef MULTI_THREAD_CONVOYS
-	simthread_barrier_wait(&step_convoys_barrier_external); 
 	// Finish the threaded part of the convoys' steps: this is mainly route searches. Block reservation, etc., is in the single threaded part. 
-	if (first_step == 1)
-	{
-		first_step = 2;
-	}
-	else if (first_step == 0)
-	{
-		// We need this to know whether the convoy thread loop is at the top or bottom barrier.
-		first_step = 3;
-	}
+	await_convoy_threads();
 #else
 	for (uint32 i = convoi_array.get_count(); i-- != 0;)
 	{
@@ -5628,7 +5643,9 @@ void karte_t::step()
 		}
 	}
 
-	rands[13] = get_random_seed();	
+	rands[13] = get_random_seed();
+
+	INT_CHECK("karte_t::step 3a");
 
 	// NOTE: Original position of the start of multi-threaded convoy stepping
 
@@ -5642,6 +5659,8 @@ void karte_t::step()
 	}
 	rands[14] = get_random_seed();
 
+	INT_CHECK("karte_t::step 3b");
+
 #ifdef MULTI_THREAD
 	// The placement of this barrier must be before any code that in any way relies on the private car routes between cities, most especially the mail and passenger generation (step_passengers_and_mail(delta_t)).
 	if (check_city_routes)
@@ -5649,6 +5668,8 @@ void karte_t::step()
 		simthread_barrier_wait(&private_car_barrier); // One wait barrier to activate all the private car checker threads, the second to wait until they have all finished. This is the second.
 	}
 #endif	
+
+	INT_CHECK("karte_t::step 3c");
 
 	rands[24] = 0;
 	rands[25] = 0;
@@ -5684,7 +5705,9 @@ void karte_t::step()
 			speed_factors_are_set = true;
 		}
 
-		simthread_barrier_wait(&step_passengers_and_mail_barrier);
+		INT_CHECK("karte_t::step 3d");
+
+		start_passengers_and_mail_threads();
 #ifdef FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
 	}
 	else
@@ -5720,19 +5743,8 @@ void karte_t::step()
 
 	INT_CHECK("karte_t::step 4");
 
-#ifdef MULTI_THREAD_PASSENGER_GENERATION
-#ifdef FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
-	if (!env_t::networkmode)
-	{
-#endif
-		// Stop the passenger and mail generation.
-		simthread_barrier_wait(&step_passengers_and_mail_barrier);
-		// The extra barrier is needed to synchronise the generation figures.
-		simthread_barrier_wait(&step_passengers_and_mail_barrier);
-#ifdef FORBID_MULTI_THREAD_PASSENGER_GENERATION_IN_NETWORK_MODE
-	}
-#endif
-#endif
+	// This does nothing if the threading is disabled.
+	await_passengers_and_mail_threads();
 
 #ifdef MULTI_THREAD
 	// This is necessary in network mode to ensure that all cars set in motion
@@ -5839,28 +5851,9 @@ void karte_t::step()
 	// This is not the computationally intensive bit of the path explorer.
 	if((steps % get_settings().get_reroute_check_interval_steps()) == 0)
 	{
-		path_explorer_t::refresh_all_categories(true);
+		path_explorer_t::refresh_all_categories(false);
 	}
 	
-#ifdef MULTI_THREAD_CONVOYS
-	// This must start after the multi-threaded path explorer starts
-
-	// Start the convoys' route finding again immediately after the convoys have been stepped: this maximises efficiency and concurrency.
-	// Since it is purely route finding in the multi-threaded convoy step, it is safe to have this concurrent with everything but the single-
-	// threaded convoy step.
-	if (first_step == 3 || first_step == 2)
-	{
-		simthread_barrier_wait(&step_convoys_barrier_external); // Start the threaded part of the convoys' steps: this is mainly route searches. Block reservation, etc., is in the single threaded part. This will end in the next step
-	}
-
-	if (first_step == 2 || first_step == 3)
-	{
-		// Convoys cannot be stepped concurrently with sync_step running in network mode because whether they need routing may depend on a command executed in sync_step,
-		// and it will be entirely by distribution_weight whether that command is executed before or after the threads get to processing that particular convoy.
-		first_step = 0;
-	}
-#endif
-
 	INT_CHECK("karte_t::step 8");
 
 	check_transferring_cargoes();
@@ -5869,6 +5862,15 @@ void karte_t::step()
 	// Start the path explorer ready for the next step. This can be very 
 	// computationally intensive, but intermittently so.
 	start_path_explorer();
+#endif
+
+#ifdef MULTI_THREAD_CONVOYS
+	// Start the convoys' route finding as soon as possible after the convoys have been stepped: this maximises efficiency and concurrency.
+	// Since it is mostly route finding in the multi-threaded convoy step, it is safe to have this concurrent with everything but the single-
+	// threaded convoy step, and anything that modifies potential routes.
+	// This also (probably) needs to start after the path explorer, as it can modify the reversing flag of schedules/lines. Starting before
+	// the path explorer would thus lead to a race condition.
+	start_convoy_threads();
 #endif
 
 	// ok, next step
@@ -5906,11 +5908,11 @@ void karte_t::step()
 		cbuffer_t buf;
 		buf.printf("%d,", message_t::general | message_t::local_flag);
 		buf.printf(translator::translate("Now %u clients connected.", settings.get_name_language_id()), last_clients);
-		tool_t *tool = create_tool( TOOL_ADD_MESSAGE | SIMPLE_TOOL );
-		tool->set_default_param( buf );
-		set_tool( tool, NULL );
+		tool_t *tmp_tool = create_tool( TOOL_ADD_MESSAGE | SIMPLE_TOOL );
+		tmp_tool->set_default_param( buf );
+		set_tool( tmp_tool, NULL );
 		// since init always returns false, it is safe to delete immediately
-		delete tool;
+		delete tmp_tool;
 	}
 
 	if(  get_scenario()->is_scripted() ) {
@@ -6109,10 +6111,11 @@ void karte_t::deposit_ware_at_destination(ware_t ware)
 				// Only book arriving passengers for commuting trips.
 				fab->liefere_an(ware.get_desc(), ware.menge);
 			}
-			else if(fab->is_end_consumer())
+			else if(fab->get_sector() == fabrik_t::end_consumer)
 			{
 				// Add visiting passengers as consumers
 				fab->add_consuming_passengers(ware.menge);
+				fab->book_stat(ware.menge, FAB_CONSUMER_ARRIVED);
 			}
 			gb_dest =lookup(fab->get_pos())->find<gebaeude_t>();
 		}
@@ -6495,7 +6498,7 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 						route_status = destination_unavailable;
 					}
 				}
-				else if (dest_building->get_is_factory() && dest_building->get_fabrik()->is_end_consumer())
+				else if (dest_building->get_is_factory() && dest_building->get_fabrik()->get_sector() == fabrik_t::end_consumer)
 				{
 					// If the visiting passengers are bound for a shop that has run out of goods to sell, 
 					// do not allow the passengers to go here.
@@ -6671,9 +6674,9 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 					// We cannot test this recursively within a reasonable time, so check only for the first stop.
 					if (pax.get_ziel() == pax.get_zwischenziel())
 					{
-						haltestelle_t::connexion* cnx = current_halt->get_connexions(wtyp->get_catg_index())->get(pax.get_zwischenziel());
+						haltestelle_t::connexion* cnx = current_halt->get_connexions(wtyp->get_catg_index(), pax.get_class())->get(pax.get_zwischenziel());
 			
-						if (current_halt->is_within_walking_distance_of(pax.get_zwischenziel()) && (!cnx || (!cnx->best_convoy.is_bound() && !cnx->best_line.is_bound())))
+						if (current_halt->is_within_walking_distance_of(pax.get_zwischenziel()) && (!cnx || (!cnx->best_convoy.is_bound() && !cnx->best_line.is_bound()) || ((cnx->best_convoy.is_bound() && !cnx->best_convoy->carries_this_or_lower_class(pax.get_catg(), pax.get_class()) || (cnx->best_line.is_bound() && !cnx->best_line->carries_this_or_lower_class(pax.get_catg(), pax.get_class()))))))
 						{
 							// Do not treat this as a public transport route: if it is a viable walking route, it will be so treated elsewhere.
 							current_journey_time = UINT32_MAX_VALUE;
@@ -7224,22 +7227,6 @@ no_route:
 				// However, this should not matter much, as equally not recording generated passengers
 				// for all return journeys should still show accurate percentages overall. 
 			}
-			if(current_destination.type == factory && (trip == commuting_trip || trip == mail_trip))
-			{
-				// The only passengers generated by a factory are returning passengers who have already reached the factory somehow or another
-				// from home (etc.).
-#ifndef FORBID_RECORDING_RETURN_FACTORY_PASSENGERS
-#ifdef MULTI_THREAD
-				mutex_error = pthread_mutex_lock(&karte_t::step_passengers_and_mail_mutex);
-				assert(mutex_error == 0);
-#endif
-				current_destination.building->get_fabrik()->book_stat(units_this_step, (wtyp == goods_manager_t::passengers ? FAB_PAX_GENERATED : FAB_MAIL_GENERATED));
-#ifdef MULTI_THREAD
-				mutex_error = pthread_mutex_unlock(&karte_t::step_passengers_and_mail_mutex);
-				assert(mutex_error == 0);
-#endif
-#endif
-			}
 		
 			ret_halt = pax.get_ziel();
 			// Those who have driven out have to take thier cars back regardless of whether public transport is better - do not check again.
@@ -7306,7 +7293,7 @@ no_route:
 #endif
 					{
 						halthandle_t test_halt = nearby_halt.halt;
-						haltestelle_t::connexion* cnx = test_halt->get_connexions(wtyp->get_catg_index())->get(ret_halt);
+						haltestelle_t::connexion* cnx = test_halt->get_connexions(wtyp->get_catg_index(), return_passengers.get_class())->get(ret_halt);
 						const uint32 jt = cnx ? cnx->journey_time : UINT32_MAX_VALUE;
 
 						if (test_halt->is_enabled(wtyp) && (ret_halt == test_halt || jt < return_journey_time))
@@ -7349,7 +7336,9 @@ no_route:
 								mutex_error = pthread_mutex_lock(&karte_t::step_passengers_and_mail_mutex);
 								assert(mutex_error == 0);
 #endif
-								current_destination.building->get_fabrik()->book_stat(units_this_step, (wtyp == goods_manager_t::passengers ? FAB_PAX_DEPARTED : FAB_MAIL_DEPARTED));
+								if (trip == mail_trip) {
+									current_destination.building->get_fabrik()->book_stat(units_this_step, FAB_MAIL_DEPARTED);
+								}
 #ifdef MULTI_THREAD
 								mutex_error = pthread_mutex_unlock(&karte_t::step_passengers_and_mail_mutex);
 								assert(mutex_error == 0);
@@ -7437,9 +7426,9 @@ no_route:
 #ifdef DESTINATION_CITYCARS
 					city->generate_private_cars(current_destination.location, car_minutes, origin_pos.get_2d(), units_this_step);
 #endif
-					if(current_destination.type == factory && (trip == commuting_trip || trip == mail_trip))
+					if(current_destination.type == factory && trip == mail_trip)
 					{
-						current_destination.building->get_fabrik()->book_stat(units_this_step, (wtyp == goods_manager_t::passengers ? FAB_PAX_DEPARTED : FAB_MAIL_DEPARTED));
+						current_destination.building->get_fabrik()->book_stat(units_this_step, FAB_MAIL_DEPARTED);
 					}
 				}
 				else
@@ -7498,9 +7487,9 @@ return_on_foot:
 						city->add_transported_mail(units_this_step);
 					}
 				}
-				if(current_destination.type == factory && (trip == commuting_trip || trip == mail_trip))
+				if(current_destination.type == factory && trip == mail_trip)
 				{
-					current_destination.building->get_fabrik()->book_stat(units_this_step, (wtyp==goods_manager_t::passengers ? FAB_PAX_DEPARTED : FAB_MAIL_DEPARTED));
+					current_destination.building->get_fabrik()->book_stat(units_this_step, FAB_MAIL_DEPARTED);
 				}
 #ifdef MULTI_THREAD
 				mutex_error = pthread_mutex_unlock(&karte_t::step_passengers_and_mail_mutex);
@@ -8061,7 +8050,7 @@ DBG_MESSAGE("karte_t::save(loadsave_t *file)", "start");
 		ls = new loadingscreen_t( translator::translate("Saving map ..."), get_size().y );
 	}
 #ifdef MULTI_THREAD
-	stop_path_explorer(); 
+	await_all_threads(); 
 #endif
 	// rotate the map until it can be saved completely
 	for( int i=0;  i<4  &&  nosave_warning;  i++  ) {
@@ -8086,11 +8075,11 @@ DBG_MESSAGE("karte_t::save(loadsave_t *file)", "start");
 		dbg->error( "karte_t::save()","Some buildings may be broken by saving!" );
 	}
 
-	/* If the current tool is a two_click_werkzeug, call cleanup() in order to delete dummy grounds (tunnel + monorail preview)
+	/* If the current tool is a two_click_tool, call cleanup() in order to delete dummy grounds (tunnel + monorail preview)
 	 * THIS MUST NOT BE DONE IN NETWORK MODE!
 	 */
 	for(  uint8 sp_nr=0;  sp_nr<MAX_PLAYER_COUNT;  sp_nr++  ) {
-		if(  two_click_tool_t* tool = dynamic_cast<two_click_tool_t*>(selected_tool[sp_nr]) ) {
+		if (two_click_tool_t* tool = dynamic_cast<two_click_tool_t*>(selected_tool[sp_nr])) {
 			tool->cleanup();
 		}
 	}
@@ -8448,6 +8437,11 @@ DBG_MESSAGE("karte_t::save(loadsave_t *file)", "motd filename %s", env_t::server
 		}
 	}
 
+	if (file->get_extended_version() >= 15 || (file->get_extended_version() >= 14 && file->get_extended_revision() >= 8) && get_settings().get_save_path_explorer_data())
+	{
+		path_explorer_t::rdwr(file);
+	}
+
 	// MUST be at the end of the load/save routine.
 	// save all open windows (upon request)
 	file->rdwr_byte( active_player_nr );
@@ -8777,7 +8771,6 @@ void karte_t::load(loadsave_t *file)
 #ifdef MULTI_THREAD
 	// destroy() destroys the threads, so this must be here.
 	init_threads();
-	first_step = 1;
 #endif
 
 	tile_counter = 0;
@@ -9577,6 +9570,21 @@ DBG_MESSAGE("karte_t::load()", "%d factories loaded", fab_list.get_count());
 		}
 	}
 
+	// Either reload the path explorer data or refresh the routing.
+	bool path_explorer_data_saved = false;
+	if ((file->get_extended_version() >= 15 || (file->get_extended_version() >= 14 && file->get_extended_revision() >= 8)) && get_settings().get_save_path_explorer_data())
+	{
+		path_explorer_data_saved = true;
+		path_explorer_t::rdwr(file); 
+	}
+
+	if (!path_explorer_data_saved || path_explorer_t::must_refresh_on_loading)
+	{
+		path_explorer_t::full_instant_refresh();
+	}
+
+	path_explorer_t::reset_must_refresh_on_loading(); 
+
 	vehicle_t::sound_ticks = 0;
 
 	// MUST be at the end of the load/save routine.
@@ -9597,9 +9605,6 @@ DBG_MESSAGE("karte_t::load()", "%d factories loaded", fab_list.get_count());
 	{
 		i->check_road_tiles(false);
 	}
-
-	// Added by : Knightly
-	path_explorer_t::full_instant_refresh();
 
 	file->set_buffered(false);
 	clear_random_mode(LOAD_RANDOM);
@@ -10162,6 +10167,14 @@ void karte_t::remove_player(uint8 player_nr)
 /* goes to next active player */
 void karte_t::switch_active_player(uint8 new_player, bool silent)
 {
+	// Disable the signalbox overlay on the ground
+	signalbox_t* old_selected = active_player->get_selected_signalbox();
+	gebaeude_t* gb_old = (gebaeude_t*)old_selected;
+	if (gb_old)
+	{
+		gb_old->display_coverage_radius(false);
+	}
+
 	for(  uint8 i=0;  i<MAX_PLAYER_COUNT;  i++  ) {
 		if(  players[(i+new_player)%MAX_PLAYER_COUNT] != NULL  ) {
 			new_player = (i+new_player)%MAX_PLAYER_COUNT;

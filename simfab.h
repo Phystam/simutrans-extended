@@ -8,6 +8,8 @@
 #ifndef simfab_h
 #define simfab_h
 
+#include <algorithm>
+
 #include "dataobj/koord3d.h"
 #include "dataobj/translator.h"
 
@@ -36,13 +38,14 @@ class ware_t;
 #define FAB_BOOST_ELECTRIC          (2)
 #define FAB_BOOST_PAX               (3)
 #define FAB_BOOST_MAIL              (4)
-#define FAB_PAX_GENERATED           (5)
-#define FAB_PAX_DEPARTED            (6)
+#define FAB_PAX_GENERATED           (5) // now unused, almost same as FAB_PAX_ARRIVED.
+#define FAB_PAX_DEPARTED            (6) // almost same as FAB_PAX_ARRIVED
 #define FAB_PAX_ARRIVED             (7)
-#define FAB_MAIL_GENERATED          (8)
+#define FAB_MAIL_GENERATED          (8) // now unused, same as FAB_MAIL_DEPARTED.
 #define FAB_MAIL_DEPARTED           (9)
 #define FAB_MAIL_ARRIVED           (10)
-#define MAX_FAB_STAT               (11)
+#define FAB_CONSUMER_ARRIVED       (11)
+#define MAX_FAB_STAT               (12)
 
 // reference lines
 #define FAB_REF_MAX_BOOST_ELECTRIC  (0)
@@ -107,6 +110,7 @@ public:
 	void rdwr(loadsave_t *file);
 	const sint64* get_stats() const { return *statistics; }
 	void book_stat(sint64 value, int stat_type) { assert(stat_type<MAX_FAB_GOODS_STAT); statistics[0][stat_type] += value; }
+	void book_stat_no_negative(sint64 value, int stat_type) { assert(stat_type < MAX_FAB_GOODS_STAT); statistics[0][stat_type] += (std::max(value, -statistics[0][stat_type])); }
 	void set_stat(sint64 value, int stat_type) { assert(stat_type<MAX_FAB_GOODS_STAT); statistics[0][stat_type] = value; }
 	sint64 get_stat(int month, int stat_type) const { assert(stat_type<MAX_FAB_GOODS_STAT); return statistics[month][stat_type]; }
 
@@ -231,7 +235,7 @@ private:
 	 */
 	void verteile_waren(const uint32 product);
 
-	player_t *owner;		// player_t* owner_p
+	player_t *owner;
 	static karte_ptr_t welt;
 
 	const factory_desc_t *desc;
@@ -313,6 +317,9 @@ private:
 
 	uint32 total_input, total_transit, total_output;
 	uint8 status;
+
+	uint8 sector;
+	void set_sector();
 
 	/// Position of a building of the factory.
 	koord3d pos;
@@ -439,7 +446,7 @@ protected:
 
 public:
 	fabrik_t(loadsave_t *file);
-	fabrik_t(koord3d pos, player_t* player, const factory_desc_t* desc, sint32 initial_prod_base);
+	fabrik_t(koord3d pos, player_t* owner, const factory_desc_t* desc, sint32 initial_prod_base);
 	~fabrik_t();
 
 	gebaeude_t* get_building();
@@ -703,11 +710,11 @@ public:
 	void set_base_production(sint32 p, bool is_from_saved_game = false);
 
 	// This is done this way rather than reusing get_prodfactor() because the latter causes a lack of precision (everything being rounded to the nearest 16). 
-	sint32 get_current_production() const { return (sint32)(welt->calc_adjusted_monthly_figure(((sint64)prodbase * (sint64)(DEFAULT_PRODUCTION_FACTOR + prodfactor_electric + prodfactor_pax + prodfactor_mail)))) >> 8l; }
+	sint32 get_current_production() const { return (sint32)(welt->calc_adjusted_monthly_figure(((sint64)prodbase * (sint64)(DEFAULT_PRODUCTION_FACTOR + prodfactor_electric + (get_sector() == fabrik_t::end_consumer ? 0 : prodfactor_pax + prodfactor_mail))))) >> 8l; }
 
-	/* prissi: returns the status of the current factory, as well as output */
-	enum { bad, medium, good, inactive, nothing, staff_shortage };
-	static unsigned status_to_color[6];
+	/* prissi: returns the status of the current factory */
+	enum { nothing, good, water_resource, medium, water_resource_full, storage_full, inactive, shipment_stuck, material_shortage, no_material, bad, mat_overstocked, stuck, staff_shortage, MAX_FAB_STATUS };
+	static unsigned status_to_color[MAX_FAB_STATUS];
 
 	uint8  get_status() const { return status; }
 	uint32 get_total_in() const { return total_input; }
@@ -741,7 +748,12 @@ public:
 	uint32 get_monthly_pax_demand() const;
 	uint32 get_scaled_mail_demand() const { return scaled_mail_demand; }
 
-	bool is_end_consumer() const { return (output.empty() && !desc->is_electricity_producer()); }
+	//bool is_end_consumer() const { return (output.empty() && !desc->is_electricity_producer()); }
+	enum ftype { marine_resource = 0, resource, resource_city, manufacturing, end_consumer, power_plant, unknown };
+	// @returns industry type
+	uint8 get_sector() const { return sector; }
+	// Determine shortage of staff for each industry type
+	bool chk_staff_shortage(uint8 abc, sint32 staffing_level_percentage) const;
 
 	/**
 	 * Returns a list of goods produced by this factory.
@@ -764,6 +776,9 @@ public:
 	int get_mail_level() const;
 
 	bool is_input_empty() const;
+
+	// check connected to public or current player stop
+	bool is_connect_own_network() const;
 };
 
 #endif

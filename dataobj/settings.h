@@ -176,7 +176,7 @@ private:
 	bool beginner_mode;
 	sint32 beginner_price_factor;
 
-	bool just_in_time;
+	uint8 just_in_time;
 
 	// default 0, will be incremented after each 90 degree rotation until 4
 	uint8 rotation;
@@ -693,6 +693,9 @@ public:
 
 	bool rural_industries_no_staff_shortage;
 
+	uint32 path_explorer_time_midpoint;
+	bool save_path_explorer_data;
+
 	/**
 	 * If map is read from a heightfield, this is the name of the heightfield.
 	 * Set to empty string in order to avoid loading.
@@ -770,8 +773,8 @@ public:
 
 	bool get_beginner_mode() const {return beginner_mode;}
 
-	void set_just_in_time(bool b) { just_in_time = b; }
-	bool get_just_in_time() const {return just_in_time;}
+	void set_just_in_time(uint8 v) { just_in_time = v; }
+	uint8 get_just_in_time() const {return just_in_time;}
 
 	void set_default_climates();
 	const sint16 *get_climate_borders() const { return climate_borders; }
@@ -1173,6 +1176,9 @@ public:
 	uint16 get_max_comfort_preference_percentage() const { return max_comfort_preference_percentage; }
 
 	bool get_rural_industries_no_staff_shortage() const { return rural_industries_no_staff_shortage; }
+
+	uint32 get_path_explorer_time_midpoint() const { return path_explorer_time_midpoint; }
+	bool get_save_path_explorer_data() const { return save_path_explorer_data; }
 };
 
 #endif 

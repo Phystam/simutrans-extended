@@ -73,6 +73,18 @@ public:
 		IS_SNOW = 0x80	// marker, if above snowline currently
 	};
 
+	struct runway_directions
+	{
+		bool runway_36_18;
+		bool runway_9_27;
+
+		runway_directions(bool run_36_18, bool run_9_27)
+		{
+			runway_36_18 = run_36_18;
+			runway_9_27 = run_9_27;
+		}
+	};
+
 private:
 	/**
 	* array for statistical values
@@ -287,7 +299,7 @@ public:
 	*/
 	waytype_t get_waytype() const { return wtyp; }
 
-	bool is_rail_type() const { return wtyp == track_wt || wtyp == maglev_wt || wtyp == tram_wt || wtyp == narrowgauge_wt || wtyp == monorail_wt;  }
+	inline bool is_rail_type() const { return wtyp == track_wt || wtyp == maglev_wt || wtyp == tram_wt || wtyp == narrowgauge_wt || wtyp == monorail_wt;  }
 
 	/**
 	* 'Jedes Ding braucht einen Typ.'
@@ -445,6 +457,9 @@ public:
 	signal_t* get_signal(ribi_t::ribi direction_of_travel) const;
 
 	bool is_junction() const { return ribi_t::is_threeway(get_ribi_unmasked()); }
+
+	runway_directions get_runway_directions() const;
+	uint32 get_runway_length(bool is_36_18) const; 
 
 } GCC_PACKED;
 

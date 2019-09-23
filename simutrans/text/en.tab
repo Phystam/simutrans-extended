@@ -3,7 +3,7 @@ PROP_FONT_FILE
 Prop-Latin1.bdf
 ################################################################################
 #                                                                              #
-#                 Simutrans-Extended Base Translation File                 #
+#                 Simutrans-Extended Base Translation File                     #
 #                             Scenario: Base texts                             #
 #                             Language: en English                             #
 #                                Encoding: ASCII                               #
@@ -1085,6 +1085,10 @@ Loom
 Ler
 %24B_CITY_SYLL
 Mous
+%249_CITY_SYLL
+Les
+%24A_CITY_SYLL
+Bern
 #
 # Town name end syllables.
 # There can be up to 1024 of these.
@@ -2167,7 +2171,7 @@ Freight
 Frame time:
 Frame Time:
 Free Capacity
-Total Capacity
+Free capacity
 Friction:
 Current friction:
 fuel_cell
@@ -3699,9 +3703,9 @@ Equipped with
 tilting_vehicle_equipment
 Tilting vehicle equipment
 classes
-classes
+price classes
 class
-class
+price class
 good_units
 good units
 no_cargo_capacity
@@ -3737,7 +3741,7 @@ this vehicle can upgrade to
 additional_upgrades
 additional upgrades
 reassign_classes
-Reassign classes
+Reassign prices
 line_no_convoys
 This line has no convoys assigned
 line_loss_making
@@ -3755,13 +3759,13 @@ This line has obsolete vehicles with upgrades
 staff_shortage
 Staff shortage
 reset_all_pass_classes
-Reset all passenger classes
+Reset all passenger prices
 resets_all_passenger_classes_to_their_defaults
-Resets all passenger classes to their defaults
+Resets all passenger prices to their defaults
 reset_all_mail_classes
-Reset all mail classes
+Reset all mail prices
 resets_all_mail_classes_to_their_defaults
-Resets all mail classes to their defaults
+Resets all mail prices to their defaults
 reassigned_to_multiple
 Reassigned to multiple
 catering_cars: %i
@@ -3775,9 +3779,9 @@ Change prices
 change_the_classes_for_the_entire_line
 Change the prices for the entire line
 reassigned_class
-reassigned class
+reassigned price
 reassigned_classes
-reassigned classes
+reassigned prices
 times_history
 Times History
 view_journey_times_history_of_this_line
@@ -3900,3 +3904,49 @@ ratio_goods
 % goods
 Can't buy obsolete vehicles!
 It is not possible to buy vehicles that are either obsolete or available only as upgrades.
+Inactive
+Inactive
+Sector
+Sector
+Commuters
+Commuters
+Consumers
+Consumers
+Within own network
+Within own network
+Show only connected to own transport network
+Show only connected to own transport network
+Fully stocked
+Fully stocked
+Power usage
+Power usage
+Power output
+Power output
+Railcar_tab
+Railcars
+staffing_bar_tooltip_help
+This bar shows how many workers that this industry has compared to how many that it needs
+Runway too short, require %dm
+Runway too short: at least %dm needed
+ (block %i)
+ (block %i)
+this_signal_protects_a_junction
+This signal protects a junction
+distance_to_junction
+Distance to junction
+distance_to_stop_signal
+Distance to stop signal
+no_signal_before_dead_end
+No signal before buffers
+distance_to_dead_end
+Distance to buffers
+Jobs
+Jobs
+show signalbox coverage
+Show signalbox coverage
+Show coverage radius of the signalbox.
+Show coverage radius of the signalbox.
+Protocol error (expected NWC_GAME)
+Network connect timeout or error: did not receive NWC_GAME packet within 10 minutes, or received bad packet.
+stop_some_goods_arrival
+Some goods out of stock
