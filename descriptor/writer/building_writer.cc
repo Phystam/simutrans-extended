@@ -177,6 +177,9 @@ void building_writer_t::write_obj(FILE* fp, obj_node_t& parent, tabfileobj_t& ob
 	} else if (!STRICMP(type_name, "stop")) {
 		type      = building_desc_t::generic_stop;
 		extra_data = get_waytype(obj.get("waytype"));
+	} else if (!STRICMP(type_name, "decoration_stop")) {
+		type      = building_desc_t::decoration_stop;
+		extra_data = get_waytype(obj.get("waytype"));
 	} else if (!STRICMP(type_name, "extension")) {
 		type = building_desc_t::generic_extension;
 		const char *wt = obj.get("waytype");

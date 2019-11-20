@@ -182,6 +182,7 @@ bool hausbauer_t::successfully_loaded()
 			case building_desc_t::flat_dock:
 			case building_desc_t::depot:
 			case building_desc_t::generic_stop:
+  		case building_desc_t::decoration_stop:
 			case building_desc_t::generic_extension:
 
 				station_building.insert_ordered(desc,compare_station_desc);
@@ -289,6 +290,7 @@ void hausbauer_t::fill_menu(tool_selector_t* tool_selector, building_desc_t::bty
 		case building_desc_t::dock:
 		case building_desc_t::flat_dock:
 		case building_desc_t::generic_stop:
+		case building_desc_t::decoration_stop:
 		case building_desc_t::generic_extension:
 			toolnr = TOOL_BUILD_STATION | GENERAL_TOOL;
 			break;
@@ -1218,6 +1220,7 @@ const vector_tpl<const building_desc_t*>* hausbauer_t::get_list(const building_d
 		case building_desc_t::flat_dock:
 		case building_desc_t::depot:
 		case building_desc_t::generic_stop:
+		case building_desc_t::decoration_stop:
 		case building_desc_t::generic_extension:
 		                                    return &station_building;
 		default:                            return NULL;

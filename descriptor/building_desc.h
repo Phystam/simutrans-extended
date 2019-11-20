@@ -148,7 +148,7 @@ class building_desc_t : public obj_desc_timelined_t {
 			city_com			= 38, ///< commercial  city buildings
 			city_ind			= 39, ///< industrial  city buildings
 			signalbox			= 70, // Signalbox. 70 to allow for plenty more Standard ones in between.
-
+			decoration_stop = 71, // decoration stops which can be built only on the decoration ways
 		};
 
 			enum flag_t {
@@ -297,7 +297,7 @@ public:
 	bool is_attraction() const { return is_type(attraction_land) || is_type(attraction_city); }
 	bool is_factory()       const { return is_type(factory); }
 	bool is_city_building() const { return is_type(city_res) || is_type(city_com) || is_type(city_ind); }
-	bool is_transport_building() const { return type > headquarters  && type <= flat_dock; }
+	bool is_transport_building() const { return (type > headquarters  && type <= flat_dock) || is_type(decoration_stop(); }
 	bool is_signalbox() const { return is_type(signalbox); }
 
 	bool is_connected_with_town() const;

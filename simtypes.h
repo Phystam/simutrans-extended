@@ -118,6 +118,8 @@ enum systemtype_t {
 	type_elevated = 1,	///< flag for elevated ways
 	type_runway = 1,	///< flag for runway (only aircrafts)
 	type_tram = 7,	///< tram track (waytype = track_wt)
+	type_decoration_flat = 32,    ///< decoration flat way (basis of decoration buildings, or pedestrian ways)
+	type_decoration_elevated = 33, ///< decoration elevated way (basis of decoration buildings, or pedestrian ways)
 	type_river = 255,	///< flag for river
 	type_all = 255,	///< special ?
 };

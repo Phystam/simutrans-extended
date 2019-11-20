@@ -5209,12 +5209,12 @@ image_id tool_build_station_t::get_icon( player_t * ) const
 		if(  desc->get_type()!=building_desc_t::generic_stop  ||  desc->get_extra()==air_wt) {
 			return IMG_EMPTY;
 		}
-		if(  desc->get_type()==building_desc_t::generic_stop  &&  !desc->can_be_built_underground()) {
+		if(  ( desc->get_type()==building_desc_t::generic_stop || desc->get_type()==building_desc_t::decoration_stop ) &&  !desc->can_be_built_underground()) {
 			return IMG_EMPTY;
 		}
 	}
 	if(  grund_t::underground_mode==grund_t::ugm_none  ) {
-		if(  desc->get_type()==building_desc_t::generic_stop  &&  !desc->can_be_built_aboveground()) {
+		if(  ( desc->get_type()==building_desc_t::generic_stop || desc->get_type()==building_desc_t::decoration_stop )  &&  !desc->can_be_built_aboveground()) {
 			return IMG_EMPTY;
 		}
 	}
@@ -5279,6 +5279,24 @@ char const* tool_build_station_t::get_tooltip(player_t const*player) const
 			}
 		}
 	}
+	else if(  desc->get_type()!=building_desc_t::decoration_stop  ){
+		if(desc->get_base_maintenance() != PRICE_MAGIC)
+		{
+			maint = desc->get_maintenance();
+		}
+		else
+		{
+			maint = welt->get_settings().maint_building*desc->get_level();
+		}
+		if(desc->get_base_price() != PRICE_MAGIC)
+		{
+			price = -desc->get_price();
+		}
+		else
+		{
+			price = welt->get_settings().cst_multiply_post * desc->get_level();
+		}
+	}
 	else if(desc->get_type()==building_desc_t::generic_extension || desc->get_type()==building_desc_t::dock || desc->get_type()==building_desc_t::flat_dock)
 	{
 		if(desc->get_base_maintenance() != PRICE_MAGIC)
@@ -5325,6 +5343,7 @@ waytype_t tool_build_station_t::get_waytype() const
 	building_desc_t const* desc = get_desc(dummy);
 	switch (desc ? desc->get_type() : building_desc_t::generic_extension) {
 		case building_desc_t::generic_stop:
+		case building_desc_t::decoration_stop:
 			return (waytype_t)desc->get_extra();
 		case building_desc_t::dock:
 		case building_desc_t::flat_dock:
@@ -5437,7 +5456,8 @@ const char *tool_build_station_t::work( player_t *player, koord3d pos )
 				msg = tool_build_station_t::tool_station_building_aux(player, true, pos, desc, rotation );
 			}
 			break;
-		case building_desc_t::generic_stop: {
+		case building_desc_t::generic_stop:
+  	case building_desc_t::decoration_stop: {
 			switch(desc->get_extra()) {
 				case road_wt:
 					msg = tool_build_station_t::tool_station_aux(player, pos, desc, road_wt, "H");
