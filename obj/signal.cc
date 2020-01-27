@@ -460,10 +460,11 @@ void signal_t::info(cbuffer_t & buf, bool dummy) const
 		uint8 directions = 1;
 		uint8 coming_from_direction = get_dir();
 		uint8 blocks_amount = desc->get_aspects();
-		int tiles = 0;
+		double tiles = 0;
 		bool dead_end = false;
 		bool crossing = false;
 		bool signal = false;
+		bool ribi_straight = true;
 		int max_tiles_to_look = 1000;
 		char direction[20];
 		char spaces[5];
@@ -529,6 +530,7 @@ void signal_t::info(cbuffer_t & buf, bool dummy) const
 			coming_from_direction = get_dir();
 			tiles = 0;
 			crossing = false;
+			ribi_straight=true;
 			dead_end = false;
 			previous_signal = NULL;
 			for (int b = 0; b < blocks_amount; b++)
@@ -554,6 +556,17 @@ void signal_t::info(cbuffer_t & buf, bool dummy) const
 
 							// Is this new tile a junction of some sorth?
 							ribi_t::ribi ribi = weg->get_ribi_unmasked();
+							switch(ribi){
+							case ribi_t::_ribi::southeast:
+							case ribi_t::_ribi::northeast:
+							case ribi_t::_ribi::southwest:
+							case ribi_t::_ribi::northwest:
+								ribi_straight=false;
+								break;
+							default:
+								ribi_straight=true;
+								break;
+							}
 							switch (ribi)
 							{
 							case ribi_t::_ribi::northsoutheast:
@@ -629,12 +642,16 @@ void signal_t::info(cbuffer_t & buf, bool dummy) const
 					// It it is a crossing, dont count the tile since the crossing starts at the edge of the tile
 					if (signal)
 					{
-						tiles++;
+						if(ribi_straight){
+							tiles++;
+						}else{
+							tiles+=1.414;
+						}
 						break;
 					}
 					if (dead_end)
 					{
-						tiles++;
+						tiles++; //dead_end is always straight
 						previous_signal = NULL;
 						break;
 					}
@@ -643,7 +660,11 @@ void signal_t::info(cbuffer_t & buf, bool dummy) const
 						previous_signal = NULL;
 						break;
 					}
-					tiles++;
+					if(ribi_straight){
+						tiles++;
+					}else{
+						tiles+=1.414;
+					}
 				}
 
 				// Convert the tiles counted to actual distance
