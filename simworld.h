@@ -1994,6 +1994,17 @@ public:
 	inline bool is_within_limits(koord k) const { return is_within_limits(k.x, k.y); }
 
 	/**
+	 * @return True if the specified x/y coodinate is inside the world tiles limits.
+	 */
+	inline bool is_within_limits_x(sint16 x) const {
+		return (x|(cached_size.x-x))>=0;
+	}
+
+	inline bool is_within_limits_y(sint16 y) const {
+		return (y|(cached_size.y-y))>=0;
+	}
+																													
+	/**
 	 * @return True if the specified coordinate is inside the world height grid limits, false otherwise.
 	 * @param x X coordinate.
 	 * @param y Y coordinate.
@@ -2314,6 +2325,15 @@ public:
 	 */
 	bool remove_city(stadt_t *s);
 
+	/**
+	 * determine city borders
+	 * @author Phystam
+	 */
+	vector_tpl<uint32> quick_sort_nearest_city_index(koord k);
+	void quick_sort(vector_tpl<uint32> numbers, vector_tpl<uint32> &index,int left, int right);
+	stadt_t* best_city_for_ground_at(koord k);
+	void calc_city_area();
+	
 	/* tourist attraction list */
 	void add_attraction(gebaeude_t *gb);
 	void remove_attraction(gebaeude_t *gb);

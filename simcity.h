@@ -185,6 +185,7 @@ private:
 	koord pos;				// Gruendungsplanquadrat der City ("founding grid square" - Google)
 	koord townhall_road;	// road in front of townhall
 	koord lo, ur;			// max size of housing area
+	vector_tpl<koord> city_area;
 
 	bool allow_citygrowth;	// Whether growth is permitted (true by default)
 
@@ -360,17 +361,6 @@ public:
 	void reset_city_borders();
 
 private:
-
-	/**
-	 * Enlarges city borders (after being unable to build a building, before trying again)
-	 * Returns false if there are other cities on all four sides
-	 */
-	bool enlarge_city_borders();
-	/**
-	 * Enlarges city borders in a particular direction (N,S,E, or W)
-	 * Returns false if it can't
-	 */
-	bool enlarge_city_borders(ribi_t::ribi direction);
 
 	// calculates the growth rate for next growth_interval using all the different indicators
 	void calc_growth();
@@ -687,6 +677,13 @@ public:
 
 	koord get_center() const { return (lo+ur)/2; }
 
+	const vector_tpl<koord>& get_city_area() const {
+		return city_area;
+	}
+	void add_city_area(koord k){
+		city_area.append_unique(k);
+	}
+	
 	// Checks whether any given postition is within the city limits.
 	bool is_within_city_limits(koord k) const;
 
