@@ -20,7 +20,7 @@
 //typedef KOORD_VAL koord_x;
 //typedef KOORD_VAL koord_y;
 typedef KOORD_VAL coordinate_t;
-typedef PLAYER_COLOR_VAL color_t;
+typedef PIXVAL color_t;
 
 
 /**

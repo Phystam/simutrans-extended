@@ -544,7 +544,7 @@ void server_frame_t::draw (scr_coord pos, scr_size size)
 	if (  display_map  ) {
 		// 3D border around the map graphic
 		display_ddd_box_clip_rgb( pos.x + D_MARGIN_LEFT, pos_y, mapsize.w + 2, mapsize.h + 2, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4) );
-		display_array_wh_rgb( pos.x + D_MARGIN_LEFT + 1, pos_y + 1, mapsize.w, mapsize.h, gi.get_map()->to_array() );
+		display_array_wh( pos.x + D_MARGIN_LEFT + 1, pos_y + 1, mapsize.w, mapsize.h, gi.get_map()->to_array() );
 	}
 
 	// Descriptive server text

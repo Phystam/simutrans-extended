@@ -258,7 +258,7 @@ void enlarge_map_frame_t::draw(scr_coord pos, scr_size size)
 	int y = pos.y+D_TITLEBAR_HEIGHT+D_MARGIN_TOP;
 
 	display_ddd_box_clip_rgb(x-2, y, preview_size+2, preview_size+2,  color_idx_to_rgb(MN_GREY0),  color_idx_to_rgb(MN_GREY4));
-	display_array_wh_rgb(x-1, y+1, preview_size, preview_size, karte);
+	display_array_wh(x-1, y+1, preview_size, preview_size, karte);
 }
 
 

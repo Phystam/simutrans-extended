@@ -465,7 +465,7 @@ static void line_segment_draw( waytype_t type, scr_coord start, uint8 start_offs
 		const int delta_y = end.y-start.y;
 		if(  (start.x-end.x)*delta_y == 0  ) {
 			// horizontal/vertical line
-			display_thick_line_rgb( start.x, start.y, end.x, end.y, colore, dotted, 5, 3, thickness );
+			display_thick_line( start.x, start.y, end.x, end.y, colore, dotted, 5, 3, thickness );
 		}
 		else {
 			// two segment
@@ -493,8 +493,8 @@ static void line_segment_draw( waytype_t type, scr_coord start, uint8 start_offs
 					mid.x = start.x + abs(delta_y);
 					mid.y = end.y;
 				}
-				display_thick_line_rgb( start.x, start.y, mid.x, mid.y, colore, dotted, 5, 3, thickness );
-				display_thick_line_rgb( mid.x, mid.y, end.x, end.y, colore, dotted, 5, 3, thickness );
+				display_thick_line( start.x, start.y, mid.x, mid.y, colore, dotted, 5, 3, thickness );
+				display_thick_line( mid.x, mid.y, end.x, end.y, colore, dotted, 5, 3, thickness );
 			}
 			else {
 				// end with diagonal
@@ -507,8 +507,8 @@ static void line_segment_draw( waytype_t type, scr_coord start, uint8 start_offs
 					mid.x = end.x - abs(delta_y);
 					mid.y = start.y;
 				}
-				display_thick_line_rgb( start.x, start.y, mid.x, mid.y, colore, dotted, 5, 3, thickness );
-				display_thick_line_rgb( mid.x, mid.y, end.x, end.y, colore, dotted, 5, 3, thickness );
+				display_thick_line( start.x, start.y, mid.x, mid.y, colore, dotted, 5, 3, thickness );
+				display_thick_line( mid.x, mid.y, end.x, end.y, colore, dotted, 5, 3, thickness );
 			}
 		}
 	}
@@ -1095,7 +1095,7 @@ void reliefkarte_t::calc_map()
 	// actually the following line should reduce new/deletes, but does not work properly
 	if(  relief==NULL  ||  (sint16)relief->get_width()!=relief_size.w  ||  (sint16)relief->get_height()!=relief_size.h  ) {
 		delete relief;
-		relief = new array2d_tpl<unsigned char> (relief_size.w,relief_size.h);
+		relief = new array2d_tpl<PIXVAL> (relief_size.w,relief_size.h);
 	}
 	cur_off = new_off;
 	cur_size = new_size;
@@ -1389,7 +1389,7 @@ void reliefkarte_t::draw(scr_coord pos)
 	if(  (uint16)cur_size.h > relief->get_height()  ) {
 		display_fillbox_wh_clip_rgb( pos.x+new_off.x, pos.y+new_off.y+relief->get_height(), 32767, 32767, color_idx_to_rgb(COL_BLACK), true);
 	}
-	display_array_wh_rgb( cur_off.x+pos.x, new_off.y+pos.y, relief->get_width(), relief->get_height(), relief->to_array());
+	display_array_wh( cur_off.x+pos.x, new_off.y+pos.y, relief->get_width(), relief->get_height(), relief->to_array());
 
 	if(  !current_cnv.is_bound()  &&  mode & MAP_LINES    ) {
 		vector_tpl<linehandle_t> linee;
@@ -1730,7 +1730,7 @@ void reliefkarte_t::draw(scr_coord pos)
 	if(  display_station.is_bound()  ) {
 		scr_coord temp_stop = karte_to_screen( display_station->get_basis_pos() );
 		temp_stop = temp_stop + pos;
-		display_ddd_proportional_clip_rgb( temp_stop.x + 10, temp_stop.y + 7, proportional_string_width( display_station->get_name() ) + 8, 0, color_idx_to_rgb(display_station->get_owner()->get_player_color1()+3), color_idx_to_rgb(COL_WHITE), display_station->get_name(), false );
+		display_ddd_proportional_clip( temp_stop.x + 10, temp_stop.y + 7, proportional_string_width( display_station->get_name() ) + 8, 0, color_idx_to_rgb(display_station->get_owner()->get_player_color1()+3), color_idx_to_rgb(COL_WHITE), display_station->get_name(), false );
 	}
 	max_waiting_change = new_max_waiting_change;	// update waiting tendencies
 
@@ -1747,7 +1747,7 @@ void reliefkarte_t::draw(scr_coord pos)
 			scr_coord p = karte_to_screen( city->get_pos() );
 			p.x = clamp( p.x, 0, get_size().w-w );
 			p += pos;
-			display_proportional_clip( p.x, p.y, name, ALIGN_LEFT, col, true );
+			display_proportional_clip_rgb( p.x, p.y, name, ALIGN_LEFT, col, true );
 		}
 	}
 
@@ -1893,7 +1893,7 @@ void reliefkarte_t::draw(scr_coord pos)
 			int name_width = proportional_string_width(name)+8;
 			boxpos.x = clamp( boxpos.x, 0, 0+get_size().w-name_width );
 			boxpos += pos;
-			display_ddd_proportional_clip_rgb(boxpos.x, boxpos.y, name_width, 0, 10, color_idx_to_rgb(COL_WHITE), name, true);
+			display_ddd_proportional_clip(boxpos.x, boxpos.y, name_width, 0, 10, color_idx_to_rgb(COL_WHITE), name, true);
 		}
 	}
 }

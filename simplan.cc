@@ -665,7 +665,7 @@ void planquadrat_t::display_overlay(const sint16 xpos, const sint16 ypos) const
 			const sint16 off = (raster_tile_width>>5);
 			// suitable start search
 			for (size_t h = halt_list_count; h-- != 0;) {
-				display_fillbox_wh_clip(x - h * off, y + h * off, r, r, PLAYER_FLAG | color_idx_to_rgb(halt_list[h].halt->get_owner()->get_player_color1() + 4), kartenboden_dirty);
+				display_fillbox_wh_clip_rgb(x - h * off, y + h * off, r, r, PLAYER_FLAG | color_idx_to_rgb(halt_list[h].halt->get_owner()->get_player_color1() + 4), kartenboden_dirty);
 			}
 		}
 	}

@@ -19,7 +19,7 @@ public:
 	convoy_scrollitem_t( convoihandle_t c ) : gui_scrolled_list_t::const_text_scrollitem_t( NULL, COL_ORANGE ) { cnv = c; }
 	PIXVAL get_color() OVERRIDE;
 	convoihandle_t get_convoy() const { return cnv; }
-	void set_color(COLOR_VAL) OVERRIDE { assert(false); }
+	void set_color(PIXVAL) OVERRIDE { assert(false); }
 	char const* get_text() const OVERRIDE;
 	void set_text(char const*) OVERRIDE;
 	bool is_editable() { return true; }

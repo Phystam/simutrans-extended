@@ -496,10 +496,10 @@ bool gui_theme_t::themes_init(const char *file_name)
 	env_t::remember_window_positions = contents.get_int("remember_window_positions", env_t::remember_window_positions );
 	env_t::window_snap_distance =      contents.get_int("window_snap_distance",      env_t::window_snap_distance );
 	gui_theme_t::gui_drop_shadows =    contents.get_int("gui_drop_shadows",          gui_theme_t::gui_drop_shadows );
-	env_t::bottom-window_darkness =    contents.get_int("gui_drop_shadows",          gui_theme_t::gui_drop_shadows );
+	env_t::bottom_window_darkness =    contents.get_int("gui_drop_shadows",          gui_theme_t::gui_drop_shadows );
 	
 	
-	env_t::default_window_title_bar =   contents.get_color("default_window_title_color",   env_t::default_window_title_color, &env_t::default_window_title_color_rgb );
+	env_t::default_window_title_color =   contents.get_color("default_window_title_color",   env_t::default_window_title_color, &env_t::default_window_title_color_rgb );
 	env_t::front_window_text_color =  contents.get_color("front_window_text_color",  env_t::front_window_text_color, &env_t::front_window_text_color_rgb );
 	env_t::bottom_window_text_color =  contents.get_color("front_window_text_color",  env_t::bottom_window_text_color, &env_t::bottom_window_text_color_rgb );
 	env_t::cursor_overlay_color = contents.get_color("cursor_overlay_color",     env_t::cursor_overlay_color, &env_t::cursor_overlay_color_rgb );

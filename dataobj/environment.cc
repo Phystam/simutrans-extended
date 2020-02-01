@@ -268,7 +268,7 @@ void env_t::init()
 
 	front_window_text_color = 0xFFFFFF; // COL_WHITE
 	bottom_window_text_color = 0x303030;	// CITY_KI dark grey
-	default_window_text_color = 0xD76B00;
+	default_window_title_color = 0xD76B00;
 	bottom_window_darkness = 25;
 
 	default_ai_construction_speed = 8000;
@@ -334,10 +334,8 @@ void env_t::rdwr(loadsave_t *file)
 	}
 
 	file->rdwr_bool( show_tooltips );
-	file->rdwr_byte( tooltip_color );
-	file->rdwr_byte( tooltip_textcolor );
 	if (  file->get_version()<120005  ) {
-		uint8 color = COL_SOFt_BLUE;
+		uint8 color = COL_SOFT_BLUE;
 		file->rdwr_byte( color );
 		env_t::tooltip_color_rgb = get_color_rgb(color);
 
@@ -496,7 +494,7 @@ void env_t::rdwr(loadsave_t *file)
 		file->rdwr_long( front_window_text_color_rgb );
 		file->rdwr_long( bottom_window_text_color_rgb );
 
-		file->rdwr_long( bottom_window_darkness );
+		file->rdwr_byte( bottom_window_darkness );
 	}
 // server settings are not saved, since they are server specific and could be different on different servers on the save computers
 }

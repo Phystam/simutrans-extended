@@ -231,7 +231,7 @@ void schedule_gui_stats_t::draw(scr_coord offset)
 	if(  schedule->empty()  ) {
 		buf.clear();
 		buf.append(translator::translate("Please click on the map to add\nwaypoints or stops to this\nschedule."));
-		sint16 const width = display_multiline_text(offset.x + 4, offset.y, buf, SYSCOL_TEXT_HIGHLIGHT );
+		sint16 const width = display_multiline_text_rgb(offset.x + 4, offset.y, buf, SYSCOL_TEXT_HIGHLIGHT );
 		set_size(scr_size(width + 4 + 16, 3 * LINESPACE));
 	}
 	else {
@@ -289,7 +289,7 @@ void schedule_gui_stats_t::draw(scr_coord offset)
 		distance = (double)(shortest_distance(last_stop_pos, schedule->entries[0].pos.get_2d()) * welt->get_settings().get_meters_per_tile()) / 1000;
 		buf.printf(" %.1f%s", distance, "km");
 		PIXVAL c = sel == 0 ? SYSCOL_TEXT_HIGHLIGHT : SYSCOL_TEXT;
-		sint16 w = display_proportional_clip(offset.x + 4 + 10, offset.y, buf, ALIGN_LEFT, c, true);
+		sint16 w = display_proportional_clip_rgb(offset.x + 4 + 10, offset.y, buf, ALIGN_LEFT, c, true);
 		if (width < w) 
 		{
 			width = w;

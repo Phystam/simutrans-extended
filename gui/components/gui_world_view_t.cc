@@ -134,14 +134,14 @@ void world_view_t::internal_draw(const scr_coord offset, obj_t const* const obj)
 	// prepare clip area
 	const int clip_x = max(old_clip.x, pos.x);
 	const int clip_y = max(old_clip.y, pos.y);
-	display_set_clip_wh_rgb(clip_x, clip_y, min(old_clip.xx, pos.x + size.w) - clip_x, min(old_clip.yy, pos.y + size.h) - clip_y);
+	display_set_clip_wh(clip_x, clip_y, min(old_clip.xx, pos.x + size.w) - clip_x, min(old_clip.yy, pos.y + size.h) - clip_y);
 
 	mark_rect_dirty_wc(pos.x, pos.y, pos.x + size.w, pos.y + size.h);
 
 	/* Not very elegant, but works: Fill everything with black for underground
 	 * mode. */
 	if(  grund_t::underground_mode  ) {
-		display_fillbox_wh(pos.x, pos.y, size.w, size.h, COL_BLACK, true);
+		display_fillbox_wh_rgb(pos.x, pos.y, size.w, size.h, color_idx_to_rgb(COL_BLACK), true);
 	}
 	else {
 		welt->get_view()->display_background(pos.x, pos.y, size.w, size.h, true);

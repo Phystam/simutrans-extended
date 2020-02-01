@@ -210,7 +210,7 @@ void gui_chart_t::draw(scr_coord offset)
 
 				// draw line between two financial markers; this is only possible from the second value on
 				if (i>0) {
-					display_direct_line(tmpx+factor*(size.w / (x_elements - 1))*(i-1),
+					display_direct_line_rgb(tmpx+factor*(size.w / (x_elements - 1))*(i-1),
 						(scr_coord_val)( offset.y+baseline-(int)(last_year/scale) ),
 						tmpx+factor*(size.w / (x_elements - 1))*(i),
 						(scr_coord_val)( offset.y+baseline-(int)(tmp/scale) ),

@@ -201,7 +201,7 @@ public:
 	static PIXVAL calc_hoehe_farbe(const sint16 height, const sint16 groundwater);
 
 	// needed for town passenger map
-	static uint8 calc_relief_farbe(const grund_t *gr);
+	static PIXVAL calc_relief_farbe(const grund_t *gr);
 
 	// public, since the convoi updates need this
 	// nonstatic, if we have someday many maps ...

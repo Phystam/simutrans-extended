@@ -237,7 +237,7 @@ void fabrik_info_t::draw(scr_coord pos, scr_size size)
 	if (factory_status_type[fab->get_status() % fabrik_t::staff_shortage]) {
 		prod_buf.append(translator::translate(factory_status_type[fab->get_status()%fabrik_t::staff_shortage]));
 	}
-	display_text_proportional_rgb(pos.x + left, top, prod_buf, ALIGN_LEFT, indikatorfarbe, true);
+	display_proportional_rgb(pos.x + left, top, prod_buf, ALIGN_LEFT, indikatorfarbe, true);
 
 	prod_buf.clear();
 

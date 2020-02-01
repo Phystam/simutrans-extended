@@ -666,8 +666,8 @@ void gui_convoy_payload_info_t::draw(scr_coord offset)
 			if (v->get_desc()->is_obsolete(month_now, welt)) {
 				veh_bar_color = color_idx_to_rgb(COL_OBSOLETE);
 			}
-			display_veh_form(pos.x + offset.x, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
-			display_veh_form(pos.x + offset.x + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
+			display_veh_form_wh_clip_rgb(pos.x + offset.x, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
+			display_veh_form_wh_clip_rgb(pos.x + offset.x + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
 
 			// goods category symbol
 			if (v->get_desc()->get_total_capacity() || v->get_desc()->get_overcrowded_capacity()) {
@@ -793,10 +793,10 @@ void gui_convoy_payload_info_t::draw(scr_coord offset)
 						int bar_end_offset = cargo_sum * LOADING_BAR_WIDTH / v->get_desc()->get_total_capacity();
 						PIXVAL goods_color = wtyp->get_color();
 						if (bar_end_offset - bar_start_offset) {
-							display_fillbox_wh_clip(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y, bar_end_offset - bar_start_offset, LOADING_BAR_HEIGHT, goods_color, true);
-							display_blend_wh(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y, bar_end_offset - bar_start_offset, 3, color_idx_to_rgb(COL_WHITE), 15);
-							display_blend_wh(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y + 1, bar_end_offset - bar_start_offset, 1, color_idx_to_rgb(COL_WHITE), 15);
-							display_blend_wh(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y + LOADING_BAR_HEIGHT - 1, bar_end_offset - bar_start_offset, 1, color_idx_to_rgb(COL_BLACK), 10);
+							display_fillbox_wh_clip_rgb(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y, bar_end_offset - bar_start_offset, LOADING_BAR_HEIGHT, goods_color, true);
+							display_blend_wh_rgb(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y, bar_end_offset - bar_start_offset, 3, color_idx_to_rgb(COL_WHITE), 15);
+							display_blend_wh_rgb(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y + 1, bar_end_offset - bar_start_offset, 1, color_idx_to_rgb(COL_WHITE), 15);
+							display_blend_wh_rgb(pos.x + extra_w + offset.x + left + bar_start_offset, pos.y + offset.y + total_height + extra_y + LOADING_BAR_HEIGHT - 1, bar_end_offset - bar_start_offset, 1, color_idx_to_rgb(COL_BLACK), 10);
 						}
 						bar_start_offset += bar_end_offset - bar_start_offset;
 					}
@@ -812,7 +812,7 @@ void gui_convoy_payload_info_t::draw(scr_coord offset)
 				// We get the freight info via the freight_list_sorter now, so no need to do anything but fetch it
 				v->get_cargo_info(freight_info);
 				// show it
-				const int px_len = display_multiline_text(pos.x + offset.x + extra_w, pos.y + offset.y + total_height + extra_y, freight_info, SYSCOL_TEXT);
+				const int px_len = display_multiline_text_rgb(pos.x + offset.x + extra_w, pos.y + offset.y + total_height + extra_y, freight_info, SYSCOL_TEXT);
 				if (px_len + extra_w > x_size)
 				{
 					x_size = px_len + extra_w;
@@ -1010,8 +1010,8 @@ void gui_convoy_maintenance_info_t::draw(scr_coord offset)
 			if (v->get_desc()->is_obsolete(month_now, welt)) {
 				veh_bar_color = color_idx_to_rgb(COL_OBSOLETE);
 			}
-			display_veh_form(pos.x + offset.x, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
-			display_veh_form(pos.x + offset.x + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
+			display_veh_form_wh_clip_rgb(pos.x + offset.x, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
+			display_veh_form_wh_clip_rgb(pos.x + offset.x + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, veh_bar_color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
 
 			// goods category symbol
 			if (v->get_desc()->get_total_capacity() || v->get_desc()->get_overcrowded_capacity()) {
@@ -1120,8 +1120,8 @@ void gui_convoy_maintenance_info_t::draw(scr_coord offset)
 							else if (desc->is_obsolete(month_now, welt)) {
 								upgrade_state_color = color_idx_to_rgb(COL_OBSOLETE);
 							}
-							display_veh_form(pos.x + extra_w + offset.x + D_MARGIN_LEFT, pos.y + offset.y + total_height + extra_y + 1, VEHICLE_BAR_HEIGHT * 2, upgrade_state_color, true, desc->get_basic_constraint_prev(), desc->get_interactivity(), false);
-							display_veh_form(pos.x + extra_w + offset.x + D_MARGIN_LEFT + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + 1, VEHICLE_BAR_HEIGHT * 2, upgrade_state_color, true, desc->get_basic_constraint_next(), desc->get_interactivity(), true);
+							display_veh_form_wh_clip_rgb(pos.x + extra_w + offset.x + D_MARGIN_LEFT, pos.y + offset.y + total_height + extra_y + 1, VEHICLE_BAR_HEIGHT * 2, upgrade_state_color, true, desc->get_basic_constraint_prev(), desc->get_interactivity(), false);
+							display_veh_form_wh_clip_rgb(pos.x + extra_w + offset.x + D_MARGIN_LEFT + grid_width / 2 - 1, pos.y + offset.y + total_height + extra_y + 1, VEHICLE_BAR_HEIGHT * 2, upgrade_state_color, true, desc->get_basic_constraint_next(), desc->get_interactivity(), true);
 
 							buf.clear();
 							buf.append(translator::translate(v->get_desc()->get_upgrades(i)->get_name()));
@@ -1198,7 +1198,7 @@ void gui_convoy_formaion_t::draw(scr_coord offset)
 							color = color_idx_to_rgb(COL_OVERCROWD);
 						}
 						// [loading indicator]
-						display_fillbox_wh_clip(offset.x + 2 + bar_offset_left, offset.y + LINESPACE + VEHICLE_BAR_HEIGHT + 3, bar_width, 3, color, true);
+						display_fillbox_wh_clip_rgb(offset.x + 2 + bar_offset_left, offset.y + LINESPACE + VEHICLE_BAR_HEIGHT + 3, bar_width, 3, color, true);
 						bar_offset_left += bar_width + 1;
 						found++;
 						if (found == v->get_number_of_accommodation_classes()) {
@@ -1239,8 +1239,8 @@ void gui_convoy_formaion_t::draw(scr_coord offset)
 			if (v->get_desc()->is_obsolete(month_now, welt)) {
 				color = color_idx_to_rgb(COL_OBSOLETE);
 			}
-			display_veh_form(offset.x+1, offset.y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
-			display_veh_form(offset.x + grid_width / 2, offset.y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
+			display_veh_form_wh_clip_rgb(offset.x+1, offset.y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_next() : v->get_desc()->get_basic_constraint_prev(), v->get_desc()->get_interactivity(), false);
+			display_veh_form_wh_clip_rgb(offset.x + grid_width / 2, offset.y + LINESPACE, VEHICLE_BAR_HEIGHT * 2, color, true, v->is_reversed() ? v->get_desc()->get_basic_constraint_prev() : v->get_desc()->get_basic_constraint_next(), v->get_desc()->get_interactivity(), true);
 
 			offset.x += grid_width;
 		}

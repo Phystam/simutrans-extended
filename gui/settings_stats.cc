@@ -793,9 +793,7 @@ void settings_display_stats_t::init(settings_t const* const)
 	SEPERATOR
 	INIT_BOOL( "window_buttons_right", env_t::window_buttons_right );
 	INIT_BOOL( "window_frame_active", env_t::window_frame_active );
-	INIT_NUM( "front_window_bar_color", env_t::front_window_bar_color, 0, 6, gui_numberinput_t::AUTOLINEAR, 0 );
 	INIT_NUM( "front_window_text_color", env_t::front_window_text_color, 208, 240, gui_numberinput_t::AUTOLINEAR, 0 );
-	INIT_NUM( "bottom_window_bar_color", env_t::bottom_window_bar_color, 0, 6, gui_numberinput_t::AUTOLINEAR, 0 );
 	INIT_NUM( "bottom_window_text_color", env_t::bottom_window_text_color, 208, 240, gui_numberinput_t::AUTOLINEAR, 0 );
 	SEPERATOR
 	INIT_BOOL( "show_tooltips", env_t::show_tooltips );

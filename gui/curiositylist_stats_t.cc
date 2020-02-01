@@ -253,7 +253,7 @@ void curiositylist_stats_t::draw(scr_coord offset)
 		    display_color_img(skinverwaltung_t::intown->get_image_id(0), xoff+D_INDICATOR_WIDTH+9, yoff, 0, false, false);
 		}
 		if(  win_get_magic( (ptrdiff_t)geb )  ) {
-			display_blend_wh( offset.x+D_POS_BUTTON_WIDTH+D_H_SPACE, yoff, size.w, LINESPACE, SYSCOL_TEXT, 25 );
+			display_blend_wh_rgb( offset.x+D_POS_BUTTON_WIDTH+D_H_SPACE, yoff, size.w, LINESPACE, SYSCOL_TEXT, 25 );
 		}
 	}
 }

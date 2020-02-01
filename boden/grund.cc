@@ -1715,7 +1715,7 @@ void grund_t::display_overlay(const sint16 xpos, const sint16 ypos)
 
 			switch( env_t::show_names >> 2 ) {
 				case 0:
-					display_ddd_proportional_clip_rgb( new_xpos, ypos, width, 0, pc, SYSCOL_TEXT, text, dirty );
+					display_ddd_proportional_clip( new_xpos, ypos, width, 0, pc, SYSCOL_TEXT, text, dirty );
 					break;
 				case 1:
 					display_outline_proportional_rgb( new_xpos, ypos-(LINESPACE/2), pc+3, SYSCOL_TEXT, text, dirty );

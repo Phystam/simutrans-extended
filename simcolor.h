@@ -42,8 +42,8 @@ typedef unsigned int FLAGGED_PIXVAL;
 #define COL_DODGER_BLUE     151
 #define COL_BLUE            147
 #define COL_DARK_BLUE       144
+#define COL_SOFT_BLUE       100
 #define COL_LIGHT_BLUE      103
-#define COL_ROYAL_BLUE      100
 #define COL_GREEN           140
 #define COL_DARK_GREEN      136
 #define COL_LIGHT_GREEN     143
@@ -141,7 +141,7 @@ typedef unsigned int FLAGGED_PIXVAL;
 // used in vehicle status
 #define COL_UPGRADEABLE       COL_PURPLE
 #define COL_OBSOLETE          COL_DARK_BLUE
-#define COL_OUT_OF_PRODUCTION COL_ROYAL_BLUE
+#define COL_OUT_OF_PRODUCTION COL_SOFT_BLUE
 //#define COL_OVERCROWDED     COL_DARK_PURPLE
 
 

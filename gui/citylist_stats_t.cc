@@ -135,7 +135,7 @@ void citylist_stats_t::draw(scr_coord offset)
 	}
 
 	sint32 sel = line_selected;
-	clip_dimension cl = display_get_clip_wh_rgb();
+	clip_dimension cl = display_get_clip_wh();
 
 	FORX(vector_tpl<stadt_t*>, const city, city_list, offset.y += LINESPACE + 1) {
 

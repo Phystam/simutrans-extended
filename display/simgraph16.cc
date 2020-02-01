@@ -426,7 +426,7 @@ static int night_shift = -1;
 /*
 * Hajo: special colors during daytime
 */
-COLOR_VAL display_day_lights[LIGHT_COUNT * 3] = {
+uint8 display_day_lights[LIGHT_COUNT * 3] = {
 	0x57,	0x65,	0x6F, // Dark windows, lit yellowish at night
 	0x7F,	0x9B,	0xF1, // Lighter windows, lit blueish at night
 	0xFF,	0xFF,	0x53, // Yellow light
@@ -736,19 +736,19 @@ void env_t_rgb_to_system_colors()
 	uint32 rgb = env_t::default_window_title_color_rgb;
 	env_t::default_window_title_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 
-	uint32 rgb = env_t::front_window_text_color_rgb;
+	rgb = env_t::front_window_text_color_rgb;
 	env_t::front_window_text_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 
-	uint32 rgb = env_t::bottom_window_text_color_rgb;
+	rgb = env_t::bottom_window_text_color_rgb;
 	env_t::bottom_window_text_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 
-	uint32 rgb = env_t::tooltip_color_rgb;
+	rgb = env_t::tooltip_color_rgb;
 	env_t::tooltip_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 
-	uint32 rgb = env_t::cursor_overlay_color_rgb;
+	rgb = env_t::cursor_overlay_color_rgb;
 	env_t::cursor_overlay_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 
-	uint32 rgb = env_t::background_color_rgb;
+	rgb = env_t::background_color_rgb;
 	env_t::background_color = get_system_color( rgb>>16, (rgb>>8)&0xFF, rgb&0xFF );
 }
 
@@ -4020,7 +4020,7 @@ void display_veh_form_wh_clip_rgb(KOORD_VAL xp, KOORD_VAL yp, KOORD_VAL w, PIXVA
 		}
 		// un-powerd vehicle
 		if (!(interactivity & HAS_POWER)) {
-			display_blend_wh(xp, yp + 1, width - h / 2, h - 2, COL_WHITE, 30);
+			display_blend_wh_rgb(xp, yp + 1, width - h / 2, h - 2, color_idx_to_rgb(COL_WHITE), 30);
 			if ((interactivity & BIDIRECTIONAL)==0 && basic_constraint_flags & vehicle_desc_t::can_be_tail) {
 				display_pixel(xp + width - h / 2 - 1, yp + h - 2, color);
 			}
@@ -4083,7 +4083,7 @@ void display_veh_form_wh_clip_rgb(KOORD_VAL xp, KOORD_VAL yp, KOORD_VAL w, PIXVA
 		}
 		// un-powerd vehicle
 		if (!(interactivity & HAS_POWER)) {
-			display_blend_wh(xp + margin_left + h/2, yp + 1, width - h / 2, h - 2, COL_WHITE, 30);
+			display_blend_wh_rgb(xp + margin_left + h/2, yp + 1, width - h / 2, h - 2, color_idx_to_rgb(COL_WHITE), 30);
 			if (basic_constraint_flags & vehicle_desc_t::can_be_head) {
 				display_pixel(xp + margin_left + h / 2, yp + 1, color);
 				if(interactivity & BIDIRECTIONAL){
@@ -4640,7 +4640,7 @@ void display_ddd_proportional(KOORD_VAL xpos, KOORD_VAL ypos, KOORD_VAL width, K
 	display_blend_wh_rgb( xpos - 2,         ypos - halfheight - 1 - hgt, 1, halfheight * 2 + 2, color_idx_to_rgb(COL_WHITE), 25 );
 	display_blend_wh_rgb( xpos + width - 3, ypos - halfheight - 1 - hgt, 1, halfheight * 2 + 2, color_idx_to_rgb(COL_BLACK), 25 );
 
-	display_proportional_rgb(xpos + 2, ypos - halfheight + 1, text, ALIGN_LEFT, text_farbe, dirty, -1);
+	display_proportional_rgb(xpos + 2, ypos - halfheight + 1, text, ALIGN_LEFT, text_farbe, dirty);
 }
 
 

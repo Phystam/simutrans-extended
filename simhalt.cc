@@ -4947,14 +4947,14 @@ void haltestelle_t::display_status(KOORD_VAL xpos, KOORD_VAL ypos)
 				v = (v / 4) + 2;
 			}
 
-			display_fillbox_wh_clip( xpos, ypos - v - 1, 1, v, color_idx_to_rgb(COL_GREY4), false);
-			display_fillbox_wh_clip( xpos + 1, ypos - v - 1, 2, v, wtyp->get_color(), false);
-			display_fillbox_wh_clip( xpos + 3, ypos - v - 1, 1, v, color_idx_to_rgb(COL_GREY1), false);
+			display_fillbox_wh_clip_rgb( xpos, ypos - v - 1, 1, v, color_idx_to_rgb(COL_GREY4), false);
+			display_fillbox_wh_clip_rgb( xpos + 1, ypos - v - 1, 2, v, wtyp->get_color(), false);
+			display_fillbox_wh_clip_rgb( xpos + 3, ypos - v - 1, 1, v, color_idx_to_rgb(COL_GREY1), false);
 
 			// Hajo: show up arrow for capped values
 			if(  sum > max_capacity  ) {
-				display_fillbox_wh_clip( xpos + 1, ypos - v - 6, 2, 4, color_idx_to_rgb(COL_WHITE), false);
-				display_fillbox_wh_clip( xpos, ypos - v - 5, 4, 1, color_idx_to_rgb(COL_WHITE), false);
+				display_fillbox_wh_clip_rgb( xpos + 1, ypos - v - 6, 2, 4, color_idx_to_rgb(COL_WHITE), false);
+				display_fillbox_wh_clip_rgb( xpos, ypos - v - 5, 4, 1, color_idx_to_rgb(COL_WHITE), false);
 				v += 5;
 			}
 

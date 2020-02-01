@@ -84,7 +84,7 @@ public:
 	 */
 	const char *get_help_filename() const {return help_file;}
 
-	FLAGGED_PIXVAL get_titlecolor() const { return default_window_title_color; }
+	FLAGGED_PIXVAL get_titlecolor() const { return env_t::default_window_title_color; }
 
 	bool is_hit(int x, int y) OVERRIDE;
 

@@ -44,7 +44,7 @@ news_img::news_img(const char* text) :
 }
 
 
-news_img::news_img(const char* text, image_id id, PLAYER_COLOR_VAL color) :
+news_img::news_img(const char* text, image_id id, FLAGGED_PIXVAL color) :
 	news_window(text, color),
 	image()
 {

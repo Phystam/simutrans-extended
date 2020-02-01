@@ -84,7 +84,7 @@ typedef struct {
 map_button_t button_init[MAP_MAX_BUTTONS] = {
 	{ COL_LIGHT_GREEN,  COL_DARK_GREEN,  "Towns", "Overlay town names", reliefkarte_t::MAP_TOWN },
 	{ COL_LIGHT_GREEN,  COL_DARK_GREEN,  "CityLimit", "Overlay city limits", reliefkarte_t::MAP_CITYLIMIT },
-	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Buildings", "Show level of city buildings", reliefkarte_t::MAP_LEVEL },
+	{ COL_PROFIT,       COL_SOFT_BLUE,  "Buildings", "Show level of city buildings", reliefkarte_t::MAP_LEVEL },
 	{ COL_LIGHT_GREEN,  COL_DARK_GREEN,  "PaxDest", "Overlay passenger destinations when a town window is open", reliefkarte_t::MAP_PAX_DEST },
 	{ COL_LIGHT_GREEN,  COL_DARK_GREEN,  "Tourists", "Highlite tourist attraction", reliefkarte_t::MAP_TOURIST },
 	{ COL_LIGHT_GREEN,  COL_DARK_GREEN,  "Factories", "Highlite factories", reliefkarte_t::MAP_FACTORIES },
@@ -106,10 +106,10 @@ map_button_t button_init[MAP_MAX_BUTTONS] = {
 	{ COL_LIGHT_ORANGE, COL_DARK_ORANGE, "Powerlines", "Highlite electrical transmission lines", reliefkarte_t::MAP_POWERLINES },
 	{ COL_WHITE,        COL_GREY5,       "Forest", "Highlite forests", reliefkarte_t::MAP_FOREST },
 	{ COL_WHITE,        COL_GREY5,       "Ownership", "Show the owenership of infrastructure", reliefkarte_t::MAP_OWNER },
-	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Commuting", "Show the success rate for commuting passengers", reliefkarte_t::MAP_ACCESSIBILITY_COMMUTING },
-	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Visiting", "Show the success rate for visiting passengers", reliefkarte_t::MAP_ACCESSIBILITY_TRIP },
-	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Staffing", "Show the staff shortage rate", reliefkarte_t::MAP_STAFF_FULFILLMENT },
-	{ COL_PROFIT,       COL_ROYAL_BLUE,  "Mail delivery", "Show the success rate for mail delivery", reliefkarte_t::MAP_MAIL_DELIVERY }
+	{ COL_PROFIT,       COL_SOFT_BLUE,  "Commuting", "Show the success rate for commuting passengers", reliefkarte_t::MAP_ACCESSIBILITY_COMMUTING },
+	{ COL_PROFIT,       COL_SOFT_BLUE,  "Visiting", "Show the success rate for visiting passengers", reliefkarte_t::MAP_ACCESSIBILITY_TRIP },
+	{ COL_PROFIT,       COL_SOFT_BLUE,  "Staffing", "Show the staff shortage rate", reliefkarte_t::MAP_STAFF_FULFILLMENT },
+	{ COL_PROFIT,       COL_SOFT_BLUE,  "Mail delivery", "Show the success rate for mail delivery", reliefkarte_t::MAP_MAIL_DELIVERY }
 };
 
 #define MAP_TRANSPORT_TYPE_ITEMS (9)
@@ -830,7 +830,7 @@ void map_frame_t::draw(scr_coord pos, scr_size size)
 			const int xpos = pos.x+D_MARGIN_LEFT + (u % columns) * (size.w-D_MARGIN_RIGHT-columns/2-1)/columns;
 			const int ypos = pos.y+D_TITLEBAR_HEIGHT + offset_y + (u / columns) * line_height;
 			display_fillbox_wh_rgb(xpos, ypos + D_GET_CENTER_ALIGN_OFFSET(D_INDICATOR_BOX_HEIGHT,LINESPACE), D_INDICATOR_BOX_WIDTH, D_INDICATOR_BOX_HEIGHT, i.colour, false);
-			display_ddd_box+rgb(xpos, ypos + D_GET_CENTER_ALIGN_OFFSET(D_INDICATOR_BOX_HEIGHT,LINESPACE), D_INDICATOR_BOX_WIDTH, D_INDICATOR_BOX_HEIGHT,SYSCOL_SHADOW,SYSCOL_SHADOW,false);
+			display_ddd_box_rgb(xpos, ypos + D_GET_CENTER_ALIGN_OFFSET(D_INDICATOR_BOX_HEIGHT,LINESPACE), D_INDICATOR_BOX_WIDTH, D_INDICATOR_BOX_HEIGHT,SYSCOL_SHADOW,SYSCOL_SHADOW,false);
 			display_proportional_rgb(xpos + D_INDICATOR_BOX_WIDTH + 2, ypos, i.text.c_str(), ALIGN_LEFT, SYSCOL_TEXT, false);
 		}
 	}

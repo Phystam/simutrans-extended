@@ -19,7 +19,7 @@ void gui_speedbar_t::set_base(sint32 base)
 }
 
 
-void gui_speedbar_t::add_color_value(const sint32 *value, uint8 color)
+void gui_speedbar_t::add_color_value(const sint32 *value, PIXVAL color)
 {
 	info_t  next =  { color, value, -1 };
 	values.insert(next);

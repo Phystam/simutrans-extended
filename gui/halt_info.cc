@@ -367,7 +367,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 		}
 
 		// passengers
-		left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+		left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 		if (welt->get_settings().is_separate_halt_capacities()) {
 			// here only for separate capacities
 			if (halt->get_pax_enabled()) {
@@ -382,7 +382,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 				}
 				info_buf.printf("%u", halt->get_capacity(1));
 				enabled = true;
-				left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+				left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 				display_color_img(skinverwaltung_t::mail->get_image_id(0), left, top, 0, false, false);
 				left += 10;
 			}
@@ -393,7 +393,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 					info_buf.append(",  ");
 				}
 				info_buf.printf("%u", halt->get_capacity(2));
-				left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+				left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 				display_color_img(skinverwaltung_t::goods->get_image_id(0), left, top, 0, false, false);
 			}
 		}
@@ -408,7 +408,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 			top += LINESPACE + D_V_SPACE;
 			left = pos.x + D_MARGIN_LEFT;
 			info_buf.printf("%s", translator::translate("Evaluation:"));
-			display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+			display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 			info_buf.clear();
 			top += LINESPACE+2;
 
@@ -431,7 +431,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 				left += 11;
 
 				info_buf.printf(": %d ", pax_sum);
-				left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + display_get_char_max_width(":");
+				left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + display_get_char_max_width(":");
 				info_buf.clear();
 
 				// value + symbol + tooltip / error message
@@ -459,7 +459,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 						info_buf.printf("(");
 						for (int i = 0; i < PAX_EVALUATIONS; i++) {
 							info_buf.printf("%d", pax_ev_num[i]);
-							left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
+							left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
 							display_color_img(skinverwaltung_t::pax_evaluation_icons->get_image_id(i), left, top, 0, false, false);
 							if (abs((int)(left - get_mouse_x())) < 14 && abs((int)(top + LINESPACE / 2 - get_mouse_y())) < LINESPACE / 2 + 2) {
 								tooltip_buf.clear();
@@ -500,7 +500,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 						}
 						info_buf.printf(")");
 					}
-					display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+					display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 				}
 				info_buf.clear();
 
@@ -528,7 +528,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 							}
 						}
 						if (pax_ev_num[i]) {
-							display_fillbox_wh_clip(left + indicator_left, top, colored_width, indicator_height, cost_type_color[i], true);
+							display_fillbox_wh_clip_rgb(left + indicator_left, top, colored_width, indicator_height, cost_type_color[i], true);
 						}
 						indicator_left += colored_width;
 					}
@@ -550,7 +550,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 				left += 11;
 
 				info_buf.printf(": %d ", mail_sum);
-				left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + display_get_char_max_width(":");
+				left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + display_get_char_max_width(":");
 				info_buf.clear();
 
 				// value + symbol + tooltip / error message
@@ -573,7 +573,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 					// if symbols ok
 					if (skinverwaltung_t::mail_evaluation_icons) {
 						info_buf.printf("(%d", halt->haltestelle_t::get_mail_delivered());
-						left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
+						left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
 
 						display_color_img(skinverwaltung_t::mail_evaluation_icons->get_image_id(0), left, top, 0, false, false);
 						if (abs((int)(left - get_mouse_x())) < 14 && abs((int)(top + LINESPACE / 2 - get_mouse_y())) < LINESPACE / 2 + 2) {
@@ -610,13 +610,13 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 				info_buf.clear();
 				if (!mail_sum) {
 					color =  color_idx_to_rgb(halt->has_mail_user(2, false) ? MN_GREY0 : MN_GREY1);
-					display_fillbox_wh_clip(left, top, ev_indicator_width, indicator_height, color, true);
+					display_fillbox_wh_clip_rgb(left, top, ev_indicator_width, indicator_height, color, true);
 				}
 				else
 				{
-					display_fillbox_wh_clip(left, top, ev_indicator_width, indicator_height, COL_MAIL_NOROUTE, true);
+					display_fillbox_wh_clip_rgb(left, top, ev_indicator_width, indicator_height, color_idx_to_rgb(COL_MAIL_NOROUTE), true);
 					if (mail_delivered_factor) {
-						display_fillbox_wh_clip(left, top, ev_indicator_width*mail_delivered_factor / 255, indicator_height, COL_MAIL_DELIVERED, true);
+						display_fillbox_wh_clip_rgb(left, top, ev_indicator_width*mail_delivered_factor / 255, indicator_height, color_idx_to_rgb(COL_MAIL_DELIVERED), true);
 					}
 				}
 

@@ -178,7 +178,7 @@ static int display_gadget_box(sint8 code,
 
 	if(pushed) {
 		mark_rect_dirty_wc(x, y, D_GADGET_WIDTH, D_TITLEBAR_HEIGHT);
-		display_blend_wh_rgb(x+1, y_1, D_GADGET_WIDTH-2, D_TITLEBAR_HEIGHT-2, color_idx_to_rgb(COL_WHITE), 50);
+		display_blend_wh_rgb(x+1, y-1, D_GADGET_WIDTH-2, D_TITLEBAR_HEIGHT-2, color_idx_to_rgb(COL_WHITE), 50);
 	}
 
 	// Do we have a gadget image?
@@ -331,11 +331,11 @@ static void win_draw_window_title(const scr_coord pos, const scr_size size,
 	if ( title_color&TRANSPARENT_FLAGS) {
 		display_blend_wh_rgb( pos.x, pos.y, size.w, D_TITLEBAR_HEIGHT, color_idx_to_rgb(COL_BLACK), env_t::bottom_window_darkness);
 	}
-	display_blend_wh_clip(pos.x + 1, pos.y,                         size.w - 2, 1, color_idx_to_rgb(COL_WHITE), 25);
-	display_blend_wh_clip(pos.x + 1, pos.y + D_TITLEBAR_HEIGHT - 1, size.w - 2, 1, color_idx_to_rgb(COL_BLACK), 25);
+	display_blend_wh_rgb(pos.x + 1, pos.y,                         size.w - 2, 1, color_idx_to_rgb(COL_WHITE), 25);
+	display_blend_wh_rgb(pos.x + 1, pos.y + D_TITLEBAR_HEIGHT - 1, size.w - 2, 1, color_idx_to_rgb(COL_BLACK), 25);
 
-	display_blend_wh_clip(pos.x,              pos.y, 1, D_TITLEBAR_HEIGHT, color_idx_to_rgb(COL_WHITE), 25);
-	display_blend_wh_clip(pos.x + size.w - 1, pos.y, 1, D_TITLEBAR_HEIGHT, color_idx_to_rgb(COL_BLACK), 25);
+	display_blend_wh_rgb(pos.x,              pos.y, 1, D_TITLEBAR_HEIGHT, color_idx_to_rgb(COL_WHITE), 25);
+	display_blend_wh_rgb(pos.x + size.w - 1, pos.y, 1, D_TITLEBAR_HEIGHT, color_idx_to_rgb(COL_BLACK), 25);
 
 	// Draw the gadgets and then move left and draw text.
 	flags.gotopos = (welt_pos != koord3d::invalid);

@@ -494,7 +494,7 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 				display_ddd_proportional_clip( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y+(LINESPACE/2), proportional_string_width(text)+7, 0, pc, SYSCOL_TEXT, text, 1 );
 				break;
 			case 1:
-				display_outline_proportional( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y, pc+1, SYSCOL_TEXT, text, 1 );
+				display_outline_proportional_rgb( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y, pc+1, SYSCOL_TEXT, text, 1 );
 				break;
 			case 2:
 				display_outline_proportional_rgb( 16+x+buttons[19].get_pos().x+16, y+buttons[19].get_pos().y, color_idx_to_rgb(COL_YELLOW), SYSCOL_TEXT, text, 1 );
@@ -527,7 +527,7 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 	sprintf(buf,"%ld ms", get_frame_time() );
 	display_proportional_clip_rgb(x+len, y+FPS_DATA, buf, ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
 
-	len = 15+display_proportional_clip(x+10, y+IDLE_DATA, translator::translate("Idle:"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+IDLE_DATA, translator::translate("Idle:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	display_proportional_clip_rgb(x+len, y+IDLE_DATA, ntos(welt->get_idle_time(), "%d ms"), ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
 
 	uint8 farbe;
@@ -536,7 +536,7 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 	farbe = color_idx_to_rgb(COL_WHITE);
 	uint32 target_fps = welt->is_fast_forward() ? 10 : env_t::fps;
 	if(loops<(target_fps*3)/4) {
-		farbe = col((loops<=target_fps/2) ? COL_RED : COL_YELLOW);
+		farbe = color_idx_to_rgb((loops<=target_fps/2) ? COL_RED : COL_YELLOW);
 	}
 	len = 15+display_proportional_clip_rgb(x+10, y+FRAME_DATA, translator::translate("FPS:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	sprintf(buf,"%d fps", loops );
@@ -545,16 +545,16 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 		strcat( buf, "*" );
 	}
 #endif
-	display_proportional_clip(x+len, y+FRAME_DATA, buf, ALIGN_LEFT, farbe, true);
+	display_proportional_clip_rgb(x+len, y+FRAME_DATA, buf, ALIGN_LEFT, farbe, true);
 
 	loops=welt->get_simloops();
 	farbe = color_idx_to_rgb(COL_WHITE);
 	if(loops<=30) {
 		farbe = color_idx_to_rgb((loops<=20) ? COL_RED : COL_YELLOW);
 	}
-	len = 15+display_proportional_clip(x+10, y+LOOP_DATA, translator::translate("Sim:"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+LOOP_DATA, translator::translate("Sim:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	sprintf( buf, "%d%c%d", loops/10, get_fraction_sep(), loops%10 );
-	display_proportional_clip(x+len, y+LOOP_DATA, buf, ALIGN_LEFT, farbe, true);
+	display_proportional_clip_rgb(x+len, y+LOOP_DATA, buf, ALIGN_LEFT, farbe, true);
 
 	// Added by : Knightly
 	FLAGGED_PIXVAL text_colour, figure_colour;
