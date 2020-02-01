@@ -186,7 +186,7 @@ void factorylist_stats_t::draw(scr_coord offset)
 		if (yoff < start) continue;
 
 		if(fab) {
-			unsigned indikatorfarbe = fabrik_t::status_to_color[fab->get_status()%fabrik_t::staff_shortage];
+			PIXVAL indikatorfarbe = fabrik_t::status_to_color[fab->get_status()%fabrik_t::staff_shortage];
 
 			buf.clear();
 			buf.append(fab->get_name());
@@ -213,9 +213,9 @@ void factorylist_stats_t::draw(scr_coord offset)
 
 
 			if (fab->get_status() >= fabrik_t::staff_shortage) {
-				display_ddd_box_clip(xoff + 1, yoff + 1, D_INDICATOR_WIDTH + 2, D_INDICATOR_HEIGHT + 2, COL_STAFF_SHORTAGE, COL_STAFF_SHORTAGE);
+				display_ddd_box_clip_rgb(xoff + 1, yoff + 1, D_INDICATOR_WIDTH + 2, D_INDICATOR_HEIGHT + 2, COL_STAFF_SHORTAGE, COL_STAFF_SHORTAGE);
 			}
-			display_fillbox_wh_clip(xoff+2, yoff+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
+			display_fillbox_wh_clip_rgb(xoff+2, yoff+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
 
 			if(  fab->get_prodfactor_electric()>0  ) {
 				display_color_img(skinverwaltung_t::electricity->get_image_id(0), xoff+4+D_INDICATOR_WIDTH, yoff, 0, false, true);
@@ -228,7 +228,7 @@ void factorylist_stats_t::draw(scr_coord offset)
 			}
 
 			// show text
-			display_proportional_clip(xoff+D_INDICATOR_WIDTH+6+28,yoff,buf,ALIGN_LEFT,SYSCOL_TEXT,true);
+			display_proportional_clip_rgb(xoff+D_INDICATOR_WIDTH+6+28,yoff,buf,ALIGN_LEFT,SYSCOL_TEXT,true);
 
 			// goto button
 			bool selected = sel==0  ||  welt->get_viewport()->is_on_center( fab->get_pos() );
@@ -236,7 +236,7 @@ void factorylist_stats_t::draw(scr_coord offset)
 			sel --;
 
 			if(  win_get_magic( (ptrdiff_t)fab )  ) {
-				display_blend_wh( xoff, yoff, size.w+D_INDICATOR_WIDTH, LINESPACE, SYSCOL_TEXT, 25 );
+				display_blend_wh_rgb( xoff, yoff, size.w+D_INDICATOR_WIDTH, LINESPACE, SYSCOL_TEXT, 25 );
 			}
 		}
 	}

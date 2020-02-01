@@ -134,7 +134,7 @@ void world_view_t::internal_draw(const scr_coord offset, obj_t const* const obj)
 	// prepare clip area
 	const int clip_x = max(old_clip.x, pos.x);
 	const int clip_y = max(old_clip.y, pos.y);
-	display_set_clip_wh(clip_x, clip_y, min(old_clip.xx, pos.x + size.w) - clip_x, min(old_clip.yy, pos.y + size.h) - clip_y);
+	display_set_clip_wh_rgb(clip_x, clip_y, min(old_clip.xx, pos.x + size.w) - clip_x, min(old_clip.yy, pos.y + size.h) - clip_y);
 
 	mark_rect_dirty_wc(pos.x, pos.y, pos.x + size.w, pos.y + size.h);
 
@@ -229,7 +229,7 @@ void world_view_t::internal_draw(const scr_coord offset, obj_t const* const obj)
 	}
 
 	display_set_clip_wh(old_clip.x, old_clip.y, old_clip.w, old_clip.h);
-	display_ddd_box_clip(pos.x - 1, pos.y - 1, size.w + 2, size.h + 2, MN_GREY0, MN_GREY4);
+	display_ddd_box_clip_rgb(pos.x - 1, pos.y - 1, size.w + 2, size.h + 2, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4));
 }
 
 

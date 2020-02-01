@@ -223,10 +223,10 @@ void fabrik_info_t::draw(scr_coord pos, scr_size size)
 
 	// status color bar
 	if (fab->get_status() >= fabrik_t::staff_shortage) {
-		display_ddd_box_clip(pos.x + D_MARGIN_LEFT - 1, top + 1, D_INDICATOR_WIDTH + 2, D_INDICATOR_HEIGHT + 2, COL_STAFF_SHORTAGE, COL_STAFF_SHORTAGE);
+		display_ddd_box_clip_rgb(pos.x + D_MARGIN_LEFT - 1, top + 1, D_INDICATOR_WIDTH + 2, D_INDICATOR_HEIGHT + 2, COL_STAFF_SHORTAGE, COL_STAFF_SHORTAGE);
 	}
 	unsigned indikatorfarbe = fabrik_t::status_to_color[fab->get_status() % fabrik_t::staff_shortage];
-	display_fillbox_wh_clip(pos.x + D_MARGIN_LEFT, top + 2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
+	display_fillbox_wh_clip_rgb(pos.x + D_MARGIN_LEFT, top + 2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
 	// Status line written text	
 	if(skinverwaltung_t::alerts && fab_alert_level[fab->get_status() % fabrik_t::staff_shortage]){
 		left += D_H_SPACE * 2;
@@ -237,11 +237,11 @@ void fabrik_info_t::draw(scr_coord pos, scr_size size)
 	if (factory_status_type[fab->get_status() % fabrik_t::staff_shortage]) {
 		prod_buf.append(translator::translate(factory_status_type[fab->get_status()%fabrik_t::staff_shortage]));
 	}
-	display_proportional(pos.x + left, top, prod_buf, ALIGN_LEFT, indikatorfarbe, true);
+	display_text_proportional_rgb(pos.x + left, top, prod_buf, ALIGN_LEFT, indikatorfarbe, true);
 
 	prod_buf.clear();
 
-	display_ddd_box_clip(pos.x + view.get_pos().x, top + view.get_size().h, view.get_size().w, D_INDICATOR_HEIGHT + 2, MN_GREY0, MN_GREY4);
+	display_ddd_box_clip_rgb(pos.x + view.get_pos().x, top + view.get_size().h, view.get_size().w, D_INDICATOR_HEIGHT + 2,  color_idx_to_rgb(MN_GREY0),  color_idx_to_rgb(MN_GREY4));
 	// tooltip for staffing_bar
 	if (abs((int)(pos.x + view.get_pos().x + view.get_size().h/2 - get_mouse_x())) < view.get_size().h/2 && abs((int)(top + view.get_size().h + (D_INDICATOR_HEIGHT+2)/2 - get_mouse_y())) < (D_INDICATOR_HEIGHT+2)/2) {
 		prod_buf.append(translator::translate("staffing_bar_tooltip_help"));

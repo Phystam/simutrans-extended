@@ -6762,26 +6762,26 @@ COLOR_VAL convoi_t::get_status_color() const
 	}
 	else if (state == WAITING_FOR_CLEARANCE_ONE_MONTH || state == CAN_START_ONE_MONTH || get_state() == NO_ROUTE || get_state() == NO_ROUTE_TOO_COMPLEX || get_state() == OUT_OF_RANGE || get_state() == EMERGENCY_STOP) {
 		// stuck or no route
-		return COL_ORANGE;
+		return color_idx_to_rgb(COL_ORANGE);
 	}
 	else if(financial_history[0][CONVOI_PROFIT]+financial_history[1][CONVOI_PROFIT]<0)
 	{
 		// ok, not performing best
-		return COL_RED;
+		return color_idx_to_rgb(COL_RED);
 	}
 	else if((financial_history[0][CONVOI_OPERATIONS]|financial_history[1][CONVOI_OPERATIONS])==0)
 	{
 		// nothing moved
-		return COL_YELLOW;
+		return color_idx_to_rgb(COL_YELLOW);
 	}
 	else if(get_overcrowded() > 0)
 	{
 		// Overcrowded
-		return COL_DARK_PURPLE;
+		return color_idx_to_rgb(COL_DARK_PURPLE);
 	}
 	else if(has_obsolete)
 	{
-		return COL_OBSOLETE;
+		return color_idx_to_rgb(COL_OBSOLETE);
 	}
 	// normal state
 	return SYSCOL_TEXT;

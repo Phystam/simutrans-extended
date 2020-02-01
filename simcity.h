@@ -176,8 +176,8 @@ private:
 
 	weighted_vector_tpl <gebaeude_t *> buildings;
 
-	sparse_tpl<uint8> pax_destinations_old;
-	sparse_tpl<uint8> pax_destinations_new;
+	sparse_tpl<PIXVAL> pax_destinations_old;
+	sparse_tpl<PIXVAL> pax_destinations_new;
 
 	// this counter will increment by one for every change => dialogs can question, if they need to update map
 	uint32 pax_destinations_new_change;
@@ -472,7 +472,7 @@ public:
 	 * ein Passagierziel in die Zielkarte eintragen
 	 * @author Hj. Malthaner
 	 */
-	void merke_passagier_ziel(koord ziel, uint8 color);
+	void merke_passagier_ziel(koord ziel, PIXVAL color);
 
 	// this function removes houses from the city house list
 	// (called when removed by player, or by town)
@@ -561,13 +561,13 @@ public:
 	 * gibt das pax-statistik-array für letzten monat zurück
 	 * @author Hj. Malthaner
 	 */
-	const sparse_tpl<uint8>* get_pax_destinations_old() const { return &pax_destinations_old; }
+	const sparse_tpl<PIXVAL>* get_pax_destinations_old() const { return &pax_destinations_old; }
 
 	/**
 	 * gibt das pax-statistik-array für den aktuellen monat zurück
 	 * @author Hj. Malthaner
 	 */
-	const sparse_tpl<uint8>* get_pax_destinations_new() const { return &pax_destinations_new; }
+	const sparse_tpl<PIXVAL>* get_pax_destinations_new() const { return &pax_destinations_new; }
 
 	/* this counter will increment by one for every change
 	 * => dialogs can question, if they need to update map

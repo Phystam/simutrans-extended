@@ -721,9 +721,11 @@ public:
 
 	void copy_city_road(settings_t const& other);
 
-	// init form this file ...
+	// init from this file ...
 	void parse_simuconf( tabfile_t &simuconf, sint16 &disp_width, sint16 &disp_height, sint16 &fullscreen, std::string &objfilename );
 
+	void parse_colours(tabfile_t& simuconf);
+	
 	void set_size_x(sint32 g) {size_x=g;}
 	void set_size_y(sint32 g) {size_y=g;}
 	void set_groesse(sint32 x, sint32 y) {size_x = x; size_y=y;}

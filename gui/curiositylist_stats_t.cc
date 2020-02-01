@@ -213,16 +213,16 @@ void curiositylist_stats_t::draw(scr_coord offset)
 		}
 		// now decide on color
 		if(some_crowded) {
-			indicatorfarbe = all_crowded ? COL_RED : COL_ORANGE;
+			indicatorfarbe = color_idx_to_rgb(all_crowded ? COL_RED : COL_ORANGE);
 		}
 		else if(pax) {
-			indicatorfarbe = mail ? COL_TURQUOISE : COL_DARK_GREEN;
+			indicatorfarbe = color_idx_to_rgb(mail ? COL_TURQUOISE : COL_DARK_GREEN);
 		}
 		else {
-			indicatorfarbe = mail ? COL_BLUE : COL_YELLOW;
+			indicatorfarbe = color_idx_to_rgb(mail ? COL_BLUE : COL_YELLOW);
 		}
 
-		display_fillbox_wh_clip(xoff+7, yoff+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indicatorfarbe, true);
+		display_fillbox_wh_clip_rgb(xoff+7, yoff+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indicatorfarbe, true);
 
 		// the other infos
 		const unsigned char *name = (const unsigned char *)ltrim( translator::translate(geb->get_tile()->get_desc()->get_name()) );
@@ -247,7 +247,7 @@ void curiositylist_stats_t::draw(scr_coord offset)
 		// now we have a short name ...
 		buf.printf("%s (%d)", short_name, geb->get_adjusted_visitor_demand());
 
-		display_proportional_clip(xoff+D_INDICATOR_WIDTH+10+9,yoff,buf,ALIGN_LEFT,SYSCOL_TEXT,true);
+		display_proportional_clip_rgb(xoff+D_INDICATOR_WIDTH+10+9,yoff,buf,ALIGN_LEFT,SYSCOL_TEXT,true);
 
 		if (geb->get_tile()->get_desc()->get_extra() != 0) {
 		    display_color_img(skinverwaltung_t::intown->get_image_id(0), xoff+D_INDICATOR_WIDTH+9, yoff, 0, false, false);

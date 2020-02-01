@@ -12,6 +12,7 @@
 #ifndef banner_h
 #define banner_h
 
+#include "../dataobj/environment.h"
 #include "components/gui_button.h"
 #include "components/gui_image.h"
 #include "gui_frame.h"
@@ -56,7 +57,7 @@ public:
 	* -borders and -body background
 	* @author Hj. Malthaner
 	*/
-	PLAYER_COLOR_VAL get_titlecolor() const {return WIN_TITLE; }
+	FLAGGED_PIXVAL get_titlecolor() const {return env_t::default_window_title_color; }
 
 	bool is_hit(int, int) OVERRIDE { return true; }
 

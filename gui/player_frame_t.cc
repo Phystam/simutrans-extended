@@ -112,7 +112,7 @@ ki_kontroll_t::ki_kontroll_t() :
 
 		// Prepare finances button
 		player_get_finances[i].init( button_t::box, "", cursor, scr_size( L_FINANCE_WIDTH, D_EDIT_HEIGHT ) );
-		player_get_finances[i].background_color = PLAYER_FLAG | ((player ? player->get_player_color1():i*8)+4);
+		player_get_finances[i].background_color = PLAYER_FLAG | color_idx_to_rgb((player ? player->get_player_color1():i*8)+4);
 		player_get_finances[i].add_listener(this);
 
 		// Player type selector, Combobox
@@ -148,7 +148,7 @@ ki_kontroll_t::ki_kontroll_t() :
 
 		// password/locked button
 		player_lock[i].init(button_t::box, "", cursor, scr_size(D_EDIT_HEIGHT, D_EDIT_HEIGHT));
-		player_lock[i].background_color = (player && player->is_locked()) ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN;
+		player_lock[i].background_color = color_idx_to_rgb( (player && player->is_locked()) ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN );
 		player_lock[i].enable( welt->get_player(i) );
 		player_lock[i].add_listener(this);
 		if (player_tools_allowed) {
@@ -403,8 +403,8 @@ void ki_kontroll_t::update_data()
 			}
 
 			// always update locking status
-			player_get_finances[i].background_color = PLAYER_FLAG | (player->get_player_color1()+4);
-			player_lock[i].background_color = player->is_locked() ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN;
+			player_get_finances[i].background_color = PLAYER_FLAG | color_idx_to_rgb(player->get_player_color1()+4);
+			player_lock[i].background_color = color_idx_to_rgb( player->is_locked() ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN );
 
 			// human players cannot be deactivated
 			if (i>1) 
@@ -489,18 +489,18 @@ void ki_kontroll_t::draw(scr_coord pos, scr_size size)
 		}
 
 		player_t *player = welt->get_player(i);
-		player_lock[i].background_color = player  &&  player->is_locked() ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN;
+		player_lock[i].background_color = color_idx_to_rgb( player  &&  player->is_locked() ? (player->is_unlock_pending() ? COL_YELLOW : COL_RED) : COL_GREEN );
 
 
 		if(  player != NULL  ) {
 			if (i != 1 && !welt->get_settings().is_freeplay() && player->get_finance()->get_account_balance() < player->get_finance()->get_hard_credit_limit() ) {
-				ai_income[i]->set_color( MONEY_MINUS );
+				ai_income[i]->set_color( color_idx_to_rgb(MONEY_MINUS) );
 				tstrncpy(account_str[i], translator::translate("Company bankrupt"), lengthof(account_str[i]));
 			}
 			else {
 				double account=player->get_account_balance_as_double();
 				money_to_string(account_str[i], account );
-				ai_income[i]->set_color( account>=0.0 ? MONEY_PLUS : MONEY_MINUS );
+				ai_income[i]->set_color( color_idx_to_rgb(account>=0.0 ? MONEY_PLUS : MONEY_MINUS) );
 			}
 			ai_income[i]->set_pos( scr_coord( size.w-D_MARGIN_RIGHT-L_FRACTION_WIDTH, ai_income[i]->get_pos().y ) );
 

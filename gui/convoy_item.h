@@ -17,7 +17,7 @@ private:
 	convoihandle_t cnv;
 public:
 	convoy_scrollitem_t( convoihandle_t c ) : gui_scrolled_list_t::const_text_scrollitem_t( NULL, COL_ORANGE ) { cnv = c; }
-	COLOR_VAL get_color() OVERRIDE;
+	PIXVAL get_color() OVERRIDE;
 	convoihandle_t get_convoy() const { return cnv; }
 	void set_color(COLOR_VAL) OVERRIDE { assert(false); }
 	char const* get_text() const OVERRIDE;

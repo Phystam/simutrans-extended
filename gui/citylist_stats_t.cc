@@ -135,34 +135,34 @@ void citylist_stats_t::draw(scr_coord offset)
 	}
 
 	sint32 sel = line_selected;
-	clip_dimension cl = display_get_clip_wh();
+	clip_dimension cl = display_get_clip_wh_rgb();
 
-	FORX(vector_tpl<stadt_t*>, const stadt, city_list, offset.y += LINESPACE + 1) {
+	FORX(vector_tpl<stadt_t*>, const city, city_list, offset.y += LINESPACE + 1) {
 
-		sint32 population = stadt->get_finance_history_month(0, HIST_CITICENS);
-		sint32 growth = stadt->get_finance_history_month(0, HIST_GROWTH);
+		sint32 population = city->get_finance_history_month(0, HIST_CITICENS);
+		sint32 growth = city->get_finance_history_month(0, HIST_GROWTH);
 		if(  offset.y + LINESPACE > cl.y  &&  offset.y <= cl.yy  ) {
 			buf.clear();
-			buf.printf( "%s: ", stadt->get_name() );
+			buf.printf( "%s: ", city->get_name() );
 			buf.append( population, 0 );
 			buf.append( " (" );
 			buf.append( growth/10.0, 1 );
 			buf.append( ")" );
-			display_proportional_clip(offset.x + 4 + 10, offset.y, buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+			display_proportional_clip_rgb(offset.x + 4 + 10, offset.y, buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 
 			// goto button
 			bool selected = sel==0;
 			if(  !selected  ) {
 				// still on center?
-				if(  grund_t *gr = welt->lookup_kartenboden( stadt->get_center() )  ) {
+				if(  grund_t *gr = welt->lookup_kartenboden( city->get_center() )  ) {
 					selected = welt->get_viewport()->is_on_center( gr->get_pos() );
 				}
 			}
 			display_img_aligned( gui_theme_t::pos_button_img[ selected ], scr_rect( offset.x, offset.y, 14, LINESPACE ), ALIGN_CENTER_V | ALIGN_CENTER_H, true );
 			sel --;
 
-			if(  win_get_magic( (ptrdiff_t)stadt )  ) {
-				display_blend_wh( offset.x, offset.y, size.w, LINESPACE, SYSCOL_TEXT, 25 );
+			if(  win_get_magic( (ptrdiff_t)city )  ) {
+				display_blend_wh_rgb( offset.x, offset.y, size.w, LINESPACE, SYSCOL_TEXT, 25 );
 			}
 		}
 		total_bev    += population;

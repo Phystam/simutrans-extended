@@ -2956,7 +2956,7 @@ void fabrik_t::new_month()
 }
 
 // static !
-unsigned fabrik_t::status_to_color[MAX_FAB_STATUS] = {
+uint8 fabrik_t::status_to_color[MAX_FAB_STATUS] = {
 	COL_WHITE, COL_GREEN, COL_DODGER_BLUE, COL_LIGHT_TURQUOISE, COL_BLUE, COL_DARK_GREEN,
 	COL_GREY3, COL_DARK_BROWN+1, COL_YELLOW-1, COL_YELLOW, COL_ORANGE, COL_ORANGE_RED, COL_RED, COL_STAFF_SHORTAGE };
 

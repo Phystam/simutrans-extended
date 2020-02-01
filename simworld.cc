@@ -5183,7 +5183,7 @@ void karte_t::new_year()
 
 	cbuffer_t buf;
 	buf.printf( translator::translate("Year %i has started."), last_year );
-	msg->add_message(buf,koord::invalid,message_t::general,COL_BLACK,skinverwaltung_t::neujahrsymbol->get_image_id(0));
+	msg->add_message(buf,koord::invalid,message_t::general,color_idx_to_rgb(COL_BLACK),skinverwaltung_t::neujahrsymbol->get_image_id(0));
 
 	FOR(vector_tpl<convoihandle_t>, const cnv, convoi_array) {
 		cnv->new_year();
@@ -5295,7 +5295,7 @@ void karte_t::recalc_average_speed(bool skip_messages)
 					{
 						cbuffer_t buf;
 						buf.printf(translator::translate("The following %s has become obsolete:\n%s\n"), vehicle_type, translator::translate(info->get_name()));
-						msg->add_message(buf, koord::invalid, message_t::new_vehicle, COL_DARK_BLUE, info->get_base_image());
+						msg->add_message(buf, koord::invalid, message_t::new_vehicle, color_idx_to_rgb(COL_DARK_BLUE), info->get_base_image());
 					}
 				}
 			}
@@ -6805,7 +6805,7 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 #endif
 			if(city && wtyp == goods_manager_t::passengers)
 			{
-				city->merke_passagier_ziel(destination_pos, COL_YELLOW);
+				city->merke_passagier_ziel(destination_pos, color_idx_to_rgb(COL_YELLOW));
 			}
 			set_return_trip = true;
 			// create pedestrians in the near area?
@@ -6847,7 +6847,7 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 				if(wtyp == goods_manager_t::passengers)
 				{
 					city->set_private_car_trip(units_this_step, destination_town);
-					city->merke_passagier_ziel(destination_pos, COL_TURQUOISE);
+					city->merke_passagier_ziel(destination_pos, color_idx_to_rgb(COL_TURQUOISE));
 				}
 				else
 				{
@@ -6903,7 +6903,7 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 			{
 				if(wtyp == goods_manager_t::passengers)
 				{
-					city->merke_passagier_ziel(destination_pos, COL_DARK_YELLOW);
+					city->merke_passagier_ziel(destination_pos, color_idx_to_rgb(COL_DARK_YELLOW));
 					city->add_walking_passengers(units_this_step);
 				}
 				else
@@ -6947,7 +6947,7 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 
 			if(city && wtyp == goods_manager_t::passengers)
 			{
-				city->merke_passagier_ziel(best_bad_destination, COL_RED);
+				city->merke_passagier_ziel(best_bad_destination, color_idx_to_rgb(COL_RED));
 			}					
 #ifdef MULTI_THREAD
 			if(start_halts[passenger_generation_thread_number].get_count() > 0)
@@ -6971,11 +6971,11 @@ sint32 karte_t::generate_passengers_or_mail(const goods_desc_t * wtyp)
 			{
 				if(car_minutes >= best_journey_time)
 				{
-					city->merke_passagier_ziel(best_bad_destination, COL_LIGHT_PURPLE);
+					city->merke_passagier_ziel(best_bad_destination, color_idx_to_rgb(COL_LIGHT_PURPLE));
 				}
 				else if(car_minutes < UINT32_MAX_VALUE)
 				{
-					city->merke_passagier_ziel(best_bad_destination, COL_PURPLE);
+					city->merke_passagier_ziel(best_bad_destination, color_idx_to_rgb(COL_PURPLE));
 				}
 				else
 				{
@@ -7010,11 +7010,11 @@ no_route:
 			{
 				if(route_status == destination_unavailable)
 				{
-					city->merke_passagier_ziel(first_destination.location, COL_DARK_RED);
+					city->merke_passagier_ziel(first_destination.location, color_idx_to_rgb(COL_DARK_RED));
 				}
 				else
 				{
-					city->merke_passagier_ziel(first_destination.location, COL_DARK_ORANGE);
+					city->merke_passagier_ziel(first_destination.location, color_idx_to_rgb(COL_DARK_ORANGE));
 				}
 			}
 #ifdef MULTI_THREAD
@@ -7301,7 +7301,7 @@ no_route:
 					}
 					if(city)
 					{
-						city->merke_passagier_ziel(origin_pos.get_2d(), COL_DARK_ORANGE);
+						city->merke_passagier_ziel(origin_pos.get_2d(), color_idx_to_rgb(COL_DARK_ORANGE));
 					}
 				}
 #ifdef MULTI_THREAD
@@ -7333,7 +7333,7 @@ return_on_foot:
 					else if(city)
 					{
 						// Local, attraction or industry.
-						city->merke_passagier_ziel(origin_pos.get_2d(), COL_DARK_YELLOW);
+						city->merke_passagier_ziel(origin_pos.get_2d(), color_idx_to_rgb(COL_DARK_YELLOW));
 						city->add_walking_passengers(units_this_step);
 					}
 				}
@@ -10782,7 +10782,7 @@ void karte_t::network_disconnect()
 	reset_timer();
 	clear_command_queue();
 	create_win( display_get_width()/2-128, 40, new news_img("Lost synchronisation\nwith server."), w_info, magic_none);
-	ticker::add_msg( translator::translate("Lost synchronisation\nwith server."), koord::invalid, COL_BLACK );
+	ticker::add_msg( translator::translate("Lost synchronisation\nwith server."), koord::invalid, color_idx_to_rgb(COL_BLACK) );
 	last_active_player_nr = active_player_nr;
 
 	stop(false);

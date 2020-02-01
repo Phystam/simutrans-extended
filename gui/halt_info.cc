@@ -104,7 +104,7 @@ const uint8 index_of_haltinfo[MAX_HALT_COST] = {
 #define COL_MAIL_NOROUTE COL_BRIGHT_ORANGE
 #define COL_MAIL_DELIVERED COL_DARK_GREEN+1
 
-const int cost_type_color[MAX_HALT_COST] =
+const uint8 cost_type_color[MAX_HALT_COST] =
 {
 	COL_HAPPY,
 	COL_OVERCROWD,
@@ -174,10 +174,10 @@ halt_info_t::halt_info_t(halthandle_t halt) :
 
 	floating_cursor_t auto_cursor(cursor, D_MARGIN_LEFT, total_width - D_MARGIN_RIGHT);
 	for (int cost = 0; cost<MAX_HALT_COST; cost++) {
-		chart.add_curve(cost_type_color[cost], halt->get_finance_history(), MAX_HALT_COST, index_of_haltinfo[cost], MAX_MONTHS, 0, false, true, 0);
+		chart.add_curve(color_idx_to_rgb(cost_type_color[cost]), halt->get_finance_history(), MAX_HALT_COST, index_of_haltinfo[cost], MAX_MONTHS, 0, false, true, 0);
 		filterButtons[cost].init(button_t::box_state, cost_type[cost], auto_cursor.next_pos(button_size), button_size);
 		filterButtons[cost].add_listener(this);
-		filterButtons[cost].background_color = cost_type_color[cost];
+		filterButtons[cost].background_color = color_idx_to_rgb(cost_type_color[cost]);
 		filterButtons[cost].set_visible(false);
 		filterButtons[cost].pressed = false;
 		filterButtons[cost].set_tooltip(cost_tooltip[cost]);
@@ -305,8 +305,8 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 
 		sint16 top = pos.y + D_TITLEBAR_HEIGHT + input.get_pos().y + input.get_size().h + D_V_SPACE;
 		//sint16 top = pos.y+36;
-		COLOR_VAL indikatorfarbe = halt->get_status_farbe();
-		display_fillbox_wh_clip(pos.x+10, top+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
+		PIXVAL indikatorfarbe = halt->get_status_farbe();
+		display_fillbox_wh_clip_rgb(pos.x+10, top+2, D_INDICATOR_WIDTH, D_INDICATOR_HEIGHT, indikatorfarbe, true);
 		int left = 10+D_INDICATOR_WIDTH+2;
 
 		// what kind of station?
@@ -355,7 +355,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 
 		info_buf.clear();
 		info_buf.printf("%s", halt->get_owner()->get_name());
-		display_proportional(left, top, info_buf, ALIGN_LEFT, PLAYER_FLAG|(halt->get_owner()->get_player_color1()+0), true);
+		display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, PLAYER_FLAG|color_idx_to_rgb(halt->get_owner()->get_player_color1()+0), true);
 		top += D_LABEL_HEIGHT * 2;
 
 		bool enabled = false;
@@ -414,7 +414,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 
 			const int ev_value_offset_left = display_get_char_max_width(":") + 12;
 			int ev_indicator_width = min( 255, get_windowsize().w - D_MARGIN_LEFT - D_MARGIN_RIGHT * 2 - ev_value_offset_left - view.get_size().w);
-			COLOR_VAL color = MN_GREY0;
+			PIXVAL color = color_idx_to_rgb(MN_GREY0);
 
 			if (halt->get_pax_enabled()) {
 				left = pos.x + D_MARGIN_LEFT + 10;
@@ -442,7 +442,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 					}
 					left += 13;
 					info_buf.printf("%s", translator::translate("This stop has no user"));
-					display_proportional(left, top, info_buf, ALIGN_LEFT, MN_GREY0, true);
+					display_proportional_rgb(left, top, info_buf, ALIGN_LEFT,  color_idx_to_rgb(MN_GREY0), true);
 				}
 				else if (!halt->get_ware_summe(goods_manager_t::passengers) && !halt->has_pax_user(2, false)) {
 					// there is demand but it seems no passengers using
@@ -451,7 +451,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 					}
 					left += 13;
 					info_buf.printf("%s", translator::translate("No passenger service"));
-					display_proportional(left, top, info_buf, ALIGN_LEFT, MN_GREY0, true);
+					display_proportional_rgb(left, top, info_buf, ALIGN_LEFT,  color_idx_to_rgb(MN_GREY0), true);
 				}
 				else {
 					// passenger evaluation icons ok?
@@ -509,8 +509,8 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 				left = pos.x + D_MARGIN_LEFT + 10 + ev_value_offset_left;
 				info_buf.clear();
 				if (!pax_sum) {
-					color = halt->has_pax_user(2, false) ? MN_GREY0 : MN_GREY1;
-					display_fillbox_wh_clip(left, top, ev_indicator_width, indicator_height, color, true);
+					color = color_idx_to_rgb(halt->has_pax_user(2, false) ? MN_GREY0 : MN_GREY1);
+					display_fillbox_wh_clip_rgb(left, top, ev_indicator_width, indicator_height, color, true);
 				}
 				else
 				{
@@ -567,7 +567,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 						// This station seems not to be used by mail vehicles
 						info_buf.printf("%s", translator::translate("No mail service"));
 					}
-					display_proportional(left, top, info_buf, ALIGN_LEFT, MN_GREY0, true);
+					display_proportional_rgb(left, top, info_buf, ALIGN_LEFT,  color_idx_to_rgb(MN_GREY0), true);
 				}
 				else {
 					// if symbols ok
@@ -585,7 +585,7 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 						left += 11;
 
 						info_buf.printf(", %d", halt->haltestelle_t::get_mail_no_route());
-						left += display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
+						left += display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true) + 1;
 						info_buf.clear();
 						display_color_img(skinverwaltung_t::mail_evaluation_icons->get_image_id(1), left, top, 0, false, false);
 						if (abs((int)(left - get_mouse_x())) < 14 && abs((int)(top + LINESPACE / 2 - get_mouse_y())) < LINESPACE / 2 + 2) {
@@ -602,14 +602,14 @@ void halt_info_t::draw(scr_coord pos, scr_size size)
 						info_buf.printf(translator::translate("%d delivered, %d no route"), halt->haltestelle_t::get_mail_delivered(), halt->haltestelle_t::get_mail_no_route());
 						info_buf.printf(")");
 					}
-					display_proportional(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
+					display_proportional_rgb(left, top, info_buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 				}
 				// Evaluation ratio indicator
 				top += LINESPACE + 1;
 				left = pos.x + D_MARGIN_LEFT + 10 + ev_value_offset_left;
 				info_buf.clear();
 				if (!mail_sum) {
-					color = halt->has_mail_user(2, false) ? MN_GREY0 : MN_GREY1;
+					color =  color_idx_to_rgb(halt->has_mail_user(2, false) ? MN_GREY0 : MN_GREY1);
 					display_fillbox_wh_clip(left, top, ev_indicator_width, indicator_height, color, true);
 				}
 				else

@@ -487,7 +487,7 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 
 	// draw the label type
 	if(  env_t::show_names&1  ) {
-		PLAYER_COLOR_VAL pc = welt->get_active_player() ? welt->get_active_player()->get_player_color1()+4 : COL_ORANGE;
+		FLAGGED_PIXVAL pc = color_idx_to_rgb(welt->get_active_player() ? welt->get_active_player()->get_player_color1()+4 : COL_ORANGE);
 		const char *text = translator::translate("show station names");
 		switch( env_t::show_names >> 2 ) {
 			case 0:
@@ -497,48 +497,48 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 				display_outline_proportional( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y, pc+1, SYSCOL_TEXT, text, 1 );
 				break;
 			case 2:
-				display_outline_proportional( 16+x+buttons[19].get_pos().x+16, y+buttons[19].get_pos().y, COL_YELLOW, SYSCOL_TEXT, text, 1 );
-				display_ddd_box_clip( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y, LINESPACE, LINESPACE, pc-2, pc+2 );
-				display_fillbox_wh(16 + x + buttons[19].get_pos().x + 1, y + buttons[19].get_pos().y + 1, LINESPACE - 2, LINESPACE - 2, pc, true);
+				display_outline_proportional_rgb( 16+x+buttons[19].get_pos().x+16, y+buttons[19].get_pos().y, color_idx_to_rgb(COL_YELLOW), SYSCOL_TEXT, text, 1 );
+				display_ddd_box_clip_rgb( 16+x+buttons[19].get_pos().x, y+buttons[19].get_pos().y, LINESPACE, LINESPACE, pc-2, pc+2 );
+				display_fillbox_wh_rgb(16 + x + buttons[19].get_pos().x + 1, y + buttons[19].get_pos().y + 1, LINESPACE - 2, LINESPACE - 2, pc, true);
 				break;
 		}
 	}
 
 	// separator
 	const sint16 w = this->get_windowsize().w;
-	display_ddd_box_clip(x+10, y+SEPERATE1+1, w-20, 0, MN_GREY0, MN_GREY4);
-	display_ddd_box_clip(x+10, y+SEPERATE2+1, w-20, 0, MN_GREY0, MN_GREY4);
-	display_ddd_box_clip(x+10, y+SEPERATE3+1, w-20, 0, MN_GREY0, MN_GREY4);
-	display_ddd_box_clip(x+10, y+SEPERATE4+1, w-20, 0, MN_GREY0, MN_GREY4);
+	display_ddd_box_clip_rgb(x+10, y+SEPERATE1+1, w-20, 0, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4));
+	display_ddd_box_clip_rgb(x+10, y+SEPERATE2+1, w-20, 0, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4));
+	display_ddd_box_clip_rgb(x+10, y+SEPERATE3+1, w-20, 0, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4));
+	display_ddd_box_clip_rgb(x+10, y+SEPERATE4+1, w-20, 0, color_idx_to_rgb(MN_GREY0), color_idx_to_rgb(MN_GREY4));
 
-	display_proportional_clip(x+10, y+BRIGHTNESS+1, translator::translate("1LIGHT_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	display_proportional_clip_rgb(x+10, y+BRIGHTNESS+1, translator::translate("1LIGHT_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
 
-	display_proportional_clip(x+10, y+SCROLL_SPEED+1, translator::translate("3LIGHT_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	display_proportional_clip_rgb(x+10, y+SCROLL_SPEED+1, translator::translate("3LIGHT_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
 
-	display_proportional_clip(x+10, y+DENS_TRAFFIC+1, translator::translate("6WORLD_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	display_proportional_clip_rgb(x+10, y+DENS_TRAFFIC+1, translator::translate("6WORLD_CHOOSE"), ALIGN_LEFT, SYSCOL_TEXT, true);
 
 	const char *hhc = translator::translate( env_t::hide_buildings==0 ? "no buildings hidden" : (env_t::hide_buildings==1 ? "hide city building" : "hide all building") );
-	display_proportional_clip(x+10+16, y+HIDE_CITY_HOUSES+1, hhc, ALIGN_LEFT, SYSCOL_TEXT, true);
+	display_proportional_clip_rgb(x+10+16, y+HIDE_CITY_HOUSES+1, hhc, ALIGN_LEFT, SYSCOL_TEXT, true);
 
 	const char *ctc = translator::translate( env_t::show_vehicle_states==0 ? "convoi error tooltips" : (env_t::show_vehicle_states==1 ? "convoi mouseover tooltips" : "all convoi tooltips") );
-	display_proportional_clip(x+10+16, y+CONVOI_TOOLTIPS+1, ctc, ALIGN_LEFT, SYSCOL_TEXT, true);
+	display_proportional_clip_rgb(x+10+16, y+CONVOI_TOOLTIPS+1, ctc, ALIGN_LEFT, SYSCOL_TEXT, true);
 
-	int len=15+display_proportional_clip(x+10, y+FPS_DATA, translator::translate("Frame time:"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	int len=15+display_proportional_clip_rgb(x+10, y+FPS_DATA, translator::translate("Frame time:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	sprintf(buf,"%ld ms", get_frame_time() );
-	display_proportional_clip(x+len, y+FPS_DATA, buf, ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
+	display_proportional_clip_rgb(x+len, y+FPS_DATA, buf, ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
 
 	len = 15+display_proportional_clip(x+10, y+IDLE_DATA, translator::translate("Idle:"), ALIGN_LEFT, SYSCOL_TEXT, true);
-	display_proportional_clip(x+len, y+IDLE_DATA, ntos(welt->get_idle_time(), "%d ms"), ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
+	display_proportional_clip_rgb(x+len, y+IDLE_DATA, ntos(welt->get_idle_time(), "%d ms"), ALIGN_LEFT, SYSCOL_TEXT_HIGHLIGHT, true);
 
 	uint8 farbe;
 	uint32 loops;
 	loops=welt->get_realFPS();
-	farbe = COL_WHITE;
+	farbe = color_idx_to_rgb(COL_WHITE);
 	uint32 target_fps = welt->is_fast_forward() ? 10 : env_t::fps;
 	if(loops<(target_fps*3)/4) {
-		farbe = (loops<=target_fps/2) ? COL_RED : COL_YELLOW;
+		farbe = col((loops<=target_fps/2) ? COL_RED : COL_YELLOW);
 	}
-	len = 15+display_proportional_clip(x+10, y+FRAME_DATA, translator::translate("FPS:"), ALIGN_LEFT, SYSCOL_TEXT, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+FRAME_DATA, translator::translate("FPS:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	sprintf(buf,"%d fps", loops );
 #if MSG_LEVEL >= 3
 	if(  env_t::simple_drawing  ) {
@@ -548,16 +548,16 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 	display_proportional_clip(x+len, y+FRAME_DATA, buf, ALIGN_LEFT, farbe, true);
 
 	loops=welt->get_simloops();
-	farbe = COL_WHITE;
+	farbe = color_idx_to_rgb(COL_WHITE);
 	if(loops<=30) {
-		farbe = (loops<=20) ? COL_RED : COL_YELLOW;
+		farbe = color_idx_to_rgb((loops<=20) ? COL_RED : COL_YELLOW);
 	}
 	len = 15+display_proportional_clip(x+10, y+LOOP_DATA, translator::translate("Sim:"), ALIGN_LEFT, SYSCOL_TEXT, true);
 	sprintf( buf, "%d%c%d", loops/10, get_fraction_sep(), loops%10 );
 	display_proportional_clip(x+len, y+LOOP_DATA, buf, ALIGN_LEFT, farbe, true);
 
 	// Added by : Knightly
-	PLAYER_COLOR_VAL text_colour, figure_colour;
+	FLAGGED_PIXVAL text_colour, figure_colour;
 
 	text_colour = SYSCOL_TEXT;
 	figure_colour = SYSCOL_TEXT_TITLE;
@@ -580,21 +580,21 @@ void color_gui_t::draw(scr_coord pos, scr_size size)
 		sprintf(status_string, "stand-by");
 	}
 
-	len = 15+display_proportional_clip(x+10, y+PHASE_REBUILD_CONNEXIONS, translator::translate("Rebuild connexions:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+len, y+PHASE_REBUILD_CONNEXIONS, ntos(path_explorer_t::get_limit_rebuild_connexions(), "%lu"), ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PHASE_REBUILD_CONNEXIONS, translator::translate("Rebuild connexions:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+len, y+PHASE_REBUILD_CONNEXIONS, ntos(path_explorer_t::get_limit_rebuild_connexions(), "%lu"), ALIGN_LEFT, figure_colour, true);
 
-	len = 15+display_proportional_clip(x+10, y+PHASE_FILTER_ELIGIBLE, translator::translate("Filter eligible halts:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+len, y+PHASE_FILTER_ELIGIBLE, ntos(path_explorer_t::get_limit_filter_eligible(), "%lu"), ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PHASE_FILTER_ELIGIBLE, translator::translate("Filter eligible halts:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+len, y+PHASE_FILTER_ELIGIBLE, ntos(path_explorer_t::get_limit_filter_eligible(), "%lu"), ALIGN_LEFT, figure_colour, true);
 
-	len = 15+display_proportional_clip(x+10, y+PHASE_FILL_MATRIX, translator::translate("Fill path matrix:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+len, y+PHASE_FILL_MATRIX, ntos(path_explorer_t::get_limit_fill_matrix(), "%lu"), ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PHASE_FILL_MATRIX, translator::translate("Fill path matrix:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+len, y+PHASE_FILL_MATRIX, ntos(path_explorer_t::get_limit_fill_matrix(), "%lu"), ALIGN_LEFT, figure_colour, true);
 
-	len = 15+display_proportional_clip(x+10, y+PHASE_EXPLORE_PATHS, translator::translate("Explore paths:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+len, y+PHASE_EXPLORE_PATHS, ntos((long)path_explorer_t::get_limit_explore_paths(), "%lu"), ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PHASE_EXPLORE_PATHS, translator::translate("Explore paths:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+len, y+PHASE_EXPLORE_PATHS, ntos((long)path_explorer_t::get_limit_explore_paths(), "%lu"), ALIGN_LEFT, figure_colour, true);
 
-	len = 15+display_proportional_clip(x+10, y+PHASE_REROUTE_GOODS, translator::translate("Re-route goods:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+len, y+PHASE_REROUTE_GOODS, ntos(path_explorer_t::get_limit_reroute_goods(), "%lu"), ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PHASE_REROUTE_GOODS, translator::translate("Re-route goods:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+len, y+PHASE_REROUTE_GOODS, ntos(path_explorer_t::get_limit_reroute_goods(), "%lu"), ALIGN_LEFT, figure_colour, true);
 
-	len = 15+display_proportional_clip(x+10, y+PATH_EXPLORE_STATUS, translator::translate("Status:"), ALIGN_LEFT, text_colour, true);
-	display_proportional_clip(x+10, y+PATH_EXPLORE_STATUS_TEXT, status_string, ALIGN_LEFT, figure_colour, true);
+	len = 15+display_proportional_clip_rgb(x+10, y+PATH_EXPLORE_STATUS, translator::translate("Status:"), ALIGN_LEFT, text_colour, true);
+	display_proportional_clip_rgb(x+10, y+PATH_EXPLORE_STATUS_TEXT, status_string, ALIGN_LEFT, figure_colour, true);
 }
