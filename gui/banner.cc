@@ -55,7 +55,7 @@
 
 // Banner color ramp
 // Index 0 is the normal text color
-static const uint8 colors[COLOR_RAMP_SIZE] = { SYSCOL_TEXT_HIGHLIGHT, COL_GREY3, COL_GREY4, COL_GREY5, COL_GREY6 };
+static const uint8 colors[COLOR_RAMP_SIZE] = { COL_WHITE, COL_GREY3, COL_GREY4, COL_GREY5, COL_GREY6 };
 
 
 banner_t::banner_t() : gui_frame_t(""),
@@ -182,7 +182,7 @@ void banner_t::draw(scr_coord pos, scr_size size )
 	display_shadow_proportional_rgb( cursor.x+24, cursor.y, SYSCOL_TEXT_HIGHLIGHT, SYSCOL_TEXT_SHADOW, "from Simutrans-Standard " QUOTEME(SIM_VERSION_MAJOR) "." QUOTEME(SIM_VERSION_MINOR), true );
 	cursor.y += L_LINESPACE_EXTRA_7;
 
-	display_shadow_proportional_rgb( cursor.x+24, cursor.y, COL_LIGHT_ORANGE, SYSCOL_TEXT_SHADOW, "Selling this software is forbidden.", true );
+	display_shadow_proportional_rgb( cursor.x+24, cursor.y, color_idx_to_rgb(COL_LIGHT_ORANGE), SYSCOL_TEXT_SHADOW, "Selling this software is forbidden.", true );
 	cursor.y += L_LINESPACE_EXTRA_5;
 
 	display_shadow_proportional_rgb( cursor.x, cursor.y, SYSCOL_TEXT_TITLE, SYSCOL_TEXT_SHADOW, "For more information, see the website and forum:", true );
