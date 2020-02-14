@@ -1088,7 +1088,6 @@ void gui_convoy_maintenance_info_t::draw(scr_coord offset)
 			}
 
 			// upgrade info
-			// NOTE: pakset may not have a vehicle set to upgrade[n]
 			if (upgradable_state)
 			{
 				int found = 0;
@@ -1096,6 +1095,9 @@ void gui_convoy_maintenance_info_t::draw(scr_coord offset)
 				for (int i = 0; i < v->get_desc()->get_upgrades_count(); i++)
 				{
 					if (const vehicle_desc_t* desc = v->get_desc()->get_upgrades(i)) {
+						if (!welt->get_settings().get_show_future_vehicle_info() && desc->is_future(month_now)==1) {
+							continue; // skip future information
+						}
 						found++;
 						if (found == 1) {
 							if (skinverwaltung_t::upgradable) {
@@ -1137,7 +1139,7 @@ void gui_convoy_maintenance_info_t::draw(scr_coord offset)
 							buf.printf(translator::translate("Maintenance: %1.2f$/km, %1.2f$/month\n"), desc->get_running_cost() / 100.0, desc->get_adjusted_monthly_fixed_cost(welt) / 100.0);
 							display_proportional_clip_rgb(pos.x + extra_w + offset.x + D_MARGIN_LEFT + grid_width, pos.y + offset.y + total_height + extra_y, buf, ALIGN_LEFT, SYSCOL_TEXT, true);
 							extra_y += LINESPACE + 2;
-						}
+						}			
 					}
 				}
 			}
