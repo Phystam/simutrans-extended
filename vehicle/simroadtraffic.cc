@@ -454,6 +454,7 @@ private_car_t::private_car_t(grund_t* gr, koord const target) :
 	time_to_life = welt->get_settings().get_stadtauto_duration() << welt->ticks_per_world_month_shift;
 	current_speed = 48;
 	ms_traffic_jam = 2147483647;
+	found_route = false;
 	this->target = target;
 	calc_image();
 	origin = gr ? gr->get_pos().get_2d() : koord::invalid;
@@ -990,7 +991,7 @@ grund_t* private_car_t::hop_check()
 
 		// We need to check here, as the hashtable will give us a 0,0,0 koord rather
 		// than koord::invalid if this be not contained in the hashtable.
-		bool found_route = false;
+		found_route = false;
 		found_route = weg->private_car_routes[weg_t::private_car_routes_currently_reading_element].is_contained(check_target);
 		if (!found_route)
 		{
@@ -1355,6 +1356,8 @@ void private_car_t::info(cbuffer_t & buf) const
 	const char* destination_city_name = destination_city ? destination_city->get_name() : translator::translate("keine");
 	buf.printf(translator::translate("%s\nspeed %i\nmax_speed %i\ndx:%i dy:%i"), translator::translate(desc->get_name()), speed_to_kmh(current_speed), speed_to_kmh(desc->get_topspeed()), dx, dy);
 	buf.printf(translator::translate("\nOrigin: %s\nDestination: %s (%s)"), origin_city_name, destination_name, destination_city_name);
+	buf.printf(translator::translate( found_route ? "\nFollowing route" : "\nNot following route" ));
+	buf.printf(translator::translate();
 }
 
 

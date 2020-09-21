@@ -122,6 +122,8 @@ private:
 
 	koord3d last_tile_marked_as_stopped;
 
+	bool found_route;
+	
 	grund_t* hop_check() OVERRIDE;
 
 	void calc_disp_lane();
