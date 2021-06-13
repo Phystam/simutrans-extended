@@ -36,6 +36,8 @@ public:
 
 	// called, after external change
 	void update_data();
+
+  void set_tool_at( gui_action_creator_t*, value_t, koord3d );
 };
 
 #endif

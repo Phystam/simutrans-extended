@@ -71,32 +71,7 @@ trafficlight_info_t::trafficlight_info_t(roadsign_t* s) :
  */
 bool trafficlight_info_t::action_triggered( gui_action_creator_t *comp, value_t v)
 {
-	char param[256];
-	if(comp == &ns) {
-		sprintf( param, "%s,1,%i", roadsign->get_pos().get_str(), (int)v.i );
-		tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
-		welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
-	}
-	else if(comp == &ow) {
-		sprintf( param, "%s,0,%i", roadsign->get_pos().get_str(), (int)v.i );
-		tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
-		welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
-	}
- 	else if(comp == &offset) {
-		sprintf( param, "%s,2,%i", roadsign->get_pos().get_str(), (int)v.i );
-		tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
-		welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
-	}
- 	else if(comp == &amber_ns) {
-		sprintf( param, "%s,4,%i", roadsign->get_pos().get_str(), (int)v.i );
-		tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
-		welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
-	}
- 	else if(comp == &amber_ow) {
-		sprintf( param, "%s,3,%i", roadsign->get_pos().get_str(), (int)v.i );
-		tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
-		welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
-	}
+	set_tool_at(comp, v, roadsign->get_pos());
 	return true;
 }
 
@@ -109,4 +84,85 @@ void trafficlight_info_t::update_data()
 	offset.set_value( roadsign->get_ticks_offset() );
 	amber_ns.set_value( roadsign->get_ticks_amber_ns() );
 	amber_ow.set_value( roadsign->get_ticks_amber_ow() );
+}
+
+void trafficlight_info_t::set_tool_at( gui_action_creator_t* comp, value_t v, koord3d k)
+{
+  char param[256];
+  if(comp == &ns) {
+    sprintf( param, "%s,1,%i", k.get_str(), (int)v.i );
+    tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
+    welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
+    //check the neighbouring traffic light
+    for(uint8 i=0; i<4; i++){
+      const koord3d neighbour = k + koord3d(koord::nesw[i],0);
+      grund_t* gr = welt->lookup(neighbour);
+      const roadsign_t* rs = gr->find<roadsign_t>();
+      if( rs && rs->get_desc()->is_traffic_light() && welt->get_active_player() == rs->get_owner() ){
+	if( rs->get_ticks_ns() != (uint8)v.i ){
+	  set_tool_at(comp, v, neighbour);
+	}
+      }
+    }
+  }
+  else if(comp == &ow) {
+    sprintf( param, "%s,0,%i", k.get_str(), (int)v.i );
+    tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
+    welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
+    for(uint8 i=0; i<4; i++){
+      const koord3d neighbour = k + koord3d(koord::nesw[i],0);
+      grund_t* gr = welt->lookup(neighbour);
+      const roadsign_t* rs = gr->find<roadsign_t>();
+      if( rs && rs->get_desc()->is_traffic_light() && welt->get_active_player() == rs->get_owner() ){
+	if( rs->get_ticks_ow() != (uint8)v.i ){
+	  set_tool_at(comp, v, neighbour);
+	}
+      }
+    }
+  }
+  else if(comp == &offset) {
+    sprintf( param, "%s,2,%i", k.get_str(), (int)v.i );
+    tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
+    welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
+    for(uint8 i=0; i<4; i++){
+      const koord3d neighbour = k + koord3d(koord::nesw[i],0);
+      grund_t* gr = welt->lookup(neighbour);
+      const roadsign_t* rs = gr->find<roadsign_t>();
+      if( rs && rs->get_desc()->is_traffic_light() && welt->get_active_player() == rs->get_owner() ){
+	if( rs->get_ticks_offset() != (uint8)v.i ){
+	  set_tool_at(comp, v, neighbour);
+	}
+      }
+    }
+  }
+  else if(comp == &amber_ns) {
+    sprintf( param, "%s,4,%i", k.get_str(), (int)v.i );
+    tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
+    welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
+    for(uint8 i=0; i<4; i++){
+      const koord3d neighbour = k + koord3d(koord::nesw[i],0);
+      grund_t* gr = welt->lookup(neighbour);
+      const roadsign_t* rs = gr->find<roadsign_t>();
+      if( rs && rs->get_desc()->is_traffic_light() && welt->get_active_player() == rs->get_owner() ){
+	if( rs->get_ticks_amber_ns() != (uint8)v.i ){
+	  set_tool_at(comp, v, neighbour);
+	}
+      }
+    }
+  }
+  else if(comp == &amber_ow) {
+    sprintf( param, "%s,3,%i", k.get_str(), (int)v.i );
+    tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT]->set_default_param( param );
+    welt->set_tool( tool_t::simple_tool[TOOL_CHANGE_TRAFFIC_LIGHT], welt->get_active_player() );
+    for(uint8 i=0; i<4; i++){
+      const koord3d neighbour = k + koord3d(koord::nesw[i],0);
+      grund_t* gr = welt->lookup(neighbour);
+      const roadsign_t* rs = gr->find<roadsign_t>();
+      if( rs && rs->get_desc()->is_traffic_light() && welt->get_active_player() == rs->get_owner() ){
+	if( rs->get_ticks_amber_ow() != (uint8)v.i ){
+	  set_tool_at(comp, v, neighbour);
+	}
+      }
+    }
+  }
 }
